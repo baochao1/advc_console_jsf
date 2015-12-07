@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>短信模板设置</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="selectMajorStageByMajor" actionListener="#{majorStageOther.selectMajorStageByMajor2(smsTemplateAction.majorID)}" update="sPhaseNo" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="6" style="width:100%; text-align:left;">
+			<h:outputLabel for="sPhaseNo" value="阶段名" />
+			<p:selectOneMenu id="sPhaseNo" value="#{smsTemplateAction.searchSmsTemplate.stageID}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorStageOther.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel for="sStatus" value="状态" />
+			<p:selectOneMenu id="sStatus" value="#{smsTemplateAction.searchSmsTemplate.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{smsTemplateReqAction.status.entrySet()}" var="s" itemLabel="#{s.value}" itemValue="#{s.key}"/>
+			</p:selectOneMenu>
+			
+			<p:outputLabel />
+			<p:outputLabel />
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{smsTemplateAction.search}" rendered="#{smsTemplateAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="addDialog.show();" 
+				actionListener="#{smsTemplateReqAction.add(0)}" rendered="#{smsTemplateAction.optAuth}" update=":addForm:addDialog" />
+		</p:menubar>
+		
+		<p:dataTable scrollable="true" scrollHeight="#{smsTemplateAction.heighti2}" 
+			widgetVar="smsTemplateTable"
+			id="smsTemplateList"
+			binding="#{smsTemplateAction.pageTable}"
+			lazy="true"
+			value="#{smsTemplateAction.page}" 
+			rows="20"
+			var="smsTemp" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{smsTemplateAction.viewAuth}"
+			editable="true" 
+			editMode="cell" 
+			>
+			<p:column headerText="阶段名" width="10%">
+				<h:outputText value="#{smsTemp.stageName}" />
+			</p:column>
+			<p:column headerText="模板名称" width="15%">
+				<h:outputText value="#{smsTemp.title}" />
+			</p:column>
+			<p:column headerText="模板内容" width="30%">
+				<h:outputText title="#{smsTemp.sendContent}" value="#{smsTemp.sendContentStr}" />
+			</p:column>
+			<p:column headerText="发送类别" width="8%">
+				<h:outputText value="#{smsTemp.sendTypeStr}" />
+			</p:column>
+			<p:column headerText="创建时间" width="12%">
+				<h:outputText value="#{smsTemp.createTimeStr}" />
+			</p:column>
+			<p:column headerText="操作" width="15%">
+				<p:commandLink value="#{smsTemp.statusStr}" update=":info" actionListener="#{smsTemplateReqAction.changeStatus(smsTemp.templateID,smsTemp.status)}" rendered="#{smsTemplateAction.optAuth}"/>
+				<h:outputText value="#{smsTemp.statusStr}" rendered="#{!smsTemplateAction.optAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="查看" oncomplete="showDialog.show();" 
+					actionListener="#{smsTemplateReqAction.show(smsTemp.templateID)}"
+					update=":showForm:showDialog" />
+				<p:spacer width="5px"/>
+				<p:commandLink value="修改" oncomplete="addDialog.show();" 
+					actionListener="#{smsTemplateReqAction.update(1, smsTemp.templateID, smsTemplateAction.majorID)}"
+					update=":addForm:addDialog" rendered="#{smsTemplateAction.optAuth}"/>
+			</p:column>
+			<p:column headerText="设置策略" width="10%">
+				<p:commandLink value="设置策略" oncomplete="setRuleDialog.show();" 
+					actionListener="#{smsTemplateAction.setRule(smsTemp.templateID,smsTemp.stageID)}"
+					update=":setRuleForm:setRuleDialog" rendered="#{smsTemplateAction.optAuth}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="smsTemplateList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 添加页面 -->
+	<h:form id="addForm" >
+		<ui:include src="load/smsSetAdd.xhtml"/>
+	</h:form>
+	<!-- 查看页面 -->
+	<h:form id="showForm" >
+		<ui:include src="load/smsSetShow.xhtml"/>
+	</h:form>
+	<!-- 设置策略页面 -->
+	<h:form id="setRuleForm" >
+		<ui:include src="load/smsRuleSet.xhtml"/>
+	</h:form>
+</h:body>
+</html>

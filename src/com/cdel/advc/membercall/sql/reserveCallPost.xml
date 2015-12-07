@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="reservecallpost">
+	<sql id="getMembercallReservePost_body">
+        SELECT *, ROW_NUMBER() Over(ORDER BY callTime DESC) AS rowNum  FROM (
+	        SELECT distinct a.callID, a.userID,b.userName, a.classID,c.classCode, a.studyStatus, a.personalAsk, a.reservedTime,
+				a.feedback, a.callStatus, a.caller, a.callTime, a.reservedDate, a.reserveRemark, t.teacherName,c.className,a.callType,
+				case 
+					when 
+						callTime is  null 
+	               	then 
+	               		DATEDIFF(hh,dateadd(hh, a.reservedTimeHour, reservedDate),getdate())
+				   	else 
+				   		DATEDIFF(hh,dateadd(hh, a.reservedTimeHour, reservedDate),callTime)
+					end 
+				as postHours 
+	        FROM ADVC_MEMBER_CALL a 
+	        LEFT JOIN 
+	       		 ADVC_MEMBER b WITH (NOLOCK) on a.userID=b.userID
+	        LEFT JOIN 
+	       		 ADVC_CLASS c WITH (NOLOCK) on a.classID=c.classID
+		    LEFT JOIN 
+		   		 ADVC_CLASS_TEACHER ct WITH (NOLOCK) ON a.classID = ct.classID 
+		    LEFT JOIN 
+		   		 ADVC_TEACHER tt WITH (NOLOCK) ON tt.teacherID = ct.teacherID 
+	        LEFT JOIN 
+	       		 ADVC_TEACHER t WITH (NOLOCK) on a.caller = t.teacherID
+	        WHERE a.reservedDate IS NOT NULL and c.status = 1
+	        <if test="userName!=null and userName!=''">AND b.userName=#{userName} </if>
+	        <if test="className!=null and className!=''">AND c.className like '%'+#{className}+'%' </if>
+	        <if test="displayAdviser !=null and displayAdviser !=''">AND (c.displayAdviser like #{manager}+'%' OR tt.teacherCode like #{manager}+'%' OR tt.teacherName like #{manager}+'%') </if>
+	        <if test="callType !=null">AND a.callType=#{callType} </if>
+            <if test="orgID != null">AND tt.orgID = #{orgID}</if>
+        )t WHERE postHours > 0
+    </sql>
+    
+ 	<select id="countReserveCallPost" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getMembercallReservePost_body" />
+        ) AS myTable 
+    </select>
+    
+    <select id="findPageReserveCallPost" resultType="ReserveCallPost" parameterType="ReserveCallPost">
+        SELECT * FROM (
+            <include refid="getMembercallReservePost_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+
+</mapper>

@@ -1,0 +1,104 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+		id="teachMemberStatisDialog" header="信息统计" widgetVar="teachMemberStatisDialog" resizable="false" showEffect="fade" hideEffect="fade" height="450" width="1000" style="width:500px;">
+	
+	<p:remoteCommand name="setOrganizeList" actionListener="#{organizeAction.setOrganizeList}" update="sOrgID" autoRun="true"/>
+	<p:panel id="dataTablePanel">  
+		 
+	<p:panelGrid columns="6"   style="width:100%; text-align:center;"  height="250">
+	       <h:outputLabel for="sOrgID" value="选择部门">
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			
+			<p:selectOneMenu id="sOrgID" style="width:200px;" panelStyleClass="minLength" value="#{adminStatisReqAction.adminStatis.orgID}" filter="true" filterMatchMode="contains">
+				<p:ajax event="change" update=":teachMemberStatisForm:uGroupName" listener="#{organizeAction.changeOrgID}" />
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{organizeAction.organizeList}" var="organize" itemLabel="#{organize.orgName}" itemValue="#{organize.orgID}"/>
+			</p:selectOneMenu>
+					
+			<h:outputLabel for="uGroupName" value="选择小组">
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			
+			<p:selectOneMenu id="uGroupName" style="width:200px;" panelStyleClass="minLength" value="#{adminStatisReqAction.adminStatis.groupID}"  filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{organizeAction.groupList}" var="group" itemLabel="#{group.groupName}" itemValue="#{group.groupID}"/>
+			</p:selectOneMenu>
+	       
+	       <h:outputLabel value="教师名称"><span class="requiredFlag">*</span></h:outputLabel>
+		    <p:inputText value="#{adminStatisReqAction.adminStatis.teacherName}" styleClass="minLength"/>
+		
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:commandButton value="查询" actionListener="#{adminStatisReqAction.getList}"/>
+				<p:spacer width="10px"/>
+				<p:commandButton type="reset" value="重置" />
+			</h:panelGroup>
+		</f:facet>	
+	</p:panelGrid>
+	
+	<p:dataTable scrollable="true" scrollHeight="#{adminStatisReqAction.heighti2}" 
+		id="adminStatisList"
+		value="#{adminStatisReqAction.adminStatisList}" 
+		var="admin" 
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！"
+		>
+		<f:facet name="header">
+		   信息统计
+		</f:facet>
+		
+		<p:columnGroup type="header">
+		     <p:row>
+		          <p:column rowspan="2"  headerText="#{adminStatisReqAction.orgName}"     />
+		          <p:column colspan="2"  headerText="班主任"      />
+		          <p:column colspan="2"  headerText="管理员"    />
+		     </p:row>
+		      <p:row>
+		          <p:column    headerText="班级数量"  />
+		          <p:column    headerText="学员总数" />
+		          <p:column    headerText="班级数量" />
+		          <p:column    headerText="学员总数"/>
+		      </p:row>
+		</p:columnGroup>
+			<p:column headerText="老师名称"  >
+				<h:outputText value="#{admin.teacherName}" />
+			</p:column>
+			<p:column headerText="班主任班级数量"  >
+				<h:outputText value="#{admin.adviserClassNum}" />
+			</p:column>
+			<p:column headerText="班主任学员总数"  >
+				<h:outputText value="#{admin.adviserMemberTotal}" />
+			</p:column>
+			<p:column headerText="管理员班级数量"  >
+				<h:outputText value="#{admin.adminClassNum}" />
+			</p:column>
+			<p:column headerText="管理员学员总数"  >
+				<h:outputText value="#{admin.adminMemberTotal}" />
+			</p:column>
+			
+		 <p:summaryRow>
+		     <p:column  style="text-align:right;"   >
+		          Total：   
+		     </p:column>
+		     <p:column   >
+		          #{adminStatisReqAction.adminStatis.adviserClassNum}$ 
+		     </p:column>
+		      <p:column   >
+		         #{adminStatisReqAction.adminStatis.adviserMemberTotal}$ 
+		     </p:column>
+		      <p:column   >
+		          #{adminStatisReqAction.adminStatis.adminClassNum}$ 
+		     </p:column>
+		      <p:column   >
+		          #{adminStatisReqAction.adminStatis.adminMemberTotal}$
+		     </p:column>
+		  </p:summaryRow>
+	</p:dataTable>
+</p:panel>
+</p:dialog>
+ 

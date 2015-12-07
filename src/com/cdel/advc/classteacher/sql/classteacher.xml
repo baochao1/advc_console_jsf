@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Mon Jul 01 18:03:07 CST 2013-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="classteacher">
+	<select id="getClassteacherList4I" resultType="Classteacher" parameterType="Integer">
+    	SELECT CT.teacherDesc,CT.teacherType,T.teacherName,T.teacherID, T.teacherCode  
+    	FROM ADVC_CLASS_TEACHER CT WITH (NOLOCK) LEFT JOIN ADVC_TEACHER T WITH (NOLOCK) ON CT.teacherID = T.teacherID         
+		WHERE CT.classID=#{classID} ORDER BY T.teacherName
+    </select>
+    
+	<select id="getTutorCountByTeacherID" resultType="Integer" parameterType="Integer">
+    	SELECT count(teacherID) 
+    	FROM ADVC_CLASS_TEACHER WITH (NOLOCK) 
+		WHERE teacherID=#{teacherID}
+    </select>
+
+    <insert id="insertClassteacher">
+        INSERT INTO ADVC_CLASS_TEACHER(teacherID, classID, teacherType 
+        <if test="teacherDesc != null and teacherDesc != ''"> ,teacherDesc </if>)
+		VALUES (#{teacherID}, #{classID}, #{teacherType} 
+		<if test="teacherDesc != null and teacherDesc != ''"> ,#{teacherDesc} </if>)
+		<selectKey keyProperty="tutorID" resultType="int">
+			SELECT @@IDENTITY AS tutorID 
+        </selectKey>
+    </insert>
+    
+    <insert id="insertClassteacherList">
+        INSERT INTO ADVC_CLASS_TEACHER( teacherID, classID, teacherType,teacherDesc )
+		<foreach collection="list" item="t" open="(" close=")" separator=" union all ">
+        	select #{t.teacherID},#{t.classID},#{t.teacherType},#{t.teacherDesc}
+        </foreach>
+    </insert>
+    
+    <delete id="deleteClassteacherByObject" parameterType="Classteacher">
+    	DELETE FROM ADVC_CLASS_TEACHER WHERE classID = #{classID} 
+    	<if test="teacherID != null"> and teacherID = #{teacherID} </if>
+    </delete>
+    
+    <delete id="deleteClassteacherMap" parameterType="java.util.HashMap">
+    	DELETE FROM ADVC_CLASS_TEACHER WHERE classID in 
+    	<foreach collection="classesList" item="classes" open="(" close=")" separator=" , ">
+        	#{classes.classID}
+        </foreach>
+    	AND teacherID = #{teacherID}
+    </delete>
+    
+    <select id="getTeacherIDsInClass" parameterType="Integer" resultType="Integer">
+        SELECT teacherID FROM ADVC_CLASS_TEACHER WITH (NOLOCK) WHERE classID=#{classID}
+    </select>
+    
+</mapper>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="reportlog">
+
+	<insert id="insertReportLog">
+        INSERT INTO ADVC_REMARK_LOG ( 
+        <trim prefix="" prefixOverrides=",">
+        	<if test="reportID !=null"> reportID ,</if>
+        	<if test="remarker !=null"> remarker ,</if>
+        	<if test="remarkContent !=null"> remarkContent ,</if>
+        	<if test="remarkTime !=null"> remarkTime </if>
+        </trim>
+        )
+        VALUES (
+        <trim prefix="" prefixOverrides=",">
+        	<if test="reportID !=null"> #{reportID },</if>
+        	<if test="remarker !=null"> #{remarker },</if>
+        	<if test="remarkContent !=null"> #{remarkContent} ,</if>
+        	<if test="remarkTime !=null">#{ remarkTime} </if>
+        </trim>
+        )
+        <selectKey keyProperty="remarkLogID" resultType="int">
+        	SELECT @@IDENTITY AS remarkLogID 
+        </selectKey>
+    </insert>
+
+    <select id="getReportLogList4I" parameterType="int" resultType="ReportLog">
+		SELECT remarkContent, remarkTime, at.teacherName 
+		FROM ADVC_REMARK_LOG ar WITH (NOLOCK) 
+		LEFT JOIN ADVC_TEACHER AT WITH (NOLOCK) ON at.teacherID = ar.remarker
+		WHERE reportID= #{reportID} order by remarkLogID desc
+    </select>
+
+</mapper>

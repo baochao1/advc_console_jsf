@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="selfhelp">
+	<sql id="getSelfHelpList_body">
+        SELECT QSP.helpPaperID, QSP.helpPaperName, QSP.creator, QSP.createTime, M.userName,
+             ROW_NUMBER() Over(ORDER BY QSP.helpPaperID DESC) AS rowNum 
+        FROM QZ_SELFHELP_PAPER QSP WITH (NOLOCK) 
+        LEFT JOIN QZ_MEMBER M WITH (NOLOCK) ON M.userID=QSP.creator
+        LEFT JOIN QZ_MEMBER_POINT_SCORE  mps  on mps.helpPaperID =  QSP.helpPaperID AND mps.userID = M.userID
+        where  QSP.creator=#{creator}  and  mps.siteCourseID in 
+		<foreach collection="siteCourseIDList" close=")" open="(" separator="," item="siteCourseID">
+			    #{siteCourseID}
+		 </foreach>
+         
+    </sql>
+
+    <select id="countSelfHelp" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getSelfHelpList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageSelfHelp" parameterType="java.util.Map" resultType="SelfHelp">
+        SELECT * FROM (
+            <include refid="getSelfHelpList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membermessageall">
+
+	<sql id="getMembermessageList_body">
+		SELECT mm.msgID, mm.classID, am1.userName as senderName,am2.userName as receiverName, c.className,
+		mm.sentTime,mm.msgTitle, mm.readFlag, mm.status,ROW_NUMBER() Over(ORDER BY msgID DESC) AS rowNum 
+		FROM ADVC_MEMBER_MESSAGE mm WITH (NOLOCK)
+		left join ADVC_MEMBER am1 WITH (NOLOCK) on am1.userID = mm.sender 	<!-- am1 发消息人 -->
+		left join ADVC_MEMBER am2 WITH (NOLOCK) on am2.userID = mm.receiver	<!-- am2接受消息人 -->
+		left join ADVC_CLASS c WITH (NOLOCK) on c.classID = mm.classID 
+		left join ADVC_TESTTERM at WITH (NOLOCK) on at.termID = c.termID     <!--学员所在班级的考期 -->
+		WHERE c.classID IS NOT NULL
+		<if test="classID!=null"> AND mm.classID=#{classID} </if>
+		<if test="msgTitle!=null and msgTitle !=''"> AND mm.msgTitle like '%'+#{msgTitle}+'%' </if>
+		<if test="senderName!=null and senderName !=''"> AND am1.userName=#{senderName} </if>
+		<if test="receiverName!=null and receiverName!=''"> AND am2.userName=#{receiverName} </if>
+		<if test="readFlag!=null"> AND mm.readFlag=#{readFlag} </if>
+		<if test="status!=null"> AND mm.status=#{status} </if>
+		<if test="majorID!=null"> AND at.majorID=#{majorID} </if>
+	</sql>
+
+	<select id="countMembermessageAll" resultType="int">
+		SELECT COUNT(*) FROM (
+			<include refid="getMembermessageList_body" />
+		) AS myTable
+	</select>
+
+	<select id="findPageMembermessageAll" parameterType="MembermessageAll" resultType="MembermessageAll">
+		SELECT * FROM (
+			<include refid="getMembermessageList_body" />
+		) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+	</select>
+
+</mapper>

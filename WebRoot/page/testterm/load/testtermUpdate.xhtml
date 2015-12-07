@@ -1,0 +1,132 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="loadDialog" header="修改" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+	<p:panelGrid id="updatePanelGrid" >
+		<p:row>
+			<p:column styleClass="addObjectClass">
+				<h:outputLabel value="所属辅导" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{testtermReqAction.testterm.majorName}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectClass">
+				<h:outputLabel value="考期类别" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:selectOneRadio value="#{testtermReqAction.testterm.termType}" styleClass="maxLength" >
+					<f:selectItems value="#{testtermReqAction.termTypes.entrySet()}" var="termType" itemLabel="#{termType.value}" itemValue="#{termType.key}"/>
+				</p:selectOneRadio>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectClass">
+				<h:outputLabel value="考期日期" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:calendar value="#{testtermReqAction.testterm.termDate}" pattern="yyyy-MM" navigator="true" readonlyInput="true"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectClass">
+				<h:outputLabel value="考期名称" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:inputText value="#{testtermReqAction.testterm.termName}" styleClass="minLength" />
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectClass">
+				<h:outputLabel value="班级简称" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:inputText value="#{testtermReqAction.testterm.classShortName}" styleClass="minLength" />
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="学习计划开始时间" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column>
+				<p:calendar value="#{testtermReqAction.testterm.startTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			</p:column>
+			<p:column>
+				<h:outputLabel value="学习计划结束时间" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column>
+				<p:calendar value="#{testtermReqAction.testterm.endTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			</p:column>
+		</p:row>
+	
+		<p:row>
+			<p:column colspan="2" >
+				<h:outputLabel value="学习计划默认最大学习时间" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="2" >
+				<p:spinner value="#{testtermReqAction.testterm.maxStudyTime}" />
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="预习计划开始时间" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column>
+				<p:calendar value="#{testtermReqAction.testterm.preStartTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			</p:column>
+			<p:column>
+				<h:outputLabel value="预习计划结束时间" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column>
+				<p:calendar value="#{testtermReqAction.testterm.preEndTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			</p:column>
+		</p:row>
+	
+		<p:row>
+			<p:column colspan="2" >
+				<h:outputLabel value="预习计划默认最大学习时间" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="2" >
+				<p:spinner value="#{testtermReqAction.testterm.preMaxStudyTime}" />
+			</p:column>
+		</p:row>
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{testtermReqAction.testterm.termID}"/>
+			<p:commandButton value="提交" actionListener="#{testtermReqAction.updateSubmit}" update="msg" oncomplete="optResult('loadDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

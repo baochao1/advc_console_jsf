@@ -1,0 +1,83 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:p="http://primefaces.org/ui" id="courseTimeDialog" header="听课时长" widgetVar="courseTimeDialog" resizable="false" showEffect="fade" hideEffect="fade" height="400">
+	
+	<p:panelGrid id="showPanelGrid" columns="4">
+		
+		<h:outputLabel value="课程名称" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{courseTimeReqAction.courseName}" />
+		
+		<h:outputLabel value="阶段名" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:selectOneMenu id="uStageID4CourseTime" value="#{courseTimeReqAction.updateCourseTime.stageID}" style="width:200px;" panelStyleClass="minLength" >
+			<f:selectItem itemLabel="--请选择--" itemValue="" />
+			<f:selectItems value="#{majorStageOther.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+		</p:selectOneMenu>
+		
+		<h:outputLabel value="课件时长(分钟)" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:inputText value="#{courseTimeReqAction.updateCourseTime.scheduleTime}" styleClass="minLength"/>
+		
+		<p:outputLabel />
+		<p:outputLabel />
+		
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:messages id="msg"/>
+				<h:inputHidden value="#{courseTimeReqAction.updateCourseTime.qzCourseID }"/>
+				<p:commandButton id="searchBtn" value="添加" actionListener="#{courseTimeReqAction.updateSubmit(0)}" 
+					 update="msg courseTimeList" oncomplete="optResultAlert(args,0);" />
+			</h:panelGroup>
+		</f:facet>
+	</p:panelGrid>
+	
+	<p:separator />
+	
+	<p:dataTable id="courseTimeList" widgetVar="courseTimeList" 
+		value="#{courseTimeAction.courseTimeList}" var="courseTime" styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！" editable="true" style="width:630px;">
+		<f:facet name="header">
+			课件时长列表
+		</f:facet>
+		<p:column width="10%" headerText="修改">
+			<p:rowEditor />
+		</p:column>
+		<p:ajax event="rowEdit" listener="#{courseTimeAction.updateSubmit}" update=":info" />
+		<p:column headerText="阶段名称" width="50%" >
+			<h:outputText value="#{courseTime.stageName}" />
+		</p:column>
+		<p:column headerText="课件时长" width="20%" >
+			<p:cellEditor>
+				<f:facet name="output">
+					<h:outputText value="#{courseTime.scheduleTime}" />
+				</f:facet>
+				<f:facet name="input">
+					<p:inputText value="#{courseTime.scheduleTime}" style="width:50px;" />
+				</f:facet>
+			</p:cellEditor>
+		</p:column>
+		<p:column headerText="状态" width="20%" >
+			<p:cellEditor>
+				<f:facet name="output">
+					<h:outputText value="#{courseTime.statusStr}" />
+				</f:facet>
+				<f:facet name="input">
+					<p:selectOneMenu value="#{courseTime.status}" style="width:100px;" panelStyleClass="tinyLength">
+						<f:selectItems value="#{courseTimeReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+					</p:selectOneMenu>
+				</f:facet>
+			</p:cellEditor>
+		</p:column>
+	</p:dataTable>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="courseTimeDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

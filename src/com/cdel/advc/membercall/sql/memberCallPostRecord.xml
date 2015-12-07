@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membercallpostrecord">
+	<sql id="getMembercallPost_body"><!-- 两次回访间隔61天和初次回访7天算过期  -->
+ 		select a.classID,a.userID,min(b.createTime) beforeTime,min(a.callTime) timeTime,
+ 		min(c.displayAdviser) displayAdviser,min(c.className) className,min(d.userName) userName,0 timeFlag 
+		from advc_member_call a,advc_member_class b,ADVC_CLASS c,advc_member d  
+		where a.classID=b.classID and a.userID=b.userID and b.classID=c.classID and d.userID=a.userID 
+		and b.status=1 and c.status=1 
+		group by a.classID,a.userID 
+		having DATEDIFF(dd,min(b.createTime),min(a.callTime)) &gt; 7 
+		union 
+		select callA.classID,callA.userID,callB.callTime beforeTime,callA.callTime timeTime,
+		callA.displayAdviser,callA.className,d.userName,1 timeFlag 
+ 		from 
+ 		(
+ 		select top 10000 ROW_NUMBER() OVER(ORDER BY a.classID,a.userID,a.callTime) rownum,
+ 		a.classID,a.userID,a.callTime,c.displayAdviser,c.className 
+		from advc_member_call a,advc_member_class b,ADVC_CLASS c 
+		where a.classID=b.classID and a.userID=b.userID and b.classID=c.classID 
+		and b.status=1 and c.status=1 and a.callTime is not null 
+		) callA,
+		(
+ 		select top 10000 ROW_NUMBER() OVER(ORDER BY a.classID,a.userID,a.callTime) rownum,
+ 		a.classID,a.userID,a.callTime,c.displayAdviser,c.className 
+		from advc_member_call a,advc_member_class b,ADVC_CLASS c 
+		where a.classID=b.classID and a.userID=b.userID and b.classID=c.classID 
+		and b.status=1 and c.status=1 and a.callTime is not null 
+		order by a.classID,a.userID,a.callTime 
+		) callB,advc_member d 
+		where callA.classID=callB.classID and callA.userID=callB.userID and callA.rownum=callB.rownum+1 
+		and callA.userID=d.userID and DATEDIFF(dd,callB.callTime,callA.callTime) &gt; 61 
+	</sql>
+ 	
+	<sql id="getMembercallPost_body2"><!-- 两次回访间隔61天和初次回访7天算过期  -->
+ 		select dd.classID,dd.userID,dd.beforeTime,dd.timeTime,dd.displayAdviser,dd.className,dd.userName,dd.timeFlag 
+ 		from advc_member_call cc,( 
+	 		select a.classID,a.userID,min(b.createTime) beforeTime,min(a.callTime) timeTime,min(a.callID) callID, 
+	 		min(c.displayAdviser) displayAdviser,min(c.className) className,min(d.userName) userName,0 timeFlag 
+			from advc_member_call a,advc_member_class b,ADVC_CLASS c,advc_member d  
+			where a.classID=b.classID and a.userID=b.userID and b.classID=c.classID and d.userID=a.userID 
+			and b.status=1 and c.status=1 
+			group by a.classID,a.userID 
+			having DATEDIFF(dd,min(b.createTime),min(a.callTime)) &gt; 7 
+		) dd where cc.callID=dd.callID and cc.callStatus=#{callStatus} 
+		union 
+		select callA.classID,callA.userID,callB.callTime beforeTime,callA.callTime timeTime,
+		callA.displayAdviser,callA.className,d.userName,1 timeFlag 
+ 		from 
+ 		(
+ 		select top 10000 ROW_NUMBER() OVER(ORDER BY a.classID,a.userID,a.callTime) rownum,a.callStatus,
+ 		a.classID,a.userID,a.callTime,c.displayAdviser,c.className 
+		from advc_member_call a,advc_member_class b,ADVC_CLASS c 
+		where a.classID=b.classID and a.userID=b.userID and b.classID=c.classID 
+		and b.status=1 and c.status=1 and a.callTime is not null 
+		) callA,
+		(
+ 		select top 10000 ROW_NUMBER() OVER(ORDER BY a.classID,a.userID,a.callTime) rownum,0 callStatus,
+ 		a.classID,a.userID,a.callTime,c.displayAdviser,c.className 
+		from advc_member_call a,advc_member_class b,ADVC_CLASS c 
+		where a.classID=b.classID and a.userID=b.userID and b.classID=c.classID 
+		and b.status=1 and c.status=1 and a.callTime is not null 
+		order by a.classID,a.userID,a.callTime 
+		) callB,advc_member d 
+		where callA.classID=callB.classID and callA.userID=callB.userID and callA.rownum=callB.rownum+1 
+		and callA.userID=d.userID and DATEDIFF(dd,callB.callTime,callA.callTime) &gt; 61 
+		and callA.callStatus=#{callStatus} 
+ 	</sql>
+	
+	<select id="countMemberCallPostRecord" resultType="int">
+        SELECT COUNT(*) FROM (
+        	<if test="callStatus != -1">
+        		<include refid="getMembercallPost_body2" />
+        	</if>
+        	<if test="callStatus == -1">
+        		<include refid="getMembercallPost_body" />
+        	</if>
+        ) AS myTable 
+    </select>
+    
+    <select id="findPageMemberCallPostRecord" resultType="MemberCallPostRecord" parameterType="MemberCallPostRecord">
+		SELECT * FROM (
+			SELECT tt.*,DATEDIFF(dd,tt.beforeTime,tt.timeTime) dayNum, 
+			ROW_NUMBER() OVER(ORDER BY DATEDIFF(dd,tt.beforeTime,tt.timeTime) desc) rowNum FROM (
+				<if test="callStatus != -1">
+	        		<include refid="getMembercallPost_body2" />
+	        	</if>
+	        	<if test="callStatus == -1">
+	        		<include refid="getMembercallPost_body" />
+	        	</if>
+			) tt
+		) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>	
+
+</mapper>

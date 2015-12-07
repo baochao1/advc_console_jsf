@@ -1,0 +1,70 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberchapterset">
+
+	<select id="getMCSByChapterIDAndUserID" parameterType="MemberChapterSet" resultType="MemberChapterSet">
+        SELECT * FROM ADVC_MEMBER_CHAPTER_SET WITH (NOLOCK) WHERE chapterID=#{chapterID} AND userID=#{userID}
+    </select>
+
+    <insert id="insertMemberChapterSet" parameterType="MemberChapterSet">
+        INSERT INTO ADVC_MEMBER_CHAPTER_SET ( 
+         <trim prefix="" prefixOverrides=",">
+            <if test="chapterID !=null">chapterID</if>
+            <if test="userID !=null">,userID</if>
+            <if test="studyAsk !=null">,studyAsk</if>
+            <if test="suggestStyTime !=null">,suggestStyTime</if>
+            <if test="preChapter !=null">,preChapter</if>
+            <if test="isStudy !=null">,isStudy </if>
+        </trim>
+        )
+        VALUES (
+         <trim prefix="" prefixOverrides=",">
+            <if test="chapterID !=null">#{chapterID}</if>
+            <if test="userID !=null">,#{userID}</if>
+            <if test="studyAsk !=null and studyAsk!=''">,#{studyAsk}</if>
+            <if test="suggestStyTime !=null">,#{suggestStyTime}</if>
+            <if test="preChapter !=null">,#{preChapter}</if>
+            <if test="isStudy !=null">,#{isStudy}</if>
+        </trim>
+        )
+        <selectKey keyProperty="chapterSetID" resultType="int">
+        	SELECT @@IDENTITY AS chapterSetID 
+        </selectKey>
+    </insert>
+
+    <update id="updateMemberChapterSet" parameterType="MemberChapterSet">
+        UPDATE ADVC_MEMBER_CHAPTER_SET
+        <set>
+            <if test="studyAsk !=null"> studyAsk=#{studyAsk}, </if>
+            <if test="suggestStyTime !=null"> suggestStyTime=#{suggestStyTime}, </if>
+	        <if test="preChapter !=null"> preChapter=#{preChapter}, </if>
+	        <if test="isStudy !=null"> isStudy=#{isStudy} </if>
+        </set>
+        where chapterSetID=#{chapterSetID} 
+    </update>
+    
+    <select id="findChaptersForChange" parameterType="MemberChapterSet" resultType="MemberChapterSet">
+        SELECT DISTINCT ch.sequence,course.courseName, tc.chapterName,tc.phaseNo,
+        tc.openStatus,mcs.isStudy,mcs.chapterSetID,tc.chapterID 
+        FROM                                                                              
+	        ADVC_STUDYPLAN_CHAPTER ch WITH (NOLOCK)      
+	        LEFT JOIN ADVC_TEMP_CHAPTER tc WITH (NOLOCK) ON tc.chapterID = ch.chapterID
+	        LEFT JOIN ADVC_COURSE course WITH (NOLOCK) ON course.courseID = tc.courseID
+	        LEFT JOIN ADVC_MEMBER_CHAPTER_SET mcs WITH (NOLOCK) ON tc.chapterID = mcs.chapterID and userID=#{userID} and isStudy=1
+		WHERE 
+			ch.planID = #{planID} 
+		ORDER BY ch.sequence 
+    </select>
+    
+    <select id="findChaptersForChange2" parameterType="MemberChapterSet" resultType="MemberChapterSet">
+        SELECT DISTINCT tc.sequence,course.courseName, tc.chapterName,tc.phaseNo,
+        tc.openStatus,mcs.isStudy,mcs.chapterSetID,tc.chapterID 
+        FROM                                                                              
+	        ADVC_MEMBER_CHAPTER_SET mcs WITH (NOLOCK) 
+	        LEFT JOIN ADVC_TEMP_CHAPTER tc WITH (NOLOCK) ON tc.chapterID = mcs.chapterID
+	        LEFT JOIN ADVC_COURSE course WITH (NOLOCK) ON course.courseID = tc.courseID
+		WHERE 
+			course.courseID in (${courseIDs}) and mcs.userID=#{userID} and mcs.isStudy=0
+		ORDER BY tc.sequence 
+    </select>
+    
+</mapper>

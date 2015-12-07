@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>高端班学习计划知识点</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+		function selectPointListListjs(){
+			selectPointListList();
+		}
+		function selectQzChapterListjs(){
+			selectQzChapterList();
+		}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" autoUpdate="true" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="selectPointListList" actionListener="#{pointListOther.selectPointListList(gdbStudyPlanPointAction.courseID)}" update=":addForm:sPointListID"/>
+	<p:remoteCommand name="selectQzChapterList" actionListener="#{chapterOther.selectQzChapterList(gdbStudyPlanPointAction.courseID)}" update=":addForm:sChapterID"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel value="知识点名称" />
+			<p:inputText value="#{gdbStudyPlanPointAction.filterGdbPlanPoint.pointName}" styleClass="minLength" />
+			
+			<h:outputLabel />	
+			<h:outputLabel />	
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" update="studyPlanPointTable" actionListener="#{gdbStudyPlanPointAction.search}" rendered="#{gdbStudyPlanPointAction.viewAuth}" />
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" onstart="selectPointListListjs();selectQzChapterListjs();" 
+			oncomplete="addDialog.show();" actionListener="#{addPointAction.add(gdbStudyPlanPointAction.courseID,gdbStudyPlanPointAction.userID,gdbStudyPlanPointAction.studyPlanID,gdbStudyPlanPointAction.siteCourseID)}" update=":addForm:addDialog" rendered="#{gdbStudyPlanPointAction.optAuth}" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{gdbStudyPlanPointAction.heighti2}" 
+			widgetVar="studyPlanPointTable"
+			id="studyPlanPointTable"
+			binding="#{gdbStudyPlanPointAction.pageTable}"
+			lazy="true"
+			value="#{gdbStudyPlanPointAction.page}" 
+			rows="20"
+			var="studyPlanPoint" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="id" width="10%">
+				<h:outputText value="#{studyPlanPoint.id}"/>
+			</p:column>
+			<p:column headerText="知识点名称" width="20%">
+				<h:outputText value="#{studyPlanPoint.pointName}"/>
+			</p:column>
+			<p:column headerText="知识点ID" width="8%">
+				<h:outputText value="#{studyPlanPoint.pointID}"/>
+			</p:column>
+			<p:column headerText="操作" width="12%">
+				<a href="#{gdbStudyPlanPointAction.qzConsoleUrl}?pointID=#{studyPlanPoint.pointID}&amp;paperType=3&amp;courseID=#{studyPlanPoint.courseID}&amp;pointName=#{studyPlanPoint.pointName}&amp;from=advc" target="_blank">查看题目</a>
+				<p:spacer width="5"/>
+				<p:commandLink value="删除" onstart="return confirmDel();"
+					actionListener="#{gdbStudyPlanPointReqAction.delete(studyPlanPoint.id)}" rendered="#{gdbStudyPlanPointAction.optAuth}"/>
+			</p:column>
+			<p:column headerText="课程" width="20%">
+				<h:outputText value="#{studyPlanPoint.siteCourseName}"/>
+			</p:column>
+			<p:column headerText="创建人" width="15%">
+				<h:outputText value="#{studyPlanPoint.creator}"/>
+			</p:column>
+			<p:column headerText="创建时间" width="15%">
+				<h:outputText value="#{studyPlanPoint.createTimeStr}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="studyPlanPointTable" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 添加页面 -->
+	<h:form id="addForm" >
+		<ui:include src="load/pointAdd.xhtml"/>
+	</h:form>
+</h:body>
+</html>

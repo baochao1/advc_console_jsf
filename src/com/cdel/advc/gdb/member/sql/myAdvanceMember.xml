@@ -1,0 +1,38 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="myadvancemember">
+	<resultMap type="MyAdvanceMember" id="myAdvanceMemberCourseList">
+    	<id property="status" column="courseStatus" jdbcType="NUMERIC" javaType="java.lang.Short" />
+		<id property="courseIDs" column="courseID" jdbcType="VARCHAR" javaType="java.lang.String" />
+		<association property="courseList" column="{status=courseStatus,courseIDs=courseID}" javaType="java.util.List" select="course.getStudyCourse2" />
+	</resultMap>
+	
+	<sql id="pageSql_body">
+		SELECT aam.userID,aam.majorID,''''+replace(aam.studycourse,',',''',''')+'''' courseID,aam.siteCourseIds,
+		am.userName,aam.telPhone,aam.id,aam.teacherID,tt.teacherCode,tt.teacherName,amd.updateDate,${courseStatus} courseStatus,
+		DATEDIFF (day,mc.lastCallTime,getDate()) callDay,DATEDIFF (day,mc.successCallTime,getDate()) callSuccessDay,
+		ROW_NUMBER() Over(ORDER BY aam.createTime desc,aam.userID desc) AS rowNum 
+		From GDB_ADVANCE_MEMBER aam WITH (NOLOCK) 
+		LEFT JOIN advc_member am WITH (NOLOCK) on aam.userID = am.userID
+		left join gdb_member_call_record mc on mc.userID = aam.userID 
+		LEFT JOIN ADVC_TEACHER tt WITH (NOLOCK) ON tt.teacherID = aam.teacherID 
+		left join advc_member_define amd WITH (NOLOCK) on amd.userID = aam.userID
+		WHERE aam.status = 1 
+		<if test="orgID != null"> and tt.orgID = #{orgID} </if>
+		<if test="majorID != null"> and aam.majorID = #{majorID} </if>
+		<if test="teacherCode != null and teacherCode != ''"> and tt.teacherCode = #{teacherCode} </if>
+		<if test="userName != null and userName != ''"> and am.userName = #{userName} </if>
+    </sql>
+    
+    <select id="findPageMyAdvanceMember" resultType="MyAdvanceMember" resultMap="myAdvanceMemberCourseList">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countMyAdvanceMember" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+</mapper>

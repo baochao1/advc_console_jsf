@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="api.callCenter.classes">
+
+    <select id="findClasses"
+    	parameterType ="com.cdel.api.callCenter.classes.Classes" 
+    	resultType ="com.cdel.api.callCenter.classes.Classes" >
+		SELECT DISTINCT
+			C.classID, C.className, C.displayAdviser AS teacherName, C.currCount AS studentCount, TT.termName AS examName
+		FROM 
+			ADVC_CLASS C WITH (NOLOCK) 
+			LEFT JOIN ADVC_TESTTERM TT  WITH (NOLOCK)  ON TT.termID = C.termID
+		WHERE C.status = 1
+		<if test="className !=null and className != ''"> AND C.className = #{className} </if>
+		<if test="teacherName !=null and teacherName != ''"> AND C.displayAdviser = #{teacherName} </if>
+	</select>
+	
+	<!-- 根据班级的最后更新一次时间查询班级信息-->
+	<select id="findClassesByUpdateTime"
+    	parameterType ="com.cdel.api.callCenter.classes.Classes" 
+    	resultType ="com.cdel.api.callCenter.classes.Classes" >
+		SELECT    TOP ${count}
+			C.classID,C.termID , C.className,C.classCode, C.displayAdviser , 
+			C.currCount ,C.status, CONVERT(varchar(100),C.createTime, 121) AS  createTime, 
+			CONVERT(varchar(100), c.updateTime, 121) AS  updateTime
+		FROM  ADVC_CLASS C WITH (NOLOCK) 
+		LEFT JOIN  ADVC_CLASS_STRATEGY  ACS ON  C.strategyID = ACS.strategyID 
+        LEFT JOIN  ADVC_MAJOR am  ON  ACS.majorID =   am.majorID
+		WHERE  CONVERT(varchar(100),C.updateTime, 121) > #{updateTime}  AND AM.siteID = #{siteID}
+		 ORDER BY  c.updateTime  
+	</select>
+	
+    
+</mapper>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>全部电话回访</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sUserName" value="学员代码"/>
+			<p:inputText id="sUserName" value="#{memberCallAllAction.searchMemberCall.userName}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sClassName" value="班级名称"/>
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sClassName" value="#{memberCallAllAction.searchMemberCall.className}" completeMethod="#{comRequestMethod.completeClassName}" var="className" itemLabel="#{className}" itemValue="#{className}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sDisplayAdviser" value="班主任"/>
+			<p:inputText id="sDisplayAdviser" value="#{memberCallAllAction.searchMemberCall.displayAdviser}" />
+			
+			<h:outputLabel for="sCallstatus" value="回访状态"/>
+			<p:selectOneMenu id="sCallstatus" value="#{memberCallAllAction.searchMemberCall.callStatus}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="全部" itemValue=""/>
+				<f:selectItems value="#{memberCallReqAction.callStatuss.entrySet()}" var="s" itemLabel="#{s.value}" itemValue="#{s.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sStartTime" value="开始日期"/>
+			<p:calendar id="sStartTime" value="#{memberCallAllAction.searchMemberCall.startDate}" 
+				pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			
+			<h:outputLabel for="sEndTime" value="结束日期"/>
+			<p:calendar id="sEndTime" value="#{memberCallAllAction.searchMemberCall.endDate}" 
+				pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			
+			<h:outputLabel for="sTeacherName" value="回访教师" rendered="#{memberCallAllAction.showTeacher }"/>
+			<h:panelGroup style="display:block;" rendered="#{memberCallAllAction.showTeacher }">
+				<p:autoComplete id="sTeacherName" value="#{memberCallAllAction.searchMemberCall.teacherName}" completeMethod="#{comRequestMethod.completeTeacherName}" var="teacherName" itemLabel="#{teacherName}" itemValue="#{teacherName}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputText/>
+			<h:outputText/>
+			
+        	<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="按学员查询" oncomplete="searchFieldSet.toggle();" update="memberCallAllList" actionListener="#{memberCallAllAction.search}"  rendered="#{memberCallAllAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton id="searchBtn2" value="按教师查询" oncomplete="searchFieldSet.toggle();searchDialog.show();" update=":searchForm4T:searchDialog" 
+						actionListener="#{memberCallAllAction.searchTeacherInit}"  rendered="#{memberCallAllAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{memberCallAllAction.heighti}" 
+			widgetVar="memberCallAll"
+			id="memberCallAllList"
+			binding="#{memberCallAllAction.pageTable}"
+			lazy="true"
+			value="#{memberCallAllAction.memberCallPage}" 
+			rows="20"
+			var="memberCallAll" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="回访状态" width="10%" styleClass="callStatus-#{memberCallAll.callStatus}">
+				<h:outputText value="#{memberCallAll.callStatusStr}"/>
+			</p:column>
+			<p:column headerText="学员代码" width="15%" >
+				<h:link value="#{memberCallAll.userName}" title="#{memberCallAll.userName}" 
+					outcome="/page/memberClass/memberClassList" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{memberCallAll.classID}"/>
+					<f:param name="siteID" value="#{memberCallAllAction.siteID}"/>
+					<f:param name="userName" value="#{memberCallAll.userName}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="班级名称" width="21%" >
+				<h:outputText value="#{memberCallAll.className}"/>
+			</p:column>
+			<p:column headerText="班主任" width="15%" >
+				<h:outputText value="#{memberCallAll.displayAdviser}"/>
+			</p:column>
+			<p:column headerText="回访教师" width="12%" >
+				<h:outputText value="#{memberCallAll.teacherName}"/>
+			</p:column>
+			<p:column headerText="回访时间" width="17%" >
+				<h:outputText value="#{memberCallAll.callTimeStr}"/>
+			</p:column>
+			<p:column headerText="电话回访" width="10%">
+				<h:link value="电话回访" outcome="/page/membercall/load/memberCallRecord" includeViewParams="true" target="_blank">
+					<f:param name="userID" value="#{memberCallAll.userID}"/>
+					<f:param name="userName" value="#{memberCallAll.userName}"/>
+					<f:param name="classID" value="#{memberCallAll.classID}"/>
+					<f:param name="siteID" value="#{memberCallAllAction.siteID}"/>
+				</h:link><br/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="memberCallAllList" />
+		</ui:include>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="searchBtn2" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 查看页面 -->
+	<h:form id="showForm" >
+		<ui:include src="/page/membercall/load/memberCallShow.xhtml" />
+	</h:form>
+	<!-- 按教师查询页面 -->
+	<h:form id="searchForm4T" >
+		<p:dialog id="searchDialog" header="按教师查询" widgetVar="searchDialog" resizable="false" showEffect="fade" hideEffect="fade" >
+			<ui:include src="load/searchTeacherShow.xhtml" />
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

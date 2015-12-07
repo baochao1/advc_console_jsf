@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="teacherorg">
+
+    <select id="getOrgList" resultType="TeacherOrg">
+    	SELECT fto.orgID,fto.orgName 
+        FROM ADVC_TEACHER_ORG fto WITH (NOLOCK) 
+        order by fto.level ASC, fto.orgID ASC
+    </select>
+    
+</mapper>

@@ -1,0 +1,39 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+		
+	<h:outputLabel value="头像" />
+	<p:graphicImage url="#{memberClassReqAction.profile.iconUrlStr}" width="100" height="100" rendered="#{not empty memberClassReqAction.profile.iconUrlStr }"/>
+	<h:outputLabel rendered="#{empty memberClassReqAction.profile.iconUrlStr }"/>
+		 
+	<h:outputLabel value="学员代码" />
+	<h:outputLabel value="#{memberClassReqAction.profile.userName}" />
+	
+	<h:outputLabel value="昵称" />
+	<h:outputLabel value="#{memberClassReqAction.profile.helpIndex}" />
+	
+	<h:outputLabel value="助人指数" />
+	<h:outputLabel value="#{memberClassReqAction.profile.nickName}" />
+	
+	<h:outputLabel value="登录次数" />
+	<h:outputLabel value="#{memberClassReqAction.profile.loginTimes}" />
+	
+	<h:outputLabel value="当前状态" />
+	<h:outputLabel value="#{memberClassReqAction.profile.currentStatusStr}" />
+	
+	<h:outputLabel value="创建时间" />
+	<h:outputLabel value="#{memberClassReqAction.profile.createTimeStr}" />
+	
+	<h:outputLabel value="最后修改时间" />
+	<h:outputLabel value="#{memberClassReqAction.profile.lastModifyTimeStr}" />
+	
+  	<f:facet name="footer">
+  		<h:inputHidden value="#{memberClassReqAction.profile.userID}"/>
+		<h:panelGroup style="text-align:center;display:block;">
+			<p:commandButton value="删除头像" actionListener="#{memberClassReqAction.updateMemberProfile}" oncomplete="optResult('proDialog',args,2);"/>
+			<p:commandButton type="button" value="关闭" onclick="proDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+	
+</p:panelGrid>

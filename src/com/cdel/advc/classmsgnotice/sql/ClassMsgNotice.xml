@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="classmsgnotice">
+	<sql id="pageSql_body">
+		SELECT classMsgID, cn.classID, msgType, msgTitle, msgContent, cn.creator, cn.createTime, 
+		cn.status, c.className,t.teacherName,ROW_NUMBER() Over(ORDER BY classMsgID DESC) AS rowNum 
+       	FROM ADVC_CLASS_MSG cn WITH (NOLOCK) 
+       	LEFT JOIN ADVC_CLASS c ON c.classID = cn.classID 
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON c.strategyID=CS.strategyID
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CS.majorID = M.majorID
+       	LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = cn.creator
+		WHERE cn.classID IS NOT NULL 
+		<if test="majorID !=null "> and M.majorID=#{majorID} </if>
+		<if test="classID !=null "> and cn.classID=#{classID} </if>
+		<if test="msgTitle !=null and msgTitle != ''"> and cn.msgTitle like '%'+#{msgTitle}+'%' </if>
+		<if test="status !=null "> and cn.status=#{status} </if>
+		<if test="msgType !=null "> and cn.msgType=#{msgType} </if>
+    </sql>
+    
+    <select id="findPageClassMsgNotice" resultType="ClassMsgNotice" parameterType="ClassMsgNotice">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countClassMsgNotice" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+        
+    <update id="updateClassMsgNotice" parameterType="ClassMsgNotice">
+        UPDATE 
+        	ADVC_CLASS_MSG 
+        <set>
+        	<if test="status != null"> status=#{status}, </if>
+        	<if test="classID != null"> classID=#{classID}, </if>
+            <if test="msgTitle != null and msgTitle != ''"> msgTitle=#{msgTitle}, </if>
+            <if test="msgContent != null and msgContent != ''"> msgContent=#{msgContent} </if>
+        </set>
+        	where classMsgID=#{classMsgID}	
+    </update>
+    
+    <insert id="insertClassMsgNotice">
+        INSERT INTO ADVC_CLASS_MSG ( classID,msgType ,msgTitle,msgContent,creator,createTime,status )
+        VALUES ( #{classID},#{msgType},#{msgTitle},#{msgContent},#{creator},#{createTime},#{status} )
+    </insert>
+    
+    <insert id="insertClassMsgNoticeList">
+        INSERT INTO ADVC_CLASS_MSG ( classID,msgType ,msgTitle,msgContent,creator,createTime,status )
+        <foreach collection="list" item="m" open="(" close=")" separator=" union all ">
+        	select #{m.classID},#{m.msgType},#{m.msgTitle},#{m.msgContent},#{m.creator},#{m.createTime},#{m.status}
+        </foreach>
+    </insert>
+    
+    <select id="getClassMsgNotice" parameterType="int" resultType="ClassMsgNotice">
+		select classMsgID,classID,msgTitle,msgContent,status from  ADVC_CLASS_MSG
+		where classMsgID=#{classMsgID}	
+    </select>
+    
+</mapper>

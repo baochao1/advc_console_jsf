@@ -1,0 +1,57 @@
+<p:panel xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" rendered="#{recordAction.selectType==1}" >
+	<p:panelGrid columns="4" style="width:100%; text-align:left;">
+		<h:outputLabel value="答题时间" />
+		<p:calendar value="#{recordReqAction.startDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+		<p:calendar value="#{recordReqAction.endDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:commandButton id="searchBtn" value="查询" actionListener="#{recordReqAction.selectChange}" />
+				<p:spacer width="10px"/>
+				<p:commandButton actionListener="#{recordReqAction.statPoint}" value="查看统计" update="statDialog" oncomplete="statDialog.show();"/>
+				<p:spacer width="10px"/>
+				<p:commandButton type="reset" value="重置" />
+			</h:panelGroup>
+		</f:facet>	
+	</p:panelGrid>
+	<p:dataTable scrollable="true" scrollHeight="#{recordAction.heighti2}" 
+		id="pointScoreList"
+		value="#{recordReqAction.pointScoreList}" 
+		var="pointScore" 
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！"
+		>
+		<p:column headerText="序号" width="5%">
+			<h:outputText value="#{row+1}" />
+		</p:column>
+		<p:column headerText="章节名称" width="10%">
+			<h:outputText value="#{pointScore.chapterName}" />
+		</p:column>
+		<p:column headerText="知识点名称" width="25%">
+			<h:outputText value="#{pointScore.pointName}" />
+		</p:column>
+		<p:column headerText="测试题数" width="10%">
+			<h:outputText value="#{pointScore.totleNum}" />
+		</p:column>
+		<p:column headerText="正确题数" width="10%">
+			<h:outputText value="#{pointScore.correctCount}" />
+		</p:column>
+		<p:column headerText="错误数" width="10%">
+			<h:outputText value="#{pointScore.errorNum}" />
+		</p:column>
+		<p:column headerText="最后答题时间" width="20%">
+			<h:outputText value="#{pointScore.lastPlayTimeStr}" />
+		</p:column>
+		<p:column headerText="操作" width="10%">
+			<a href="#{recordReqAction.qzurl}?paperType=3_&amp;pointID=#{pointScore.pointID}&amp;userID=#{recordAction.userID}&amp;userName=#{recordAction.userName}&amp;pointTestID=#{pointScore.pointTestID}&amp;siteCourseID=#{pointScore.siteCourseID}" target="_blank">查看</a>
+		</p:column>
+	</p:dataTable>
+	<p:dialog id="statDialog" header="知识点测试记录统计" widgetVar="statDialog" resizable="false" showEffect="fade" hideEffect="fade" >
+		<ui:include src="pointStat.xhtml"/>
+	</p:dialog>
+</p:panel>

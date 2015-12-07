@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="guidetext">
+	
+	<sql id="getList_body">
+		SELECT a.guideID,a.content,a.majorID,a.stageID,a.leftDays,a.createTime,b.stageName,a.status,
+		a.type,c.majorName,ROW_NUMBER() Over(ORDER BY a.stageID asc,a.guideID asc) AS rowNum 
+        FROM advc_home_GuideText a WITH (NOLOCK) 
+        LEFT JOIN advc_home_Stage b WITH (NOLOCK) ON a.stageID=b.stageID 
+        LEFT JOIN advc_major c WITH (NOLOCK) ON a.majorID=c.majorID 
+		<where>
+			<if test="status != null"> and a.status=#{status}</if>
+			<if test="majorID != null"> and a.majorID=#{majorID}</if>
+			<if test="stageID != null"> and a.stageID=#{stageID}</if>
+		</where>
+    </sql>
+
+    <select id="countGuideText" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageGuideText" parameterType="GuideText" resultType="GuideText">
+        SELECT * FROM (
+            <include refid="getList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+	<update id="updateGuideText">
+		UPDATE advc_home_GuideText 
+		<set>
+			<if test="content !=null and content != ''"> content =#{content}, </if>
+			<if test="leftDays !=null"> leftDays =#{leftDays}, </if>
+			<if test="status !=null"> status =#{status} </if>
+		</set>
+		WHERE guideID=#{guideID}
+	</update>
+	
+	<insert id="insertGuideText">
+    	insert into advc_home_GuideText (content, majorID, stageID, type, leftDays, status, createTime ) 
+    	values (#{content}, #{majorID}, #{stageID}, #{type}, #{leftDays}, #{status}, #{createTime} )
+    </insert>
+	
+	<select id="getGuideText" parameterType="Integer" resultType="GuideText">
+		SELECT a.guideID,a.content,a.leftDays,a.status,a.createTime,b.stageName,c.majorName,a.type 
+		FROM advc_home_GuideText a WITH (NOLOCK) 
+		LEFT JOIN advc_home_Stage b WITH (NOLOCK) ON a.stageID=b.stageID 
+		LEFT JOIN advc_major c WITH (NOLOCK) ON a.majorID=c.majorID 
+		where a.guideID=#{guideID}
+    </select>
+    
+	<select id="hasSameGuideText" parameterType="GuideText" resultType="Integer">
+		SELECT count(guideID)
+		FROM advc_home_GuideText WITH (NOLOCK) 
+		where majorID=#{majorID} and stageID=#{stageID} and type=#{type} and status=1
+    </select>
+	
+</mapper>

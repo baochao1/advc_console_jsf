@@ -1,0 +1,36 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+
+	<h:outputLabel value="发送人"/>
+	<h:outputText value="#{innerMsgReqAction.detailInnerMsg.teacherCode}(#{innerMsgReqAction.detailInnerMsg.senderName})"/>
+	
+	<h:outputLabel value="接收人"/>
+	<h:outputText value="#{innerMsgReqAction.detailInnerMsg.receiverName}" escape="false"/>
+	
+	<h:outputLabel value="发送时间"/>
+	<h:outputText value="#{innerMsgReqAction.detailInnerMsg.sendTimeStr}"/>
+	
+	<h:outputLabel value="回复内容" rendered="#{innerMsgReqAction.showBtn}">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputTextarea cols="70" rows="5" autoResize="false" value="#{innerMsgReqAction.detailInnerMsg.replyContent}" rendered="#{innerMsgReqAction.showBtn}"/>
+	
+	<h:outputLabel value="状态"/>
+	<h:outputText styleClass="status-#{innerMsgReqAction.detailInnerMsg.status}" value="#{innerMsgReqAction.detailInnerMsg.statusStr}"/>
+	
+	<h:outputLabel value="相关学员"/>
+	<h:outputText value="#{innerMsgReqAction.detailInnerMsg.referUser}"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{innerMsgReqAction.detailInnerMsg.innerMsgID}"/>
+			<h:inputHidden value="#{innerMsgReqAction.detailInnerMsg.receiveID}"/>
+			<h:inputHidden value="#{innerMsgReqAction.detailInnerMsg.innerMsgContent}"/>
+			<p:commandButton type="submit" value="提交" actionListener="#{innerMsgReqAction.updateSubmit}" update="msg" oncomplete="optResult('detailDialog',args,1);" rendered="#{innerMsgReqAction.showBtn}"/>
+			<p:commandButton type="button" value="关闭" onclick="detailDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

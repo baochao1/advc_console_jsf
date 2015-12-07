@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="adminStatis">
+
+  	<!--  班主任   和管理员  统计  查询 --> 
+	<sql id="getTeacher_adminStatis_body">
+       select ats.teacherID, ats.adviserClassNum,ats.adviserMemberTotal,ats.adminClassNum,ats.adminMemberTotal,
+        t.teacherCode, t.teacherName, t.status,t.isHeader,t.orgID , org.parentID, org.orgName, 
+        org2.orgID  as pOrgID,  org2.orgName AS pOrgName, ROW_NUMBER() Over(ORDER BY t.orgID DESC) AS rowNum
+        from  ADVC_TEACHER_STATIS  ats  WITH (NOLOCK) 
+        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK)  on t.teacherID = ats.teacherID
+        LEFT JOIN ADVC_TEACHER_ORG org WITH (NOLOCK) on org.orgID=t.orgID
+        left join  ADVC_TEACHER_ORG org2 on  org2.orgID = org.parentID
+        where  t.status = 1  
+		<if test="orgID != null and  orgID !=0 "> AND org.parentID=#{orgID} </if>
+		<if test="groupID != null and groupID !=0"> AND t.orgID=#{groupID} </if>
+		<if test="teacherID != null  and teacherID !=0 "> AND t.teacherID=#{teacherID}  </if>
+		<if test="teacherCode != null  and  teacherCode !=''"> AND t.teacherCode=#{teacherCode}  </if>
+		<if test="teacherName != null and  teacherName !=''"> AND  t.teacherName=#{teacherName}   </if>
+	</sql>
+
+    <select id="findPageAdminStatis" parameterType="AdminStatis" resultType="AdminStatis">
+        SELECT * FROM (
+            <include refid="getTeacher_adminStatis_body" />
+        ) AS myTable  
+    </select>
+
+</mapper>

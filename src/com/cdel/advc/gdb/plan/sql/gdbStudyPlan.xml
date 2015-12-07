@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="gdbstudyplan">
+
+	<sql id="getGdbStudyPlanList_body">
+		SELECT gsp.studyPlanID, gsp.userID, gsp.startDate, gsp.endDate, gsp.status, gsp.studyContent, gsp.studyMethods, gsp.createTime, 
+		gsp.updateTime, gsp.createUserId,rau.realName creator,gsp.studyHours,qsc.siteCourseName,gsp.siteCourseID,gsp.weekNum,qsc.courseID,
+		ROW_NUMBER() Over(ORDER BY gsp.weekNum, gsp.startDate) AS rowNum 
+        FROM GDB_STUDY_PLAN gsp WITH (NOLOCK) 
+        LEFT JOIN RAD_ADMIN_USER rau WITH (NOLOCK) ON gsp.createUserId = rau.adminID
+        LEFT JOIN QZ_SITE_COURSE qsc WITH (NOLOCK) on gsp.siteCourseID = qsc.siteCourseID 
+        <where>
+        	<if test="userID != null"> and gsp.userID=#{userID} </if>
+        	<if test="status != null"> and gsp.status=#{status} </if>
+        	<if test="startDate1 != null"> and gsp.startDate <![CDATA[>=]]> #{startDate1} </if>
+        	<if test="startDate2 != null"> and gsp.startDate <![CDATA[<=]]> #{startDate2} </if>
+        </where>
+    </sql>
+   
+    <select id="countGdbStudyPlan" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getGdbStudyPlanList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageGdbStudyPlan" resultType="GdbStudyPlan" parameterType="GdbStudyPlan">
+        SELECT * FROM (
+            <include refid="getGdbStudyPlanList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <update id="updateGdbStudyPlan">
+		UPDATE GDB_STUDY_PLAN
+		<set>
+			<if test="studyMethods !=null and studyMethods != ''"> studyMethods=#{studyMethods},</if>
+			<if test="studyContent !=null and studyContent != ''"> studyContent=#{studyContent},</if>
+			<if test="studyHours !=null"> studyHours=#{studyHours},</if>
+			<if test="startDate !=null"> startDate=#{startDate},</if>
+			<if test="status !=null"> status=#{status},</if>
+			<if test="updateTime !=null"> updateTime=#{updateTime},</if>
+		</set>
+		WHERE studyPlanID=#{studyPlanID}
+	</update>
+	
+	<insert id="insertGdbStudyPlan">
+        INSERT INTO GDB_STUDY_PLAN ( userID,startDate,endDate,status,studyContent,studyMethods,createTime,
+        	createUserId,studyHours,siteCourseID,weekNum )
+        VALUES ( #{userID},#{startDate},#{endDate},#{status},#{studyContent},#{studyMethods},#{createTime},
+        	#{createUserId},#{studyHours},#{siteCourseID},#{weekNum} )
+    </insert>
+	
+	<select id="getGdbStudyPlan" parameterType="GdbStudyPlan" resultType="GdbStudyPlan">
+        SELECT * FROM GDB_STUDY_PLAN WITH (NOLOCK) 
+        where studyPlanID=#{studyPlanID}
+    </select>
+
+</mapper>

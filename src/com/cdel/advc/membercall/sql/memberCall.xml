@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membercall">
+	<sql id="pageSql_where">
+		WHERE M.status = 1 AND C.status = 1 
+		<if test="className !=null and className!=''"> AND C.className = #{className} </if>
+		<if test="siteID != null"> AND M.siteID = #{siteID} </if>
+		<if test="majorID !=null"> AND M.majorID = #{majorID} </if>
+		<if test="orgID !=null"> AND manager.orgID = #{orgID} </if>
+		<if test="teacherID != null"> AND 
+			<if test="teachUser">
+			(
+				<foreach collection="sameOrgTeachers" index="index" item="sameOrgTeacher" open="(" close=")" separator=" or ">   
+					CT2.teacherID = #{sameOrgTeacher} 
+				</foreach>
+			)
+			</if>
+			<if test="!teachUser"> CT2.teacherID = #{teacherID} </if>
+		</if>
+		<if test="teacherName !=null and teacherName!=''"> AND (manager.teacherName like #{teacherName}+'%' or C.displayAdviser like #{teacherName}+'%' or adviser.teacherName like #{teacherName}+'%' ) </if>
+		<if test="userName !=null and userName!=''"> AND MC.status = 1 AND MR.userName = #{userName} </if>
+		<if test="call30status"> AND tmp.successCallTime &lt; #{endDate} </if>
+	</sql>
+	<select id="findPageMemberCall" resultType="MemberCall" parameterType="MemberCall">
+		SELECT * FROM (
+			SELECT t.*,ROW_NUMBER() Over( ORDER BY 
+			<if test="sortField == null or sortField == ''"> t.classID DESC </if>
+			<if test="sortField != null and sortField != ''"> t.calltime  
+				<if test="sortOrder == 'DESCENDING'"> DESC  </if>
+				<if test="sortOrder == 'ASCENDING'"> ASC  </if>
+			</if>
+			 ) AS rowNum 
+		    FROM
+		    (
+		    	SELECT 
+					DISTINCT(C.classID) 
+					classID, 
+					C.className, 
+					C.termID, 
+					AT.termName, 
+					C.displayAdviser,
+					C.currCount, 
+					C.createTime, 
+					manager.teacherName, 
+					(SELECT MAX(amc.lastCalltime) FROM ADVC_MEMBER_CALL_RECORD amc with (nolock) WHERE 	C.classID = amc.classID ) AS calltime 
+				FROM ADVC_CLASS C WITH (NOLOCK)
+					INNER JOIN ADVC_TESTTERM AT WITH (NOLOCK) ON AT.termID = C.termID 
+					INNER JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON CS.strategyID = C.strategyID
+					INNER JOIN ADVC_MAJOR M WITH (NOLOCK) ON M.majorID = CS.majorID
+				<if test="userName !=null and userName!=''">
+					INNER JOIN ADVC_MEMBER_CLASS MC WITH (NOLOCK) ON C.classID = MC.classID 
+					INNER JOIN ADVC_MEMBER MR WITH (NOLOCK) ON MC.userID = MR.userID 
+				</if>
+				LEFT JOIN ADVC_CLASS_TEACHER CT WITH (NOLOCK) ON CT.classID = C.classID AND CT.teacherType = 1 
+				LEFT JOIN ADVC_TEACHER manager WITH (NOLOCK) ON manager.TeacherID = CT.TeacherID
+				<if test="teacherName !=null and teacherName!=''"> 
+					LEFT JOIN ADVC_TEACHER adviser with (nolock) ON C.adviserTeacherCode = adviser.teacherCode
+				</if>
+				<if test="teacherID != null"> 
+					LEFT JOIN ADVC_CLASS_TEACHER CT2 WITH (NOLOCK) ON CT2.classID = C.classID 
+				</if>
+				<if test="call30status">
+					INNER JOIN ADVC_MEMBER_CALL_RECORD tmp WITH (NOLOCK) ON tmp.classID = C.classID
+				</if>
+				<include refid="pageSql_where" />
+             )t
+		) AS myTable WHERE rowNum between #{rowNumStart} AND #{rowNumEnd}
+	</select>
+
+	<select id="countMemberCall" resultType="int">
+		SELECT 
+			COUNT(DISTINCT C.classID)
+		FROM ADVC_CLASS C WITH (NOLOCK)
+			INNER JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON CS.strategyID = C.strategyID
+			INNER JOIN ADVC_MAJOR M WITH (NOLOCK) ON M.majorID = CS.majorID
+		<if test="userName !=null and userName!=''">
+			INNER JOIN ADVC_MEMBER_CLASS MC WITH (NOLOCK) ON C.classID = MC.classID 
+			INNER JOIN ADVC_MEMBER MR WITH (NOLOCK) ON MC.userID = MR.userID 
+		</if>
+		<if test="orgID !=null or (teacherName !=null and teacherName!='')"> 
+			LEFT JOIN ADVC_CLASS_TEACHER CT WITH (NOLOCK) ON CT.classID = C.classID AND CT.teacherType = 1 
+			LEFT JOIN ADVC_TEACHER manager WITH (NOLOCK) ON manager.TeacherID = CT.TeacherID
+		</if>
+		<if test="teacherName !=null and teacherName!=''"> 
+			LEFT JOIN ADVC_TEACHER adviser with (nolock) ON C.adviserTeacherCode = adviser.teacherCode
+		</if>
+		<if test="teacherID != null"> 
+			LEFT JOIN ADVC_CLASS_TEACHER CT2 WITH (NOLOCK) ON CT2.classID = C.classID 
+		</if>
+		<if test="call30status">
+			INNER JOIN ADVC_MEMBER_CALL_RECORD tmp WITH (NOLOCK) ON tmp.classID = C.classID
+		</if>
+		<include refid="pageSql_where" />
+	</select>
+	
+	<select id="getMemberCallInfo" resultType="MemberCall" parameterType="MemberCall">
+        SELECT <if test="callStatus == 2"> top 1 </if>
+        a.callID, a.userID, b.userName, a.classID, c.classCode, c.className, a.studyStatus, a.personalAsk, a.reservedTime, a.callType,
+		a.feedback, a.callStatus, a.caller, a.callTime, a.reservedDate, a.reserveRemark, t.teacherName, c.className
+        FROM ADVC_MEMBER_CALL a WITH (NOLOCK) 
+        LEFT JOIN ADVC_MEMBER b WITH (NOLOCK) ON a.userID=b.userID
+        LEFT JOIN ADVC_CLASS c WITH (NOLOCK) ON a.classID=c.classID
+        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON a.caller = t.teacherID
+        <where>
+	        <if test="callStatus !=null"> AND a.callStatus = #{callStatus}</if>
+	        <if test="classID !=null"> AND a.classID = #{classID}</if>
+	        <if test="userID !=null"> AND a.userID = #{userID}</if>
+	        <if test="callID !=null"> AND a.callID = #{callID}</if>
+        </where>
+        order by a.callTime desc 
+    </select>
+    
+    <select id="getMemberCall" resultType="MemberCall" parameterType="Integer">
+        SELECT a.callID, a.userID, b.userName, a.classID, c.classCode, c.className, a.studyStatus, a.personalAsk, a.reservedTime, a.callType,
+		a.feedback, a.callStatus, a.caller, a.callTime, a.reservedDate, a.reserveRemark, t.teacherName, c.className
+        FROM ADVC_MEMBER_CALL a WITH (NOLOCK) 
+        LEFT JOIN ADVC_MEMBER b WITH (NOLOCK) ON a.userID=b.userID
+        LEFT JOIN ADVC_CLASS c WITH (NOLOCK) ON a.classID=c.classID
+        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON a.caller = t.teacherID
+        WHERE a.callID = #{callID}
+    </select>
+    
+    <update id="updateMembercallToNewClass">
+        UPDATE ADVC_MEMBER_CALL set classID=#{newClassID} WHERE classID=#{classID} AND userID=#{userID}
+    </update>
+    
+    <insert id="insertMemberCall">
+        INSERT INTO ADVC_MEMBER_CALL ( userID,classID,callStatus,caller,callTime 
+        	<if test="studyStatus != null and studyStatus != ''"> ,studyStatus </if>
+        	<if test="personalAsk != null and personalAsk != ''"> ,personalAsk </if>
+        	<if test="feedback != null and feedback != ''"> ,feedback </if>
+        	<if test="reserveRemark != null and reserveRemark != ''"> ,reserveRemark </if>
+        	<if test="reservedDate != null"> ,reservedDate </if>
+        )
+        VALUES ( #{userID},#{classID},#{callStatus},#{caller},#{callTime} 
+			<if test="studyStatus != null and studyStatus != ''"> ,#{studyStatus} </if>
+        	<if test="personalAsk != null and personalAsk != ''"> ,#{personalAsk} </if>
+        	<if test="feedback != null and feedback != ''"> ,#{feedback} </if>
+        	<if test="reserveRemark != null and reserveRemark != ''"> ,#{reserveRemark} </if>
+        	<if test="reservedDate != null"> ,#{reservedDate} </if>
+        )
+        <selectKey keyProperty="callID" resultType="int">
+        	SELECT @@IDENTITY AS callID
+        </selectKey>
+    </insert>
+
+    <update id="updateMemberCall">
+        UPDATE ADVC_MEMBER_CALL 
+        <set>
+        	<if test="userID != null"> userID=#{userID}, </if>
+        	<if test="classID != null"> classID=#{classID}, </if>
+        	<if test="studyStatus != null and studyStatus != ''"> studyStatus=#{studyStatus}, </if>
+        	<if test="personalAsk != null and personalAsk != ''"> personalAsk=#{personalAsk}, </if>
+        	<if test="feedback != null and feedback != ''"> feedback=#{feedback}, </if>
+        	<if test="callStatus != null"> callStatus=#{callStatus}, </if>
+        	<if test="caller != null"> caller=#{caller}, </if>
+        	<if test="callTime != null"> callTime=#{callTime}, </if>
+        	<if test="reservedDate != null"> reservedDate=#{reservedDate}, </if>
+        	<if test="reserveRemark != null and reserveRemark != ''"> reserveRemark=#{reserveRemark}, </if>
+        	<if test="callType != null"> callType=#{callType}, </if>
+        </set>
+		WHERE callID=#{callID}
+    </update>
+
+</mapper>

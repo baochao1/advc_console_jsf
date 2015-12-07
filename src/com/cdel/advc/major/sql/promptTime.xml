@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="prompttime">
+	 
+    <!--新增一个  提示时间类型     -->
+    <insert id="insertPromptTime">
+		INSERT INTO advc_home_promptTime ( guideLanguageID 
+			<if test="beginTime != null "> ,beginTime </if>
+			<if test="endTime != null "> ,endTime </if>
+		) 
+		VALUES( #{guideLanguageID} 
+			<if test="beginTime != null "> ,#{beginTime} </if>
+			<if test="endTime != null "> ,#{endTime} </if>
+		) 
+    </insert>
+
+	<update id="updatePromptTime" parameterType="PromptTime">
+		UPDATE advc_home_promptTime 
+        <set>
+        	<if test="beginTime != null ">beginTime = #{beginTime},</if>
+        	<if test="endTime != null">endTime = #{endTime}</if>
+        </set>
+        WHERE promptID = #{promptID}
+	</update>
+    
+    <!-- 删除  提示时间类型  -->
+    <delete id="deletePromptTimeByObject"  >
+    	DELETE FROM advc_home_promptTime WHERE guideLanguageID = #{guideLanguageID}
+    </delete>
+
+</mapper>

@@ -1,0 +1,29 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" columns="1" style="width:550px;">
+	<p:dataTable widgetVar="logTable" 
+		id="logList" 
+		binding="#{divideLogAction.pageTable}"
+		lazy="true"
+		value="#{divideLogAction.divideLogPage}" 
+		rows="10"
+		var="log"
+		paginator="true" 
+		paginatorPosition="bottom"
+		currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+		paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+		styleClass="gridTable" 
+		emptyMessage="没有日志！"
+		rendered="#{divideLogAction.show}">
+		<p:column headerText="内容" width="*">
+			<h:outputText value="#{log.logDesc}" />
+		</p:column>
+		<p:column headerText="创建人" width="15%">
+			<h:outputText value="#{log.teacherName}" />
+		</p:column>
+		<p:column headerText="日期" width="20%">
+			<h:outputText value="#{log.createDateStr}" />
+		</p:column>
+	</p:dataTable>
+</p:panelGrid>

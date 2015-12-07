@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="qzuploadfile">
+	<sql id="pageSql_body">
+		select uf.id,uf.fileUrl,uf.creator,ru.realName,
+		row_number() over(order by id desc ) as rowNum
+		from advc_upload_file uf with (nolock)
+		left join RAD_ADMIN_USER ru with (nolock) on uf.creator = ru.adminID
+		where ru.status = 1 
+    </sql>
+    
+    <select id="findPageQzUploadFile" resultType="QzUploadFile">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countQzUploadFile" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+    <insert id="insertQzUploadFile">
+        INSERT INTO advc_upload_file (fileUrl ,creator,createTime,status )
+        VALUES (#{fileUrl},#{creator},getDate(),1 )
+    </insert>
+    
+</mapper>

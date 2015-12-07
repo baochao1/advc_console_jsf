@@ -1,0 +1,16 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showDialog" widgetVar="showDialog" resizable="false" showEffect="fade" hideEffect="fade" >
+	<p:dataTable value="#{classteacherReqAction.teacherList}" var="teacher" rendered="#{classteacherReqAction.showDialogShow}" emptyMessage="对不起，没有查询到数据！" style="width:500px;">
+		<p:column headerText="管理员姓名" width="30%" style="text-align:center">
+			<h:outputText value="#{teacher.teacherName}" />
+		</p:column>
+		<p:column headerText="管理员责任说明" style="text-align:center">
+			<h:outputText value="#{teacher.teacherDesc}" />
+		</p:column>
+		<p:column headerText="总管理员" width="30%" style="text-align:center">
+			<h:outputText value="#{(teacher.teacherType==1)?'是':''}" />
+		</p:column>
+	</p:dataTable>
+</p:dialog>

@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统--查看报告</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-widget-content td{vertical-align:top;}
+		.jqplot-table-legend{font-size: 12px;border: 1px solid #666666;border-collapse: collapse;}
+	</style>
+	<script>
+	function logList(){
+		setLogList();
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl autoUpdate="true" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setLogList" actionListener="#{reportLogReqAction.loadLog(reportShowAction.report.reportID)}" update=":logForm:logTable" autoRun="true"/>
+	<p:panelGrid id="dataTablePanel" style="width:100%; ">
+		<f:facet name="header">
+			<p:row>
+				<p:column colspan="4" styleClass="facetColumn">
+					<h:outputLabel value="学员:#{reportShowAction.memberClass.userName}" />
+					<p:spacer width="5" />
+					<h:outputLabel value="#{reportShowAction.report.reportTitle}" />
+					<p:separator />
+					<h:outputLabel value="创建教师:#{reportShowAction.report.creatorName}" />
+					<p:spacer width="5" />
+					<h:outputLabel value="创建时间:#{reportShowAction.report.createTimeStr}" />
+				</p:column>	
+			</p:row>
+		</f:facet>
+		
+		<p:row>
+			<p:column style="width:22%;">
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column colspan="2">
+								<h:outputLabel value="学员相关信息" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sUserName" value="学员" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sUserName" value="#{reportShowAction.memberClass.userName}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sUserCode" value="学号" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sUserCode" value="#{reportShowAction.memberClass.studentNo}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sClassName" value="班级" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sClassName" value="#{reportShowAction.memberClass.className}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sClassTeacher" value="班主任" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sClassTeacher" value="#{reportShowAction.memberClass.displayAdviser}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column  colspan="2">
+							<h:link value="历史报告" outcome="/page/report/reportList.xhtml" includeViewParams="true" target="_blank">
+								<f:param name="userID" value="#{reportShowAction.report.userID}"/>
+								<f:param name="classID" value="#{reportShowAction.report.classID}"/>
+							</h:link> |
+							<h:link value="学习计划" outcome="/page/plan/showPlan" includeViewParams="true" target="_blank">
+								<f:param name="userID" value="#{reportShowAction.report.userID}"/>
+								<f:param name="userName" value="#{reportShowAction.memberClass.userName}"/>
+								<f:param name="classID" value="#{reportShowAction.report.classID}"/>
+								<f:param name="siteID" value="#{reportShowAction.siteID}"/>
+								<f:param name="termID" value="#{reportShowAction.memberClass.termID}"/>
+								<f:param name="planType" value="0"/>
+							</h:link> |
+							<h:link value="学习记录 " outcome="/page/record/recordList" includeViewParams="true" target="_blank">
+								<f:param name="userID" value="#{reportShowAction.report.userID}"/>
+								<f:param name="userName" value="#{reportShowAction.memberClass.userName}"/>
+								<f:param name="classID" value="#{reportShowAction.report.classID}"/>
+							</h:link>
+						</p:column>		
+					</p:row>
+					
+				</p:panelGrid>
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column colspan="2">
+								<h:outputLabel value="统计数据区间" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sStartTime" value="开始日期" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sStartTime" value="#{reportShowAction.report.startTimeStr}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sEndTime" value="结束日期" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sEndTime" value="#{reportShowAction.report.endTimeStr}"/>	
+						</p:column>	
+					</p:row>					
+				</p:panelGrid>
+					<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column colspan="2">
+								<h:outputLabel value="班主任点评" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sApplyStatus" value="申请状态" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sApplyStatus" value="#{reportShowAction.report.applyStatusStr}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sApplyTime" value="申请时间" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sApplyTime" value="#{reportShowAction.report.applyTimeStr}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sRemarkUserID" value="评 论 人" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sRemarkUserID" value="#{reportShowAction.report.teacherName}"/>	
+						</p:column>	
+					</p:row>
+					
+					<p:row>
+						<p:column>
+							<h:outputLabel for="sRemarkTime" value="评论时间" />
+						</p:column>		
+						<p:column>
+							<h:outputText id="sRemarkTime" value="#{reportShowAction.report.remarkTimeStr}"/>	
+						</p:column>	
+					</p:row>
+				</p:panelGrid>
+			</p:column>	
+			<p:column>
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+								<h:outputLabel value="学习时长统计" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					<p:row>
+						<p:column>
+							<h:outputText escape="false" value="#{reportShowAction.report.timeLongRecord}" />	
+						</p:column>		
+					</p:row>
+				</p:panelGrid>
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+								<h:outputLabel value="每日学习时长表" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					<p:row>
+						<p:column>
+							 <p:lineChart legendPosition="ne" xaxisLabel="日期" yaxisLabel="分钟"
+								value="#{reportShowAction.lineChartModel}"
+     							title="学习时长比例图" minY="0" maxY="#{reportShowAction.lineMaxY}" /> 
+						</p:column>		
+					</p:row>
+				</p:panelGrid>		
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+								<h:outputLabel value="课程学习时长比例图" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					<p:row>
+						<p:column>
+						 	<p:pieChart legendPosition="e" showDataLabels="true"
+						 		 style="font-size:12px;"		
+						 		 value="#{reportShowAction.pieChartModel}"  
+              					 title="学习时长比例图"/> 
+						</p:column>		
+					</p:row>
+				</p:panelGrid>		
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+								<h:outputLabel value="知识点测试记录" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					<p:row>
+						<p:column>
+							<h:outputText  escape="false" value="#{reportShowAction.report.pointRecord}"/>	
+						</p:column>		
+					</p:row>
+				</p:panelGrid>	
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+								<h:outputLabel value="中心测试记录" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					<p:row>
+						<p:column>
+							<h:outputText escape="false" value="#{reportShowAction.report.centerRecord}"/>	
+						</p:column>		
+					</p:row>
+				</p:panelGrid>	
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+								<h:outputLabel value="错题记录" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					<p:row>
+						<p:column>
+							<h:outputText escape="false" value="#{reportShowAction.report.errorRecord}"/>	
+						</p:column>		
+					</p:row>
+				</p:panelGrid>	
+			
+			</p:column>	
+		</p:row>
+		<p:row>
+			<p:column colspan="2">
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+								<h:outputLabel value="学员申请说明" />
+							</p:column>
+						</p:row>
+					</f:facet>
+					<p:row>
+						<p:column>
+							#{reportShowAction.report.applyContentStr}
+						</p:column>		
+					</p:row>
+				</p:panelGrid>
+			</p:column>		
+		</p:row>
+		<p:row>
+			<p:column colspan="2">
+				<p:panelGrid style="width:100%;">
+					<f:facet name="header">
+						<p:row>
+							<p:column>
+<p:panelGrid style="width:100%;">
+	<p:row>
+		<p:column>
+			<p:editor value="#{reportShowAction.report.remarkContent}" height="200" width="900" />
+		</p:column>
+	</p:row>
+	<f:facet name="footer">
+		<p:row>
+			<p:column style="display:block; text-align:center">
+				<p:commandButton value="提交" actionListener="#{reportReqAction.addRemark}" update="sRemarkUserID sRemarkTime" oncomplete="optResultAlert(args,3,'logList');"/>
+			</p:column>
+		</p:row>
+	</f:facet>
+</p:panelGrid>	
+							</p:column>
+						</p:row>
+					</f:facet>
+				</p:panelGrid>
+			</p:column>		
+		</p:row>
+	</p:panelGrid>
+	</h:form>
+	<h:form id="logForm">
+		<p:panelGrid>
+			<p:row>
+				<p:column>
+					<p:dataTable scrollable="true" scrollHeight="200" 
+						id="logTable"	
+						value="#{reportLogReqAction.reportList}"			   
+						var="log" 
+						styleClass="gridTable" 	
+						emptyMessage="对不起，没有查询到数据！">
+						<p:column headerText="评论者" width="20%;">
+							<h:outputText value="#{log.teacherName}"/>
+						</p:column>
+						<p:column headerText="评论时间" width="30%;">
+							<h:outputText value="#{log.remarkTimeStr}" />
+						</p:column>
+						<p:column headerText="评语" width="50%">
+							<h:outputText escape="false" value="#{log.remarkContent}"/>
+						</p:column>
+					</p:dataTable>
+				</p:column>		
+			</p:row>
+		</p:panelGrid>
+	</h:form>
+</h:body>
+</html>

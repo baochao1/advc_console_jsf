@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="technologymsg">
+	<sql id="pageSql_body">
+        SELECT m.msgID, m.classID, m.userID, m.teacherID, m.msgType, m.replyTime, m.readFlag, m.msgTitle, m.sentTime, m.status,
+		c.className, c.classCode, c.displayAdviser, me.userName,ROW_NUMBER() Over(ORDER BY m.replyTime DESC , m.sentTime ASC) AS rowNum 
+        FROM ADVC_MEMBER_MSG m  WITH (NOLOCK) 
+        left join ADVC_CLASS c  WITH (NOLOCK) on m.classID = c.classID
+        left join ADVC_CLASS_STRATEGY cs  WITH (NOLOCK) ON c.strategyID = cs.strategyID 
+        left join ADVC_MEMBER me  WITH (NOLOCK) on m.userID = me.userID
+        where m.msgType = 1 
+        <if test="majorID !=null and majorID !=''"> and cs.majorID=#{majorID} </if>
+        <if test="classID !=null and classID !=''"> and m.classID=#{classID} </if>
+        <if test="userName !=null and userName !=''"> and me.userName=#{userName} </if>
+        <if test="reply==0 "> and replyTime IS NULL </if>
+        <if test="reply==1 "> and replyTime IS NOT NULL </if>
+        <if test="status !=null "> and m.status=#{status} </if>
+    </sql>
+    
+    <select id="findPageTechnologyMsg" resultType="TechnologyMsg" parameterType="TechnologyMsg">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countTechnologyMsg" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+
+</mapper>

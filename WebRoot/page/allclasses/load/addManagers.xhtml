@@ -1,0 +1,51 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="addManagersDialog" header="批量添加管理员" widgetVar="addManagersDialog" resizable="false" showEffect="fade" hideEffect="fade" height="350">
+	<p:panelGrid id="updatePanelGrid" columns="2" columnClasses="addObjectClass, maxLength" >
+		
+		<h:outputLabel value="教师列表" />
+		<p:selectCheckboxMenu id="uClassName" value="#{classteacherAction.teacherIDs}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+			<p:ajax event="change" update="uManagerList" listener="#{classteacherReqAction.changeTeacherID}" process="@form"/>
+			<f:selectItems value="#{teacherOther.teacherList}" var="teacher" itemLabel="#{teacher.teacherName}(#{teacher.teacherCode})" itemValue="#{teacher.teacherID}"/>
+		</p:selectCheckboxMenu>
+		
+		<h:outputLabel value="管理员" />
+		<p:dataTable id="uManagerList" style="width:500px;"
+			value="#{classteacherAction.teacherList}" 
+			var="teacher" 
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			rowKey="#{teacher.teacherID}" 
+			editable="true" 
+			editMode="cell" 
+			selection="#{classteacherReqAction.selectedManager}"
+			>
+			<p:column selectionMode="single" />
+			<p:column headerText="姓名" width="15%">
+				<h:outputText value="#{teacher.teacherName}" />
+			</p:column>
+			<p:column headerText="责任说明(单击修改,回车确定)" width="65%">
+				<p:cellEditor>
+					<f:facet name="output">
+						<h:outputText value="#{teacher.teacherDesc}" title="单击修改"/>
+					</f:facet>
+					<f:facet name="input">
+						<p:inputText value="#{teacher.teacherDesc}" style="width:90%"/>
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+			<p:column headerText="操作" width="10%">
+				<p:commandLink value="删除" update="uManagerList" actionListener="#{classteacherAction.deleteManager(row)}" rendered="#{teacher.isZhuRen != 1 }"/>
+			</p:column>
+		</p:dataTable>
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<p:commandButton value="提交" actionListener="#{classteacherReqAction.updateSubmit(classteacherAction.classID)}" update="msg" oncomplete="optResult('addManagersDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="addManagersDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

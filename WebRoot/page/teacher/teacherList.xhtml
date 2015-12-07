@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>管理员管理</title> 
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+	.ui-picklist .ui-picklist-list {
+		width:300px;
+	}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" autoUpdate="true"/>
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sTeacherCode" value="教师代码"/>
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sTeacherCode" value="#{teacherAction.filterTeacher.teacherCode}" completeMethod="#{comRequestMethod.completeTeacherName2}" var="teacherCode" itemLabel="#{teacherCode}" itemValue="#{teacherCode}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sTeacherName" value="教师名称" />
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sTeacherName" value="#{teacherAction.filterTeacher.teacherName}" completeMethod="#{comRequestMethod.completeTeacherName3}" var="teacherCode" itemLabel="#{teacherCode}" itemValue="#{teacherCode}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sOrgID" value="组织" />				   
+			<p:selectOneMenu id="sOrgID" value="#{teacherAction.filterTeacher.orgID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择组织--" itemValue="" />
+				<f:selectItems value="#{teacherOrgOtherInit.teacherOrgs}" var="org" itemLabel="#{org.orgName}" itemValue="#{org.orgID}"/>
+			</p:selectOneMenu>
+			  
+			<p:outputLabel/>
+			<p:outputLabel/>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{teacherAction.search}" rendered="#{teacherAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		
+		<p:menubar>
+			<p:menuitem value="教师信息统计" icon="ui-icon-contact" oncomplete="teachMemberStatisDialog.show();" 
+			  update=":teachMemberStatisForm:teachMemberStatisDialog" actionListener="#{adminStatisReqAction.getList()}" rendered="#{teacherAction.viewAuth}"/>
+		</p:menubar>
+		
+		<p:dataTable scrollable="true" scrollHeight="#{teacherAction.heighti}" 
+			widgetVar="teacherTable"
+			id="teacherList"
+			binding="#{teacherAction.pageTable}"
+			lazy="true"
+			value="#{teacherAction.page}" 
+			rows="20"
+			var="tea" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rowKey="#{tea.teacherID}"
+			editable="true" 
+			>
+			<p:column width="7%" headerText="修改">
+				<p:rowEditor />
+			</p:column>
+			<p:ajax event="rowEdit" listener="#{teacherReqAction.updateTeacher}" update=":info" />
+			<p:column headerText="教师代码" width="9%">
+				<h:outputText value="#{tea.teacherCode}" title="#{tea.teacherCode}"/>
+			</p:column>
+			<p:column headerText="教师名称" width="11%">
+				<h:outputText value="#{tea.teacherName}"/>
+			</p:column>
+			<p:column headerText="所属组织" width="16%">
+				<p:cellEditor>
+					<f:facet name="output">
+						<h:outputText value="#{tea.orgName}"/>
+					</f:facet>
+					<f:facet name="input">
+						<p:selectOneMenu id="sOrgID" value="#{tea.orgID}" style="width:150px;" filter="true" filterMatchMode="contains">
+							<f:selectItems value="#{teacherOrgOtherInit.teacherOrgs}" var="org" itemLabel="#{org.orgName}" itemValue="#{org.orgID}"/>
+						</p:selectOneMenu>
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+			<p:column headerText="职位" width="9%">
+				<p:cellEditor>
+					<f:facet name="output">
+						<h:outputText value="#{tea.isHeaderStr}" escape="false"/>
+					</f:facet>
+					<f:facet name="input">
+						<p:selectOneMenu value="#{tea.isHeader}" style="width:70px;">
+							<f:selectItems value="#{teacherReqAction.isHeaders.entrySet()}" var="isHeader" itemLabel="#{isHeader.value}" itemValue="#{isHeader.key}"/>
+						</p:selectOneMenu>
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+			
+			<p:column headerText="状态" width="8%">
+				<h:outputText styleClass="status-#{tea.status}" value="启用" rendered="#{tea.status == 1}"/>
+				<h:outputText styleClass="status-#{tea.status}" value="注销" rendered="#{tea.status == 0}"/>
+			</p:column>
+			
+			<p:column headerText="所负责的班级" width="30%">
+				<p:commandLink value="查看" oncomplete="allClassDialog.show();" update=":allClassForm:allClassDialog" actionListener="#{teacherReqAction.checkAllClass(tea.teacherID)}" rendered="#{teacherAction.viewAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="管理" oncomplete="teachClassDialog.show();" update=":teachClassForm:teachClassDialog" actionListener="#{teacherReqAction.showTeachClass(tea.teacherID)}" rendered="#{teacherAction.viewAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="高端班管理" oncomplete="teachStudentDialog.show();" update=":teachStudentForm:teachStudentDialog" actionListener="#{teachStudentReqAction.showTeachStudent(tea.teacherID)}" rendered="#{teacherAction.viewAuth}"/>
+			</p:column>
+		
+			<p:column headerText="工作统计" width="10%">
+				<p:commandLink value="查看" oncomplete="statisticsDialog.show();" update=":statisticsForm:statisticsDialog" actionListener="#{teacherStatisticsReqAction.checkStat(tea.teacherID)}" rendered="#{teacherAction.viewAuth}"/>
+			</p:column>			
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="teacherList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+
+	<!-- 查看负责的班级 -->
+	<h:form id="allClassForm" >
+		<p:dialog id="allClassDialog" header="查看负责的班级" widgetVar="allClassDialog" resizable="false" showEffect="fade" hideEffect="fade" position="top">
+			<ui:include src="load/allClassList.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 工作统计 -->
+	<h:form id="statisticsForm" >
+		<p:dialog id="statisticsDialog" header="工作量统计" widgetVar="statisticsDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/teacherStatistics.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 管理负责的班级 -->
+	<h:form id="teachClassForm">
+		<ui:include src="load/teachClassList.xhtml"/>
+	</h:form>
+	<!-- 管理高端班学员 -->
+	<h:form id="teachStudentForm">
+		<ui:include src="load/teachStudentList.xhtml"/>
+	</h:form>
+	
+	<!-- 老师管理的学员总数统计  -->
+	<h:form id="teachMemberStatisForm">
+		<ui:include src="load/teachMemberStatisList.xhtml"/>
+	</h:form>
+	
+</h:body>
+</html>

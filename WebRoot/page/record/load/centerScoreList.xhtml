@@ -1,0 +1,38 @@
+<p:panel xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" rendered="#{recordAction.selectType==2}" >
+	<p:dataTable scrollable="true" scrollHeight="#{recordAction.heighti2}" 
+		id="centerScoreList"
+		value="#{recordReqAction.centerScoreList}" 
+		var="centerScore" 
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！"
+		>
+		<p:column headerText="课程名称" width="11%">
+			<h:outputText value="#{centerScore.courseName}" />
+		</p:column>
+		<p:column headerText="中心名称" width="17%">
+			<h:outputText value="#{centerScore.centerName}" />
+		</p:column>
+		<p:column headerText="试卷名称" width="20%">
+			<h:outputText value="#{centerScore.paperViewName}" />
+		</p:column>
+		<p:column headerText="客观题得分" width="10%">
+			<h:outputText value="#{centerScore.machineMark}" />
+		</p:column>
+		<p:column headerText="最后得分" width="10%">
+			<h:outputText value="#{centerScore.lastMark}" />
+		</p:column>
+		<p:column headerText="答题次数" width="10%">
+			<h:outputText value="#{centerScore.playCount}" />
+		</p:column>
+		<p:column headerText="最后答题时间" width="15%">
+			<h:outputText value="#{centerScore.lastPlayTimeStr}" />
+		</p:column>
+		<p:column headerText="操作" width="7%">
+			<a href="#{recordReqAction.qzurl2}?paperType=6&amp;paperScoreID=#{centerScore.paperScoreID}&amp;paperViewID=#{centerScore.paperViewID}&amp;userName=#{recordAction.userName}&amp;paperViewName=#{centerScore.paperViewName}" target="_blank">查看</a>
+		</p:column>
+	</p:dataTable>
+</p:panel>

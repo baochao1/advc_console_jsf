@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gdbmembercallrecord">
+
+	<select id="getGdbMemberCallRecord" resultType="GdbMemberCallRecord" parameterType="GdbMemberCallRecord">
+		select * from GDB_MEMBER_CALL_RECORD 
+		WHERE userID=#{userID}
+	</select>
+	
+	<update id="updateGdbMemberCallRecord">
+        UPDATE GDB_MEMBER_CALL_RECORD set lastCallTime=#{lastCallTime} 
+       	<if test="successCallTime != null"> ,successCallTime=#{successCallTime} </if>
+        WHERE userID=#{userID}
+    </update>
+    
+    <insert id="insertGdbMemberCallRecord">
+        INSERT INTO GDB_MEMBER_CALL_RECORD ( userID,lastCallTime 
+       	<if test="successCallTime != null"> ,successCallTime </if> )
+        VALUES ( #{userID},#{lastCallTime} 
+       	<if test="successCallTime != null"> ,#{successCallTime} </if> )
+        <selectKey keyProperty="callID" resultType="int">
+        	SELECT @@IDENTITY AS callID
+        </selectKey>
+    </insert>
+	
+</mapper>

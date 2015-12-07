@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+       http://www.springframework.org/schema/jee 
+       http://www.springframework.org/schema/jee/spring-jee-3.0.xsd 
+	   http://www.springframework.org/schema/context  
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       ">
+
+	<jee:jndi-lookup id="jiaowu" jndi-name="java:comp/env/jdbc/physerver" />
+
+	<jee:jndi-lookup id="courseWare" jndi-name="java:comp/env/jdbc/sqlserver_cware" />
+	
+	<jee:jndi-lookup id="accMain" jndi-name="java:comp/env/jdbc/sqlserver_main" />
+
+	<bean id="dataSource" class="com.cdel.database.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="jiaowu" value-ref="jiaowu" />
+				<entry key="courseWare" value-ref="courseWare" />
+				<entry key="accMain" value-ref="accMain" />
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="jiaowu" />
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+		<property name="dataSource" ref="dataSource"/>  
+	</bean> 
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="classpath:com/**/*.xml" />
+		<property name="typeAliases">
+			<array>
+				<value>com.cdel.advc.course.domain.Course</value>
+				<value>com.cdel.qz.course.domain.QzCourse</value>
+				<value>com.cdel.qz.siteCourse.domain.QzSiteCourse</value>
+				<value>com.cdel.advc.website.domain.Website</value>
+				<value>com.cdel.advc.major.domain.Major</value>
+				<value>com.cdel.advc.major.domain.MainMajor</value>
+				<value>com.cdel.qz.business.domain.QzBusiness</value>
+				<value>com.cdel.plat.grant.domain.AdminUser</value>
+				<value>com.cdel.plat.grant.domain.Privilege</value>
+				<value>com.cdel.advc.classes.domain.Classes</value>
+				<value>com.cdel.advc.strategy.domain.Strategy</value>
+				<value>com.cdel.advc.strategy.domain.StrategyOrder</value>
+				<value>com.cdel.advc.testterm.domain.Testterm</value>
+				<value>com.cdel.advc.classes.domain.Classes</value>
+				<value>com.cdel.advc.classes.domain.AllClasses</value>
+				<value>com.cdel.advc.teacher.domain.Teacher</value>
+				<value>com.cdel.advc.teacher.domain.TeacherStatistics</value>
+				<value>com.cdel.advc.course.domain.TempChapter</value>
+				<value>com.cdel.advc.course.domain.StudyAsk</value>
+				<value>com.cdel.advc.teacherorg.domain.TeacherOrg</value>
+				<value>com.cdel.advc.faq.domain.Faq</value>
+				<value>com.cdel.advc.membercall.domain.MemberCall</value>
+				<value>com.cdel.advc.membercall.domain.MemberCallNoCall</value>
+				<value>com.cdel.advc.membercall.domain.MemberCallPostRecord</value>
+				<value>com.cdel.advc.membercall.domain.MemberCallAll</value>
+				<value>com.cdel.advc.membercall.domain.MemberCallPost</value>
+				<value>com.cdel.advc.membercall.domain.MemberCallRecord</value>
+				<value>com.cdel.advc.membercall.domain.ReserveCall</value>
+				<value>com.cdel.advc.membercall.domain.ReserveCallAll</value>
+				<value>com.cdel.advc.membercall.domain.ReserveCallHistory</value>
+				<value>com.cdel.advc.membercall.domain.ReserveCallPost</value>
+				<value>com.cdel.advc.membernote.domain.Membernote</value>
+				<value>com.cdel.advc.classnews.domain.Classnews</value>
+				<value>com.cdel.advc.membermessage.domain.Membermessage</value>
+				<value>com.cdel.advc.membermessage.domain.MembermessageAll</value>
+				<value>com.cdel.advc.classteacher.domain.Classteacher</value>		
+				<value>com.cdel.advc.memberclass.domain.MemberClass</value>
+				<value>com.cdel.advc.major.domain.ClassNo</value>
+				<value>com.cdel.advc.technologyMsg.domain.TechnologyMsg</value>
+				<value>com.cdel.advc.innermsg.domain.InnerMsg</value>
+				<value>com.cdel.advc.innermsg.domain.InnerMsgReceive</value>
+				<value>com.cdel.advc.innermsg.domain.InnerMsgAll</value>
+				<value>com.cdel.advc.membermsglog.domain.MembermsgLog</value>
+				<value>com.cdel.advc.membermsg.domain.Membermsg</value>
+				<value>com.cdel.advc.major.domain.SpecialGeneral</value>
+				<value>com.cdel.advc.major.domain.PhaseSet</value>
+				<value>com.cdel.advc.sitenotice.domain.Sitenotice</value>
+				<value>com.cdel.advc.classmsgnotice.domain.ClassMsgNotice</value>
+				<value>com.cdel.advc.gdb.materials.domain.GdbMaterials</value>
+				<value>com.cdel.advc.gdb.membercall.domain.GdbMemberCall</value>
+				<value>com.cdel.advc.gdb.membercall.domain.GdbMemberCallRecord</value>
+				<value>com.cdel.advc.combo.domain.Combo</value>
+				<value>com.cdel.advc.coursetimeLong.domain.CoursetimeLong</value>
+				<value>com.cdel.advc.classmsgActive.domain.ClassmsgActive</value>
+				<value>com.cdel.advc.courseware.domain.Courseware</value>
+				<value>com.cdel.advc.report.domain.CwTimeLong</value>
+				<value>com.cdel.advc.report.domain.ReportRemark</value>
+				<value>com.cdel.advc.infoModify.domain.InfoModify</value>
+				<value>com.cdel.advc.sendGroup.domain.SendGroup</value>
+				<value>com.cdel.advc.memberSms.domain.MemberSms</value>
+				<value>com.cdel.advc.member.domain.Member</value>
+				<value>com.cdel.advc.sendMemberMsgGroup.domain.SendMemberMsgGroup</value>
+				<value>com.cdel.advc.gdb.member.domain.AdvanceMember</value>
+				<value>com.cdel.advc.gdb.member.domain.MyAdvanceMember</value>
+				<value>com.cdel.advc.gdb.plan.domain.GdbStudyPlan</value>
+				<value>com.cdel.advc.gdb.planPoint.domain.GdbStudyPlanPoint</value>
+				<value>com.cdel.advc.gdb.paper.domain.GdbTestPaper</value>
+				<value>com.cdel.advc.memberdefine.domain.Memberdefine</value>
+				<value>com.cdel.advc.memberdefine.domain.MemberdefineLog</value>
+				<value>com.cdel.advc.sendEmail.domain.SendEmail</value>
+				<value>com.cdel.advc.plan.domain.PlanChapter</value>
+				<value>com.cdel.advc.plan.domain.StudyPlan</value>
+				<value>com.cdel.advc.divide.domain.DivideLog</value>
+				<value>com.cdel.advc.msconf.domain.Msconf</value>
+				<value>com.cdel.advc.plan.domain.MemberTermHours</value>
+				<value>com.cdel.advc.plan.domain.PlanLog</value>
+				<value>com.cdel.advc.specialty.domain.Specialty</value>
+				<value>com.cdel.advc.occupation.domain.Occupation</value>
+				<value>com.cdel.advc.memberclass.domain.MemberProfile</value>
+				<value>com.cdel.advc.plan.domain.MemberChapterSet</value>
+				<value>com.cdel.advc.plan.domain.MemberChapter</value>
+				<value>com.cdel.advc.report.domain.Report</value>
+				<value>com.cdel.advc.report.domain.ReportLog</value>
+				<value>com.cdel.advc.plan.domain.PlanSpecialGeneral</value>
+				<value>com.cdel.advc.report.domain.RptCourseTime</value>
+				<value>com.cdel.qz.score.center.domain.CenterScore</value>
+				<value>com.cdel.qz.score.point.domain.PointScore</value>
+				<value>com.cdel.qz.quesError.domain.QuesError</value>
+				<value>com.cdel.advc.plan.domain.PlanChapterSequenceSet</value>
+				<value>com.cdel.qz.pointList.domain.PointList</value>
+				<value>com.cdel.qz.point.domain.Point</value>
+				<value>com.cdel.qz.chapter.domain.QzChapter</value>
+				<value>com.cdel.qz.score.selfhelp.domain.SelfHelp</value>
+				<value>com.cdel.advc.stage.domain.Stage</value>
+				<value>com.cdel.advc.majorStage.domain.MajorStage</value>
+				<value>com.cdel.advc.majorStage.domain.StageServiceItem</value>
+				<value>com.cdel.advc.serviceItem.domain.ServiceItem</value>
+				<value>com.cdel.advc.stageRelative.domain.StageRelative</value>
+				<value>com.cdel.advc.smsTemplate.domain.SmsTemplate</value>
+				<value>com.cdel.advc.membermsg.domain.MembermsgRelRecall</value>
+				<value>com.cdel.advc.smsRegularly.domain.SmsRegularly</value>
+				<value>com.cdel.advc.guideText.domain.GuideText</value>
+				<value>com.cdel.advc.serviceText.domain.ServiceText</value>
+				<value>com.cdel.advc.courseTime.domain.CourseTime</value>
+				<value>com.cdel.advc.qzUploadFile.domain.QzUploadFile</value>
+				<value>com.cdel.advc.stageRelative.domain.StageRelativeService</value>
+				<value>com.cdel.advc.major.domain.GuideLanguage</value>
+				<value>com.cdel.advc.major.domain.PromptTime</value>
+				<value>com.cdel.advc.memberclass.domain.PhoneNumberLog</value>
+				<value>com.cdel.advc.adminTeacher.domain.AdminStatis</value>
+				<value>com.cdel.advc.adminTeacher.domain.Organize</value>
+			</array>
+		</property>
+	</bean>
+	
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate"> 
+		<constructor-arg index="0" ref="sqlSessionFactory" /> 
+	</bean>
+
+	<aop:config proxy-target-class="true">
+		<aop:aspect id="dsAspect" ref="dsAspectBean">
+			<aop:pointcut id="dsService" expression="execution(* *..*Dao.*(..))" />
+			<aop:before pointcut-ref="dsService" method="doBefore" />
+		</aop:aspect>
+	</aop:config>
+	
+	<context:component-scan base-package="com" />
+
+	<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+</beans>

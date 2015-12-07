@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sitenotice">
+    <sql id="getSitenoticeList_body">
+	   	SELECT sn.siteNoticeID, sn.siteID, sn.type, sn.subject, sn.content, w.siteName, t.teacherName creatorName,
+	   	sn.startTime, sn.endTime,sn.createTime, sn.status,
+		ROW_NUMBER() Over(ORDER BY siteNoticeID DESC) AS rowNum 
+	   	FROM ADVC_SITE_NOTICE sn WITH (NOLOCK) 
+	   	LEFT JOIN ADVC_WEBSITE w WITH (NOLOCK) ON w.siteID = sn.siteID 
+	   	LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = sn.creator
+	   	<where>
+	   		<if test="siteNoticeID !=null"> AND sn.siteNoticeID = #{siteNoticeID}</if>
+	   		<if test="siteID !=null"> AND sn.siteID = #{siteID}</if>
+	   		<if test="subject != null and subject != ''"> AND sn.subject like '%'+#{subject}+'%'</if>
+	   		<if test="status !=null"> AND sn.status = #{status}</if>
+	   		<if test="type !=null"> AND sn.type = #{type}</if>
+	   	</where>
+    </sql>
+
+    <select id="countSitenotice" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getSitenoticeList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageSitenotice" parameterType="Sitenotice" resultType="Sitenotice">
+        SELECT * FROM (
+            <include refid="getSitenoticeList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+	<update id="updateSitenotice">
+        UPDATE ADVC_SITE_NOTICE
+        <set>
+        	<if test="type !=null"> type= #{type},</if>
+        	<if test="subject != null and subject != ''"> subject= #{subject},</if>
+        	<if test="content != null and content != ''"> content= #{content},</if>
+        	<if test="status != null"> status= #{status},</if>
+        	<if test="endTime !=null"> endTime= #{endTime}</if>
+        </set>
+		WHERE siteNoticeID=#{siteNoticeID}
+    </update>
+    
+    <insert id="insertSitenotice">
+        INSERT INTO ADVC_SITE_NOTICE ( siteID,type ,subject ,content ,creator ,createTime ,startTime ,endTime ,status )
+        VALUES ( #{siteID} ,#{type},#{subject },#{ content },#{ creator },#{createTime} ,#{startTime} ,#{endTime} ,#{status } )
+    </insert>
+    
+    <select id="getSitenotice" resultType="Sitenotice">
+        SELECT siteNoticeID, siteID, type, subject, content, creator, createTime, status,startTime,endTime
+        FROM ADVC_SITE_NOTICE WITH (NOLOCK) 
+        where siteNoticeID=#{siteNoticeID}
+    </select>
+    
+</mapper>

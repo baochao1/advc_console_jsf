@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学习记录</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<p:panel id="dataTablePanel">
+	<h:form id="headForm">
+		<p:remoteCommand name="getPointTestList" actionListener="#{recordReqAction.selectChange(recordAction.initSelectCourseID,1)}" 
+			autoRun="true" update="selectCourseRadio :info"/>
+		<p:panel>
+			<f:facet name="header">
+				<h:outputText value="学员#{param.userName}的课程学习记录" />
+			</f:facet>
+			<p:panelGrid style="width:100%;">
+				<p:row>
+					<p:column style="width:10%;">
+						<p:outputLabel value="课程："/>
+					</p:column>
+					<p:column style="width:90%;">
+						<p:selectOneMenu id="selectCourseRadio" value="#{recordAction.selectCourseID}" >
+							<p:ajax event="change" listener="#{recordReqAction.selectChange}" process="@form"/>	
+							<f:selectItems value="#{recordAction.courseList}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseID}"/>
+						</p:selectOneMenu>
+					</p:column>
+				</p:row>
+				<p:row>
+					<p:column style="width:10%;">
+						<p:outputLabel />
+					</p:column>
+					<p:column style="width:90%;">
+						<p:selectOneRadio id="selectTypeRadio" value="#{recordAction.selectType}" >
+							<p:ajax event="change" listener="#{recordReqAction.selectChange}" process="@form"/>	
+							<f:selectItems value="#{recordReqAction.typeMap.entrySet()}" var="type" itemLabel="#{type.value}" itemValue="#{type.key}"/>
+						</p:selectOneRadio>
+					</p:column>
+				</p:row>
+			</p:panelGrid>
+		</p:panel>
+	</h:form>
+	<h:form id="searchForm">
+		<ui:include src="load/pointScoreList.xhtml"/>
+		<ui:include src="load/centerScoreList.xhtml"/>
+		<ui:include src="load/timeList.xhtml"/>
+		<ui:include src="load/selfHelpPaperList.xhtml"/>
+	</h:form>
+	</p:panel>
+	<ui:include src="/page/common/blockUI2.xhtml">
+		<ui:param name="tableID" value=":headForm:selectCourseRadio" />
+	</ui:include>
+	<ui:include src="/page/common/blockUI2.xhtml">
+		<ui:param name="tableID" value=":headForm:selectTypeRadio" />
+	</ui:include>
+</h:body>
+</html>

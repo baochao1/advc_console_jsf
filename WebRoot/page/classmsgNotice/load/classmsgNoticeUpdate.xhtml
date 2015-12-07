@@ -1,0 +1,25 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" style="width:800px">
+	
+	<h:outputLabel for="uMsgTitle" value="公告标题">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText id="uMsgTitle" styleClass="minLength" value="#{classMsgNoticeReqAction.updateClassMsgNotice.msgTitle}"/>
+	
+	<h:outputLabel for="uMsgTitle" value="公告内容">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:editor value="#{classMsgNoticeReqAction.updateClassMsgNotice.msgContent}" />
+  	
+  	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/> 
+			<h:inputHidden value="#{classMsgNoticeReqAction.updateClassMsgNotice.classMsgID}"/>
+			<h:inputHidden value="#{classMsgNoticeReqAction.updateClassMsgNotice.classID}"/>
+			<p:commandButton value="修改" actionListener="#{classMsgNoticeReqAction.updateSubmit(1)}" update="msg" oncomplete="optResult('loadDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

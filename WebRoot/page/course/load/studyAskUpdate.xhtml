@@ -1,0 +1,74 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" rendered="#{studyAskAction.flag==0 or studyAskAction.flag==1}">
+	<p:row>
+		<p:column styleClass="addObjectMinClass">
+			<h:outputLabel value="章节名"/>
+		</p:column>
+		<p:column styleClass="addContentClass">
+			<h:outputText value="#{studyAskAction.chapterName}"/>
+		</p:column>
+		<p:column styleClass="addObjectMinClass">
+			<h:outputLabel value="课程组合门数">
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+		</p:column>
+		<p:column styleClass="addContentClass">
+			<p:selectOneMenu value="#{studyAskAction.updateStudyAsk.type}" >
+				<p:ajax event="change" update="suggestStyTime studyAsk1 studyAsk2 studyAsk3 studyAsk4" listener="#{studyAskAction.changeType}" />
+				<f:selectItems value="#{studyAskAction.typeMap.entrySet()}" var="type" itemLabel="#{type.value}" itemValue="#{type.key}"/>
+			</p:selectOneMenu>
+		</p:column>
+	</p:row>
+	<p:row>
+		<p:column colspan="2">
+			<h:outputLabel value="建议学习时间（小时）" >
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+		</p:column>
+		<p:column colspan="2">
+			<p:inputText value="#{studyAskAction.updateStudyAsk.suggestStyTime4Hour}" id="suggestStyTime"/>
+		</p:column>
+	</p:row>
+	
+	<p:row>
+		<p:column styleClass="addObjectMinClass">
+			<h:outputLabel value="学习提示"/>
+		</p:column>
+		<p:column styleClass="maxLength">
+			<p:editor value="#{studyAskAction.updateStudyAsk.studyAsk1}" id="studyAsk1" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+		</p:column>
+		<p:column styleClass="addObjectMinClass">
+			<h:outputLabel value="学习建议"/>
+		</p:column>
+		<p:column styleClass="maxLength">
+			<p:editor value="#{studyAskAction.updateStudyAsk.studyAsk2}" id="studyAsk2" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+		</p:column>
+	</p:row>
+	
+	<p:row>
+		<p:column styleClass="addObjectMinClass">
+			<h:outputLabel value="完成标准"/>
+		</p:column>
+		<p:column styleClass="maxLength">
+			<p:editor value="#{studyAskAction.updateStudyAsk.studyAsk3}" id="studyAsk3" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+		</p:column>
+		<p:column styleClass="addObjectMinClass">
+			<h:outputLabel value="备注"/>
+		</p:column>
+		<p:column styleClass="maxLength">
+			<p:editor value="#{studyAskAction.updateStudyAsk.studyAsk4}" id="studyAsk4" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+		</p:column>
+	</p:row>
+	<p:row>
+		<p:column colspan="4">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:messages id="msg"/>
+				<p:commandButton value="提交" oncomplete="optResult('loadDialog',args,'#{studyAskAction.flag}');" actionListener="#{studyAskAction.updateSubmit}" rendered="#{studyAskAction.optAuth}" update="msg"/>
+				<p:spacer width="10"/>
+				<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();" />
+			</h:panelGroup>
+		</p:column>
+	</p:row>
+</p:panelGrid>

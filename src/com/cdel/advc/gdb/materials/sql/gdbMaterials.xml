@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="gdbmaterials">
+	<sql id="pageSql_body">
+		SELECT materialsID,gsm.status,qsc.siteCourseName ,gsm.siteCourseID, rau.realName, gsm.creator, uploadPath, materialName, uploadTime,
+		ROW_NUMBER() Over(ORDER BY materialsID DESC) AS rowNum 
+        FROM GDB_SITECOURSE_MATERIALS gsm WITH (NOLOCK) 
+        left join RAD_ADMIN_USER rau WITH (NOLOCK) on rau.adminID = gsm.creator
+        left join QZ_SITE_COURSE qsc WITH (NOLOCK) on qsc.siteCourseID=gsm.siteCourseID 
+        <where>
+			<if test="siteCourseID !=null "> and gsm.siteCourseID=#{siteCourseID} </if>
+        </where>
+    </sql>
+    
+    <select id="findPageGdbMaterials" resultType="GdbMaterials" parameterType="GdbMaterials">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countGdbMaterials" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+    <select id="getGdbMaterials" parameterType="int" resultType="GdbMaterials">
+        SELECT * 
+        from GDB_SITECOURSE_MATERIALS  WITH (NOLOCK) 
+        where materialsID=#{materialsID}
+    </select>
+        
+    <update id="updateGdbMaterials" parameterType="GdbMaterials">
+        UPDATE 
+        	GDB_SITECOURSE_MATERIALS 
+        <set>
+        	<if test="status != null"> status=#{status}, </if>
+        	<if test="siteCourseID != null"> siteCourseID=#{siteCourseID},</if>
+            <if test="uploadPath != null and uploadPath != ''"> uploadPath=#{uploadPath}, </if>
+            <if test="materialName != null and materialName != ''"> materialName=#{materialName} </if>
+        </set>
+        	where materialsID=#{materialsID}	
+    </update>
+    
+    <insert id="insertGdbMaterials">
+        INSERT INTO GDB_SITECOURSE_MATERIALS ( siteCourseID,uploadPath ,materialName,creator,UploadTime,status )
+        VALUES ( #{siteCourseID},#{uploadPath},#{materialName},#{creator},#{uploadTime},#{status} )
+    </insert>
+    
+</mapper>

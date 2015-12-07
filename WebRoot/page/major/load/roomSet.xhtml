@@ -1,0 +1,30 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	<h:outputLabel value="辅导名" />
+	<h:outputLabel value="#{majorReqAction.majorName}" />
+	
+	<h:outputLabel value="房间标题" >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText value="#{majorReqAction.roomTitle}" styleClass="minLength"/>
+	
+	<h:outputLabel value="房间简要描述" />
+	<p:inputTextarea cols="25" rows="5" autoResize="false" value="#{majorReqAction.roomDesc}" />
+	
+	<h:outputLabel value="房间类型" />
+	<p:selectOneMenu style="width:200px;" panelStyleClass="minLength" value="#{majorReqAction.roomeType}" >
+		<f:selectItems value="#{majorReqAction.roomTypeMap.entrySet()}" var="roomeType" itemLabel="#{roomeType.value}" itemValue="#{roomeType.key}"/>
+	</p:selectOneMenu>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{majorReqAction.siteID}"/>
+			<h:inputHidden value="#{majorReqAction.majorID}"/>
+			<p:commandButton value="提交" actionListener="#{majorReqAction.addRoomSubmit}" oncomplete="optResult('roomDialog',args,1);" update="msg"/>
+			<p:commandButton type="button" value="关闭" onclick="roomDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

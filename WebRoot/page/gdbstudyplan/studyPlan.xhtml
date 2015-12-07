@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>高端班学习计划</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+		function setSiteCourseListjs(siteCourseIDs){
+			setSiteCourseList([{name:'siteCourseIDs', value:siteCourseIDs}]);
+		}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setSiteCourseList" actionListener="#{qzSiteCourseOther.setQzSiteCourse}" />
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel value="开始时间" />
+			<h:panelGroup>
+				<p:calendar value="#{gdbStudyPlanAction.filterGdbPlan.startDate1}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>--
+				<p:calendar value="#{gdbStudyPlanAction.filterGdbPlan.startDate2}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sStatus" value="状态" />	
+			<p:selectOneMenu id="sStatus" value="#{gdbStudyPlanAction.filterGdbPlan.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{gdbStudyPlanReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" update="studyPlanTable" actionListener="#{gdbStudyPlanAction.search}" rendered="#{gdbStudyPlanAction.viewAuth}" />
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" onclick="setSiteCourseListjs('#{gdbStudyPlanAction.siteCourseIDs}');" oncomplete="addDialog.show();" update=":addForm:addDialog"
+				actionListener="#{gdbStudyPlanReqAction.add}" rendered="#{gdbStudyPlanAction.optAuth}" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{gdbStudyPlanAction.heighti2}" 
+			widgetVar="studyPlanTable"
+			id="studyPlanTable"
+			binding="#{gdbStudyPlanAction.pageTable}"
+			lazy="true"
+			value="#{gdbStudyPlanAction.page}" 
+			rows="20"
+			var="studyPlan" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="所属周次" width="10%">
+				<h:outputText value="#{studyPlan.weekNumStr}"/>
+			</p:column>
+			<p:column headerText="学习要求" width="13%">
+				<h:outputText value="#{studyPlan.studyContent}" escape="false"/>
+			</p:column>
+			<p:column headerText="所属课程" width="13%">
+				<h:outputText value="#{studyPlan.siteCourseName}"/>
+			</p:column>
+			<p:column headerText="建议学习时长" width="14%">
+				<h:outputText value="#{studyPlan.studyHoursStr}"/>
+			</p:column>
+			<p:column headerText="知识点" width="8%">
+				<h:link value="查看" outcome="/page/gdbStudyPlanPoint/pointList.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="userID" value="#{studyPlan.userID}"/>
+					<f:param name="studyPlanID" value="#{studyPlan.studyPlanID}"/>
+					<f:param name="siteCourseID" value="#{studyPlan.siteCourseID}"/>
+					<f:param name="courseID" value="#{studyPlan.courseID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="测试试卷" width="8%">
+				<h:link value="查看" outcome="/page/gdbTestPaper/paperList.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="studyPlanID" value="#{studyPlan.studyPlanID}"/>
+					<f:param name="siteCourseID" value="#{studyPlan.siteCourseID}"/>
+					<f:param name="courseID" value="#{studyPlan.courseID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="操作" width="10%">
+				<p:commandLink value="#{studyPlan.statusStr}" update=":info" actionListener="#{gdbStudyPlanReqAction.changeStatus(studyPlan.studyPlanID,studyPlan.status)}" rendered="#{gdbStudyPlanReqAction.optAuth}"/>
+				<h:outputText value="#{studyPlan.statusStr}" rendered="#{!gdbStudyPlanReqAction.optAuth}"/>
+				<p:spacer width="5"/>
+				<p:commandLink value="编辑" oncomplete="loadDialog.show();" actionListener="#{gdbStudyPlanReqAction.update(studyPlan.studyPlanID)}" update=":loadForm:loadDialog" rendered="#{gdbStudyPlanReqAction.optAuth}"/>
+			</p:column>
+			<p:column headerText="开始时间" width="12%">
+				<h:outputText value="#{studyPlan.createTimeStr}"/>
+			</p:column>
+			<p:column headerText="创建人" width="12%">
+				<h:outputText value="#{studyPlan.creator}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="studyPlanTable" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 添加页面 -->
+	<h:form id="addForm" >
+		<p:dialog id="addDialog" header="添加" widgetVar="addDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/studyPlanAdd.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 修改页面 -->
+	<h:form id="loadForm" >
+		<p:dialog id="loadDialog" header="修改" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/studyPlanUpdate.xhtml"/>
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="gdbstudyplanpoint">
+
+	<sql id="getGdbStudyPlanPointList_body">
+        SELECT gp.id, gp.studyPlanID, gp.pointID, gp.createUserID, gp.createTime, gp.userID,sc.courseID,
+             sc.siteCourseName,pu.realName creator, p.pointName, ROW_NUMBER() Over(ORDER BY ID DESC) AS rowNum 
+        FROM GDB_STUDY_PLAN_POINT gp WITH (NOLOCK) 
+        left join qz_site_course sc WITH (NOLOCK) on gp.siteCourseID = sc.siteCourseID 
+        left join rad_admin_user pu WITH (NOLOCK) on gp.createUserID = pu.adminID
+        left join qz_point p WITH (NOLOCK) on gp.pointID = p.pointID
+        where gp.siteCourseID=#{siteCourseID} and gp.studyPlanID=#{studyPlanID} and gp.userID=#{userID} 
+        <if test="pointName != null and pointName != ''"> and p.pointName like '%'+#{pointName}+'%' </if>
+    </sql>
+
+    <select id="countGdbStudyPlanPoint" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getGdbStudyPlanPointList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageGdbStudyPlanPoint" parameterType="GdbStudyPlanPoint" resultType="GdbStudyPlanPoint">
+        SELECT * FROM (
+            <include refid="getGdbStudyPlanPointList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <delete id="deleteGdbStudyPlanPoint">
+       delete from GDB_STUDY_PLAN_POINT where id = #{value}
+    </delete>
+    
+    <insert id="insertGdbStudyPlanPointMap">
+		INSERT INTO GDB_STUDY_PLAN_POINT ( studyPlanID,pointID,siteCourseID,createUserID,createTime,userID)
+		<foreach collection="pointList" item="point" open="(" close=")" separator=" union all ">
+        	select #{studyPlanID},#{point.pointID},#{siteCourseID},#{createUserID},#{createTime},#{userID}
+        </foreach>
+    </insert>
+
+    <select id="getPointByStudyPlanID" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select pointID from GDB_STUDY_PLAN_POINT WITH (NOLOCK) where studyPlanID=#{studyPlanID}     
+    </select>
+    
+</mapper>

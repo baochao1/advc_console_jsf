@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="innermsgreceive">
+	<update id="updateInnerMsgReceive" parameterType="InnerMsgReceive">
+        UPDATE 
+        	ADVC_INNER_MSG_RECEIVE 
+			<set> 
+	        	<if test="readTime !=null "> readTime=#{readTime}, </if>
+	        	<if test="readStatus !=null"> readStatus=#{readStatus} </if>
+        	</set>
+        WHERE receiveID=#{receiveID}
+    </update>
+    
+    <select id="getInnerMsgReceiveList4I"  resultType="InnerMsgReceive" parameterType="InnerMsgReceive">
+     	SELECT readStatus,readTime, teacher.teacherName senderName,teacher.teacherCode 
+        FROM ADVC_INNER_MSG_RECEIVE imr WITH (NOLOCK) 
+        left join ADVC_TEACHER teacher WITH (NOLOCK) on teacher.teacherID = imr.receiveTeacherID
+        where imr.innerMsgID = #{innerMsgID}
+	</select>
+	
+	<select id="getInnerMsgReceive" resultType="InnerMsgReceive">
+        SELECT receiveID,innerMsgID,receiveTeacherID,readStatus,readTime
+        FROM ADVC_INNER_MSG_RECEIVE WITH (NOLOCK) where receiveID=#{receiveID}
+    </select>
+    
+    <insert id="insertInnerMsgReceive" parameterType="InnerMsgReceive">
+        INSERT INTO ADVC_INNER_MSG_RECEIVE ( 
+        <if test="innerMsgID != null">innerMsgID,</if>
+        <if test="receiveTeacherID != null">receiveTeacherID,</if>
+        <if test="readStatus != null">readStatus</if>
+        ) VALUES (
+        <if test="innerMsgID != null">#{innerMsgID},</if>
+        <if test="receiveTeacherID != null">#{receiveTeacherID},</if>
+        <if test="readStatus != null">#{readStatus}</if>
+        )
+    </insert>
+    
+    <insert id="insertInnerMsgReceiveList" parameterType="InnerMsgReceive">
+        INSERT INTO ADVC_INNER_MSG_RECEIVE ( innerMsgID,receiveTeacherID,readStatus ) 
+        <foreach collection="list" item="ms" open="(" close=")" separator=" union all ">
+        	SELECT #{ms.innerMsgID}, #{ms.receiveTeacherID}, #{ms.readStatus} 
+        </foreach>
+    </insert>
+    
+</mapper>

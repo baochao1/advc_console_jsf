@@ -1,0 +1,115 @@
+<h:form id="showForm" 
+      xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:c="http://java.sun.com/jsp/jstl/core"
+	  xmlns:p="http://primefaces.org/ui" >
+	<p:dialog id="showDialog" widgetVar="showDialog" header="查看消息" resizable="false" showEffect="fade" hideEffect="fade">
+		<p:panelGrid id="showPanelGrid">
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="班级代码"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.classcode}"/>
+				</p:column>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="班级名称"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.className}"/>
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="班主任"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.displayAdviser}"/>
+				</p:column>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="学员代码"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.userName}"/>
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="消息标题"/>
+				</p:column>
+				<p:column colspan="3" styleClass="maxLength">
+					<h:outputText value="#{membermsgReqAction.membermsg.msgTitle}"/>
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="消息内容"/>
+				</p:column>
+				<p:column colspan="3" styleClass="maxLength">
+					<h:outputText value="#{membermsgReqAction.membermsg.msgContent}"/>
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="发送时间"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.sentTimeStr}"/>
+				</p:column>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="回复人"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.teacherName}"/>
+				</p:column>
+			</p:row>
+
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="回复内容"/>
+				</p:column>
+				<p:column colspan="3" styleClass="maxLength">
+					<h:outputText value="#{membermsgReqAction.membermsg.replyContent}"/>
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="状态"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.statusStr}"/>
+				</p:column>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="回复时间"/>
+				</p:column>
+				<p:column styleClass="addContentClass">
+					<h:outputText value="#{membermsgReqAction.membermsg.replyTimeStr}"/>
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="修改日志"/>
+				</p:column>
+				<p:column colspan="3" styleClass="maxLength">
+					<h:link value="#{(membermsgReqAction.logCount!=0)?'【日志查看】':''}" 
+						outcome="/page/membermsglog/membermsgLogInfo" includeViewParams="true" target="_blank">
+						<f:param name="msgID" value="#{membermsgReqAction.membermsg.msgID}"/>
+					</h:link>
+				</p:column>
+			</p:row>
+		</p:panelGrid>
+		
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:commandButton type="button" value="关闭" onclick="showDialog.hide();" />
+			</h:panelGroup>
+		</f:facet>
+	</p:dialog>
+</h:form>

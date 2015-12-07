@@ -1,0 +1,28 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	
+	<h:outputLabel value="辅导选择">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="uMajorName" value="#{comboReqAction.updateCombo.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" >
+		<p:ajax event="change" update=":copyForm:uCourseID" listener="#{comboAction.changeMajorID}" />
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="从哪门课程复制计划项" />
+	<p:selectOneMenu  id="uCourseID"  value="#{tempChapterReqAction.copyCourseID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+		<f:selectItems value="#{comboAction.courseList}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseID}"/>
+	</p:selectOneMenu>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<h:inputHidden value="#{tempChapterReqAction.courseID}"/>
+			<p:commandButton id="copyBtn" value="复制" onstart="return doCopyChapter();" update=":info" 
+				actionListener="#{tempChapterReqAction.copySubmit}" oncomplete="optResult('copyDialog',args,3,oloverWarn(args));"/>
+			<p:commandButton type="button" value="关闭" onclick="copyDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

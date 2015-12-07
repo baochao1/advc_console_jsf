@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>考期管理</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+	<script>
+	function changeName(){
+		var majorID=$("#addForm\\:aMajorID").find("option:selected").val();
+		if(majorID!=""){
+			var majorName=$("#addForm\\:aMajorID").find("option:selected").text();
+			$("#addForm\\:aMajorName").val(majorName);
+		}
+	}
+	function closeConfirm(){
+		if(confirm("确定关闭该考期下的所有班级吗？\r\n该操作将导致学员无法进入班级！")){
+			if(confirm("关闭操作不可逆，请最后确认！")){
+				return true;
+			}
+		}
+		return false;
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(testtermAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid id="searchPanel" columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="所属辅导" />
+			<p:selectOneMenu id="sMajorID" value="#{testtermAction.searchTestterm.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel value="考期日期"  />
+			<p:calendar value="#{testtermAction.searchTestterm.termDate}" pattern="yyyy-MM" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			
+			<h:outputLabel value="考期名称"/>
+			<h:panelGroup style="display:block;">
+				<p:autoComplete value="#{testtermAction.searchTestterm.termName}" completeMethod="#{comRequestMethod.completeTermName}" var="termName" itemLabel="#{termName}" itemValue="#{termName}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<p:outputLabel/>
+			<p:outputLabel/>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{testtermAction.search}"  rendered="#{testtermAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="loadDialog.hide();addDialog.show();" 
+				actionListener="#{testtermReqAction.add}" rendered="#{testtermReqAction.optAuth}" update=":addForm:addDialog" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{testtermAction.heighti2}" 
+			widgetVar="testterm"
+			id="testtermList"
+			binding="#{testtermAction.pageTable}"
+			lazy="true"
+			value="#{testtermAction.testtermPage}" 
+			rows="20"
+			var="testterm" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="操作" width="5%">
+				<p:rowToggler />
+			</p:column>
+			<p:rowExpansion>
+			<p:panelGrid columns="2" style="width:300px; ">
+				<p:outputLabel value="关闭班级"/>
+				<p:commandLink value="批量关班" update=":info" onstart="return closeConfirm();" actionListener="#{testtermReqAction.closeClass(testterm.termID,0)}" rendered="#{testtermReqAction.optAuth}"/>
+				
+				<p:outputLabel value="操作"/>
+				<h:panelGroup style="display:block;">
+					<p:commandLink value="修改" update=":loadForm:loadDialog" oncomplete="addDialog.hide();loadDialog.show();" actionListener="#{testtermReqAction.update(testterm.termID)}" rendered="#{testtermReqAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="删除" onstart="return confirmDel();" update=":info" actionListener="#{testtermReqAction.delete(testterm.termID)}" rendered="#{testtermReqAction.optAuth}"/>
+				</h:panelGroup>
+			</p:panelGrid>
+			</p:rowExpansion>
+			<p:column headerText="辅导" width="16%" >
+				<h:outputText value="#{testterm.majorName}"/>
+			</p:column>
+			<p:column headerText="考期名称" width="25%" >
+				<h:outputText value="#{testterm.termName}"/>
+			</p:column>
+			<p:column headerText="考期日期" width="10%" >
+				<h:outputText value="#{testterm.termDateStr}"/>
+			</p:column>
+			<p:column headerText="考期类型" width="10%" >
+				<h:outputText value="#{testterm.termTypeStr}"/>
+			</p:column>
+			<p:column headerText="状态" width="7%" style="text-align:center">
+				<p:commandLink value="#{testterm.statusStr}" update=":searchForm:testtermList :info" actionListener="#{testtermReqAction.changeStatus(testterm.termID,testterm.status)}" rendered="#{testtermAction.optAuth}"/>
+				<h:outputText value="#{testterm.statusStr}" rendered="#{!testtermAction.optAuth}"/>
+			</p:column>
+			<p:column headerText="添加者" width="12%" >
+				<h:outputText value="#{testterm.creatorName}"/>
+			</p:column>
+			<p:column headerText="添加时间" width="12%" >
+				<h:outputText value="#{testterm.createTimeStr}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="testtermList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 添加页面 -->
+	<h:form id="addForm" >
+		<ui:include src="load/testtermAdd.xhtml"/>
+	</h:form>
+	<!-- 修改页面 -->
+	<h:form id="loadForm" >
+		<ui:include src="load/testtermUpdate.xhtml"/>
+	</h:form>
+</h:body>
+</html>

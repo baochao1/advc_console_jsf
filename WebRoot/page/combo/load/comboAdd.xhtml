@@ -1,0 +1,41 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	
+	<h:outputLabel value="辅导选择">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="uMajorName" value="#{comboReqAction.updateCombo.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" >
+		<p:ajax event="change" update=":addForm:uCourseID" listener="#{comboAction.changeMajorID}" />
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="课程选择">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectCheckboxMenu id="uCourseID" value="#{comboReqAction.updateCombo.courseIDs}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+		<f:selectItems value="#{comboAction.courseList}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseID}"/>
+	</p:selectCheckboxMenu>
+	
+	<h:outputLabel value="套餐名称">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText value="#{comboReqAction.updateCombo.comboName}" styleClass="minLength"/>
+	
+	<h:outputLabel value="套餐代码">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText value="#{comboReqAction.updateCombo.comboCode}" styleClass="minLength"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{comboReqAction.updateCombo.comboID}"/>
+			<h:inputHidden value="#{comboReqAction.flag}"/>
+			<p:commandButton value="提交" actionListener="#{comboReqAction.updateSubmit}" update="msg" oncomplete="optResult('addDialog',args,'#{comboReqAction.flag}');"/>
+			<p:commandButton type="button" value="关闭" onclick="addDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

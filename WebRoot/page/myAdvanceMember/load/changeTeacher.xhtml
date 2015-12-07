@@ -1,0 +1,22 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+		
+	<h:outputLabel value="学员姓名" />
+	<p:outputLabel value="#{myAdvanceMemberReqAction.member.userName}" />
+	
+	<h:outputLabel value="老师选择" />
+	<p:selectOneMenu value="#{myAdvanceMemberReqAction.member.teacherID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+		<f:selectItems value="#{myAdvanceMemberAction.gdbteacherList}" var="teacher" itemLabel="#{teacher.teacherName}" itemValue="#{teacher.teacherID}"/>
+	</p:selectOneMenu>
+	
+  	<f:facet name="footer">
+  		<h:inputHidden value="#{myAdvanceMemberReqAction.member.id}"/>
+		<h:panelGroup style="text-align:center;display:block;">
+			<p:commandButton value="提交" actionListener="#{myAdvanceMemberReqAction.updateMemberTeacher}" oncomplete="optResult('changeTDialog',args,3);"/>
+			<p:commandButton type="button" value="关闭" onclick="changeTDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+	
+</p:panelGrid>

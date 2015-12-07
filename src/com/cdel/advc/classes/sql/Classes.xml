@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="classes">
+	<!-- 班级管理列表查询 -->
+	<sql id="getClassesList_classManage">
+		SELECT
+		DISTINCT(C.classID) classID, C.strategyID, C.termID, C.className, C.classCode,
+		C.displayAdviser,C.classMsg1Time,C.classMsg2Time,
+		C.currCount, C.classDesc, C.createTime, C.noticeTime, C.status, C.areaID,
+		C.hasFull, AT.termName, TEA2.teacherName,C.adviserTeacherCode 
+		FROM
+		ADVC_CLASS C WITH(NOLOCK)
+		INNER JOIN
+		ADVC_CLASS_STRATEGY CS WITH(NOLOCK) ON C.strategyID = CS.strategyID
+		INNER JOIN
+		ADVC_MAJOR M WITH(NOLOCK) ON CS.majorID = M.majorID	<!-- 网站，辅导条件 -->
+		<if test="userName != null and userName !=''">
+			LEFT JOIN
+			ADVC_MEMBER_CLASS MC WITH(NOLOCK) ON C.classID = MC.classID
+			LEFT JOIN
+			ADVC_MEMBER MR WITH (NOLOCK) ON MC.userID = MR.userID	<!-- 学员名称条件 -->
+		</if>
+		LEFT JOIN
+		ADVC_CLASS_TEACHER CT WITH (NOLOCK) ON CT.classID = C.classID 
+		LEFT JOIN
+		ADVC_TEACHER TEA WITH (NOLOCK) ON CT.TeacherID = TEA.TeacherID <!--组织条件 -->
+		INNER JOIN
+		ADVC_TESTTERM AT WITH (NOLOCK) ON AT.termID = C.termID   <!-- 得到考期名称 -->
+		LEFT JOIN
+		ADVC_CLASS_TEACHER CT2 WITH (NOLOCK) ON CT2.classID = C.classID AND CT2.teacherType = 1 
+		LEFT JOIN
+		ADVC_TEACHER TEA2 WITH (NOLOCK) ON TEA2.teacherID = CT2.teacherID 
+		WHERE M.status = 1 
+		<if test="strategyID != null"> AND C.strategyID=#{strategyID} </if>
+		<if test="classID != null"> AND C.classID=#{classID} </if>
+		<if test="siteID != null"> AND M.siteID=#{siteID} </if>
+		<if test="majorID != null"> AND M.majorID=#{majorID} </if>
+		<if test="areaID != null"> AND C.areaID=#{areaID} </if>
+		<if test="userName != null and userName !=''"> AND MC.status = 1 AND MR.userName=#{userName} </if>
+		<if test="className != null and className !=''"> AND C.className LIKE #{className}+'%' </if>
+		<if test="status != null"> AND C.status=#{status} </if>
+		<if test="orgID != null"> AND TEA.orgID=#{orgID} </if>
+		<if test="manager != null and manager !=''"><!-- 管理员或班主任查询 -->
+			AND (
+			C.displayAdviser = #{manager} OR
+			TEA.teacherCode = #{manager} OR
+			TEA.teacherName = #{manager})
+		</if>
+		<if test="teacherID != null"> and 
+			<if test="teachUser">
+			(
+				<foreach collection="sameOrgTeachers" index="index" item="sameOrgTeacher" open="(" close=")" separator=" or ">   
+					ct.teacherID = #{sameOrgTeacher} 
+				</foreach>
+			)
+			</if>
+			<if test="!teachUser"> ct.teacherID=#{teacherID} </if>
+		</if>
+	</sql>
+
+	<!-- 分页 查询个数语句 -->
+	<select id="countClasses" resultType="int">
+		SELECT COUNT(classID) FROM (
+			<include refid="getClassesList_classManage" />
+		) AS myTable
+	</select>
+
+	<!-- 分页查询列表语句 -->
+	<select id="findPageClasses" parameterType="Classes" resultType="Classes">
+		SELECT * FROM (
+			SELECT t.*, DATEDIFF(day, classMsg1Time, getDate()) classMsg1Day, DATEDIFF(day, classMsg2Time, getDate()) classMsg2Day,
+			ROW_NUMBER() Over(ORDER BY t.classID DESC) AS rowNum
+			FROM
+			(
+				<include refid="getClassesList_classManage" />
+			)t
+		) AS myTable WHERE rowNum BETWEEN #{rowNumStart} AND #{rowNumEnd}
+	</select>
+
+	<select id="getClasses" parameterType="Integer" resultType="Classes">
+		SELECT C.*, CS.limitNum, CS.majorID, CS.courseSet 
+ 		FROM ADVC_CLASS C WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID=CS.strategyID
+        WHERE C.classID = #{classID}
+	</select>    	
+    
+	<!-- 更新班级语句 -->
+	<update id="updateClasses">
+		UPDATE ADVC_CLASS
+		<set>
+			<if test="strategyID !=null"> strategyID=#{strategyID},</if>
+			<if test="termID !=null"> termID=#{termID},</if>
+			<if test="className !=null and className !=''"> className=#{className:VARCHAR},</if>
+			<if test="classCode !=null and classCode !=''"> classCode=#{classCode:VARCHAR},</if>
+			<if test="displayAdviser != null and displayAdviser != '' and displayAdviser != '-1'"> displayAdviser=#{displayAdviser:VARCHAR},</if>
+			<if test="displayAdviser == '-1'"> displayAdviser=null,</if>
+			<if test="adviserTeacherCode != null and adviserTeacherCode != '' and adviserTeacherCode != '-1'"> adviserTeacherCode=#{adviserTeacherCode},</if>
+			<if test="adviserTeacherCode == '-1'"> adviserTeacherCode=null,</if>
+			<if test="currCount !=null"> currCount=#{currCount},</if>
+			<if test="classDesc !=null and classDesc !=''"> classDesc=#{classDesc},</if>
+			<if test="createTime !=null"> createTime=#{createTime},</if>
+			<if test="noticeTitle !=null and noticeTitle !=''"> noticeTitle=#{noticeTitle:VARCHAR},</if>
+			<if test="noticeContent !=null and noticeContent !=''"> noticeContent=#{noticeContent},</if>
+			<if test="noticeCreator !=null"> noticeCreator=#{noticeCreator},</if>
+			<if test="noticeTime !=null"> noticeTime=#{noticeTime},</if>
+			<if test="status !=null"> status=#{status},</if>
+			<if test="hasFull !=null"> hasFull=#{hasFull},</if>
+			<if test="classMsg1Time !=null"> classMsg1Time=#{classMsg1Time},</if>
+			<if test="classMsg2Time !=null"> classMsg2Time=#{classMsg2Time},</if>
+			updateTime=getdate()
+		</set>
+		WHERE classID=#{classID}
+	</update>
+	
+	<select id="findClassNames" parameterType="String" resultType="String">
+    	SELECT top 20 className FROM ADVC_CLASS WHERE className like '%'+#{className}+'%' 
+    	order by className 
+    </select>
+	
+	<!-- 查询过滤条件,查询辅导下的班级 （通过分班策略） -->
+	<select id="getClassesListByMajorID" parameterType="Integer" resultType="Classes">
+		SELECT
+		DISTINCT C.classID, C.className
+		FROM
+		ADVC_CLASS C WITH (NOLOCK)
+		LEFT JOIN
+		ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID=CS.strategyID
+		WHERE
+		CS.majorID=#{majorID}
+		ORDER BY
+		C.className,C.classID
+	</select>
+	
+	<!-- 查询过滤条件,查询辅导下的班级 （通过分班策略） -->
+	<select id="getClassesListByMajorID4Status" parameterType="Integer" resultType="Classes">
+		SELECT
+		DISTINCT C.classID, C.className
+		FROM
+		ADVC_CLASS C WITH (NOLOCK)
+		LEFT JOIN
+		ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID=CS.strategyID
+		WHERE
+		CS.majorID=#{majorID} and C.status=1 
+		ORDER BY
+		C.className,C.classID
+	</select>
+	
+	<select id="getClassesListByMajorID2" parameterType="Map" resultType="Classes">
+		SELECT 
+		<if test="num == 0"> top 50 </if>
+		<if test="num == 1"> top 100 </if>
+		C.classID, C.className
+		FROM ADVC_CLASS C WITH (NOLOCK)
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID=CS.strategyID
+		WHERE CS.majorID=#{majorID} and C.status=1 
+	</select>
+    
+    <select id="getClassesList4I" parameterType="Integer" resultType="Classes">
+		SELECT DISTINCT C.classID, C.className, M.majorID
+		FROM ADVC_CLASS C WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID=CS.strategyID
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CS.majorID = M.majorID
+		where M.siteID=#{siteID}
+		ORDER BY M.majorID,C.className,C.classID
+	</select>
+	
+	<insert id="insertClasses">
+		INSERT INTO ADVC_CLASS (
+		updateTime,
+		<trim prefix="" suffixOverrides=",">
+			<if test="strategyID != null"> strategyID ,</if>
+			<if test="termID != null"> termID ,</if>
+			<if test="className != null"> className ,</if>
+			<if test="classCode != null"> classCode ,</if>
+			<if test="displayAdviser != null"> displayAdviser ,</if>
+			<if test="adviserTeacherCode != null"> adviserTeacherCode ,</if>
+			<if test="currCount != null"> currCount ,</if>
+			<if test="classDesc != null"> classDesc ,</if>
+			<if test="createTime != null"> createTime ,</if>
+			<if test="noticeTitle != null"> noticeTitle ,</if>
+			<if test="noticeContent != null"> noticeContent ,</if>
+			<if test="noticeCreator != null"> noticeCreator ,</if>
+			<if test="noticeTime != null"> noticeTime ,</if>
+			<if test="status != null"> status ,</if>
+			<if test="areaID != null"> areaID ,</if>
+		</trim>
+		)
+		VALUES (
+		 getdate(),
+		<trim prefix="" suffixOverrides=",">
+			<if test="strategyID != null"> #{strategyID},</if>
+			<if test="termID != null"> #{termID},</if>
+			<if test="className != null"> #{className},</if>
+			<if test="classCode != null"> #{classCode},</if>
+			<if test="displayAdviser != null"> #{displayAdviser},</if>
+			<if test="adviserTeacherCode != null"> #{adviserTeacherCode},</if>
+			<if test="currCount != null"> #{currCount},</if>
+			<if test="classDesc != null"> #{classDesc},</if>
+			<if test="createTime != null"> #{createTime},</if>
+			<if test="noticeTitle != null"> #{noticeTitle},</if>
+			<if test="noticeContent != null"> #{noticeContent},</if>
+			<if test="noticeCreator != null"> #{noticeCreator},</if>
+			<if test="noticeTime != null"> #{noticeTime},</if>
+			<if test="status != null"> #{status},</if>
+			<if test="areaID != null"> #{areaID},</if>
+		</trim>
+		 
+		)
+		<selectKey keyProperty="classID" resultType="int">
+			SELECT @@IDENTITY AS classID
+		</selectKey>
+	</insert>
+	
+	<select id="getCountClassesByTermID" parameterType="Integer" resultType="Integer">
+		SELECT count(C.classID)	FROM ADVC_CLASS C WITH (NOLOCK) where C.termID = #{termID}
+	</select>
+	
+	<update id="updateClassesStatusInTerm" parameterType="Classes">
+		UPDATE ADVC_CLASS SET updateTime=getdate(),status = #{status} WHERE termID = #{termID} 
+	</update>
+	
+	<update id="updateClassesMemberCount">
+		UPDATE ADVC_CLASS SET updateTime=getdate(), currCount = currCount + #{changeCount} WHERE classID = #{classID} AND (currCount + #{changeCount}) &gt;= 0
+	</update>
+	
+	<select id="getCPAClassesCount" resultType="int">
+		SELECT COUNT(classID) FROM ADVC_CLASS WITH (NOLOCK)	WHERE termID IN (
+			SELECT termID FROM ADVC_TESTTERM WITH (NOLOCK) WHERE majorID = #{majorID} ) AND areaID = -1
+	</select>
+	
+	<select id="getTeacherClasses" parameterType="Integer" resultType="Classes">
+		SELECT C.*, T.teacherID,am.majorID,am.majorName  
+        FROM ADVC_CLASS C WITH (NOLOCK) 
+        LEFT JOIN ADVC_CLASS_TEACHER T WITH (NOLOCK) ON C.classID = T.classID 
+        left join ADVC_CLASS_STRATEGY ac  WITH (NOLOCK) on ac.strategyID = C.strategyID
+        left join ADVC_MAJOR am WITH (NOLOCK) on am.majorID = ac.majorID
+        where T.teacherID = #{teacherID} 
+        ORDER BY am.majorID 
+    </select>   
+     	
+	<select id="getClassesByTerm" parameterType="Classes" resultType="Classes">
+		SELECT C.* 
+		<if test="teacherID != null"> ,T.teacherID </if>
+		FROM ADVC_CLASS C WITH (NOLOCK)
+		LEFT JOIN ADVC_CLASS_TEACHER T WITH (NOLOCK) ON C.classID = T.classID 
+		<if test="teacherID != null"> AND T.teacherID = #{teacherID} </if>
+		<where>
+			<if test="termID != null"> AND termID=#{termID}</if>
+		</where>
+		order by C.classID asc
+    </select>   
+    
+    <select id="getCountClassByStrategyID" parameterType="Integer" resultType="Integer">
+		select count(*) 
+		from ADVC_CLASS WITH (NOLOCK) where strategyID=#{strategyID}
+	</select>
+	
+    <select id="getClassByStrategyID" parameterType="Classes" resultType="Classes">
+		select className,classID 
+		from ADVC_CLASS WITH (NOLOCK) where strategyID=#{strategyID} and status=#{status}
+	</select>
+	
+	<select id="getNotFullClasses" parameterType="Classes" resultType="Classes">
+		SELECT * FROM ADVC_CLASS WITH (NOLOCK) 
+		WHERE currCount &lt; #{limitNum} and strategyID=#{strategyID} and termID=#{termID} and status=1 and hasFull = 0
+	</select>
+    
+	<select id="checkCode" parameterType="Classes" resultType="Integer">
+    	SELECT count(classID) FROM ADVC_CLASS WITH (NOLOCK) 
+    	<where>
+    		<if test="classID != null"> AND classID!=#{classID} </if>
+    		<if test="classCode != null and classCode != ''"> AND classCode=#{classCode} </if>
+    	</where>
+    </select>
+    
+	<select id="getZhuRenClassList" parameterType="String" resultType="Classes">
+    	SELECT className,classID 
+    	FROM ADVC_CLASS WITH (NOLOCK) where adviserTeacherCode=#{teacherCode}
+    </select>
+
+</mapper>

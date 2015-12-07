@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sendemail">
+   
+    <insert id="insertSendEmail">
+        INSERT INTO ADVC_CLASS_MAIL ( 
+            <trim prefix="" prefixOverrides=",">
+                <if test="classID !=null"> classID ,</if>
+            	<if test="title !=null and title !='' "> title,</if>
+            	<if test="content !=null and content !='' ">content ,</if>
+            	<if test="sendTime !=null">sendTime,</if>
+            	<if test="sender !=null">sender</if>
+            </trim>
+        )
+        VALUES (
+	        <trim prefix="" prefixOverrides=",">
+                <if test="classID !=null"> #{classID} ,</if>
+            	<if test="title !=null and title !='' "> #{title} ,</if>
+            	<if test="content !=null and content !='' "> #{content} ,</if>
+            	<if test="sendTime !=null"> #{sendTime} ,</if>
+            	<if test="sender !=null"> #{sender}</if>
+            </trim>
+        )
+    </insert>
+    
+    <sql id="SendEmailList_body">
+	   	SELECT sms.mailID, sms.classID, title, content, sendTime, sender,ac.className,au.teacherName,
+             ROW_NUMBER() Over(ORDER BY mailID DESC) AS rowNum 
+        FROM ADVC_CLASS_MAIL sms WITH (NOLOCK) 
+        left join ADVC_CLASS ac WITH (NOLOCK) ON sms.classID = ac.classID
+        LEFT JOIN ADVC_TEACHER au WITH (NOLOCK) ON sms.sender = au.teacherID
+	   	<where>
+	   		<if test="classID !=null"> sms.classID = #{classID}</if>
+	   	</where>
+    </sql>
+
+    <select id="countSendEmail" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="SendEmailList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageSendEmail" parameterType="SendEmail" resultType="SendEmail">
+        SELECT * FROM (
+            <include refid="SendEmailList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="getSendEmail" parameterType="int" resultType="SendEmail">
+        SELECT sms.mailID, sms.classID, title, content, sendTime, sender,ac.className,au.teacherName
+        FROM ADVC_CLASS_MAIL sms WITH (NOLOCK) 
+        left join ADVC_CLASS ac WITH (NOLOCK) ON sms.classID = ac.classID
+        LEFT JOIN ADVC_TEACHER au WITH (NOLOCK) ON sms.sender = au.teacherID
+        where mailID = #{mailID} 
+    </select>
+    
+</mapper>

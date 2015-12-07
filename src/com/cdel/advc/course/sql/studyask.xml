@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="studyask">
+	<select id="getCountByChapterID" parameterType="java.lang.Integer" resultType="int">
+		SELECT COUNT(*) FROM ADVC_TEMP_CHAPTER_STUDYASK WITH (NOLOCK)
+		where chapterID=#{chapterID} 
+	</select>
+	
+	<select id="getAskByChapterID" parameterType="java.lang.Integer" resultType="StudyAsk">
+		SELECT * FROM ADVC_TEMP_CHAPTER_STUDYASK WITH (NOLOCK)
+		where chapterID=#{chapterID} 
+	</select>
+	
+	<select id="getStudyAskList" parameterType="StudyAsk" resultType="StudyAsk">
+        SELECT askID, chapterID, type, content, suggestStyTime 
+        FROM ADVC_TEMP_CHAPTER_STUDYASK WITH (NOLOCK) 
+        <where>
+        	<if test="chapterID != null"> and chapterID=#{chapterID}</if>
+        	<if test="type != null"> and type=#{type}</if>
+        </where>
+        order by chapterID,type 
+	</select>
+	
+	<select id="getStudyAskList2" parameterType="Integer" resultType="StudyAsk">
+        SELECT askID, chapterID, type, content, suggestStyTime 
+        FROM ADVC_TEMP_CHAPTER_STUDYASK WITH (NOLOCK) where chapterID=#{chapterID} 
+        order by chapterID,type 
+	</select>
+	
+	<select id="getStudyAskTypeList" parameterType="Integer" resultType="Integer">
+        SELECT type FROM ADVC_TEMP_CHAPTER_STUDYASK WITH (NOLOCK) where chapterID=#{chapterID} order by type
+	</select>
+	
+	<select id="getStudyAsk" parameterType="Integer" resultType="StudyAsk">
+        SELECT askID, chapterID, type, content, suggestStyTime 
+        FROM ADVC_TEMP_CHAPTER_STUDYASK WITH (NOLOCK) where askID=#{askID}
+	</select>
+	
+	<insert id="insertStudyAsk">
+        INSERT INTO ADVC_TEMP_CHAPTER_STUDYASK ( chapterID,type,content,suggestStyTime )
+        VALUES ( #{chapterID},#{type},#{content},#{suggestStyTime})
+        <selectKey keyProperty="askID" resultType="int">
+        	SELECT @@IDENTITY AS askID
+        </selectKey>
+    </insert>
+
+    <update id="updateStudyAsk">
+        UPDATE ADVC_TEMP_CHAPTER_STUDYASK set content=#{content},suggestStyTime=#{suggestStyTime}
+        <if test="type != null">,type=#{type}</if>
+		where askID=#{askID}
+    </update>
+    
+    <delete id="deleteStudyAsk">
+    	delete from ADVC_TEMP_CHAPTER_STUDYASK where askID=#{askID}
+    </delete>
+    
+    <delete id="deleteBatchStudyAsk" parameterType="Integer">
+    	DELETE ADVC_TEMP_CHAPTER_STUDYASK WHERE chapterID 
+    	in(select chapterID from ADVC_TEMP_CHAPTER where courseID = #{courseID})
+    </delete>
+
+</mapper>

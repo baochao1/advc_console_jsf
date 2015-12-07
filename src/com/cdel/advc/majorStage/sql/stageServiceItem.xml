@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="stageserviceitem">
+    
+    <select id="getStageServiceItemList" parameterType="StageServiceItem" resultType="StageServiceItem">
+		select a.serviceID, b.serviceName 
+		from advc_home_Stage_ServiceItem a WITH (NOLOCK), advc_home_ServiceItem b WITH (NOLOCK)
+		where a.serviceID=b.serviceID and a.majorID=#{majorID} and a.stageID=#{stageID} 
+		and b.status=1
+    </select>
+    
+    <delete id="deleteStageServiceItem" parameterType="Integer">
+		delete from advc_home_Stage_ServiceItem where majorID=#{majorID}
+    </delete>
+    
+    <insert id="insertStageServiceItemList">
+    	insert into advc_home_Stage_ServiceItem (majorID, stageID, serviceID ) 
+    	<foreach collection="list" item="m" open="(" close=")" separator=" union all ">
+        	select #{m.majorID}, #{m.stageID}, #{m.serviceID} 
+        </foreach>
+    </insert>
+    
+</mapper>

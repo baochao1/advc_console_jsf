@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membercallnocall">
+	<sql id="pageSql_body">
+		select distinct(a.classID) classID,a.userID,tea.teacherName,ac.displayAdviser,
+		a.createTime,bm.userName,ac.className 
+		from ADVC_MEMBER_CLASS a WITH (NOLOCK) 
+		left join ADVC_MEMBER_CALL_RECORD b WITH (NOLOCK) on a.classID = b.classID AND a.userID = b.userID 
+		LEFT JOIN ADVC_MEMBER bm WITH (NOLOCK) on a.userID=bm.userID 
+		LEFT JOIN ADVC_CLASS ac WITH (NOLOCK) ON a.classID = ac.classID 
+		LEFT JOIN ADVC_CLASS_STRATEGY CS with (nolock) ON ac.strategyID = CS.strategyID 
+		LEFT JOIN ADVC_MAJOR M with (nolock) ON CS.majorID = M.majorID 
+		LEFT JOIN ADVC_CLASS_TEACHER ct with (nolock) ON ct.classID = ac.classID 
+		LEFT JOIN ADVC_CLASS_TEACHER ct2 WITH (NOLOCK) ON ct2.classID = ac.classID AND ct2.teacherType = 1 
+		LEFT JOIN ADVC_TEACHER tea with (nolock) ON ct2.TeacherID = tea.TeacherID 
+		<if test="teacherName !=null and teacherName!=''"> 
+			LEFT JOIN ADVC_TEACHER tea2 with (nolock) ON ac.adviserTeacherCode = tea2.teacherCode
+		</if>
+		<if test="orgSet != null"> 
+			LEFT JOIN ADVC_TEACHER tt3 WITH (NOLOCK) ON tt3.teacherCode = ac.adviserTeacherCode 
+		</if>
+		where b.callRecordID is null and a.status=1 and ac.status=1 
+		<if test="siteID != null"> and M.siteID=#{siteID} </if>
+		<if test="className !=null and className!=''"> and ac.className=#{className} </if>
+		<if test="orgSet !=null and orgSet !=''"> and tt3.orgID in (${orgSet}) </if>
+		<if test="teacherID != null"> and 
+			<if test="teachUser">
+			(
+				<foreach collection="sameOrgTeachers" index="index" item="sameOrgTeacher" open="(" close=")" separator=" or ">   
+					ct.teacherID = #{sameOrgTeacher} 
+				</foreach>
+			)
+			</if>
+			<if test="!teachUser"> ct.teacherID=#{teacherID} </if>
+		</if>
+		<if test="teacherName !=null and teacherName!=''"> and (tea.teacherName like #{teacherName}+'%' or ac.displayAdviser like #{teacherName}+'%' or tea2.teacherName like #{teacherName}+'%' ) </if>
+	</sql>
+    
+	<select id="findPageMemberCallNoCall" resultType="MemberCallNoCall" parameterType="MemberCallNoCall">
+		SELECT * FROM (
+			SELECT t.*,ROW_NUMBER() Over( ORDER BY 
+			<if test="sortField == null or sortField == ''"> t.createTime asc </if>
+			<if test="sortField != null and sortField != ''"> t.createTime  
+				<if test="sortOrder == 'DESCENDING'"> desc </if>
+				<if test="sortOrder == 'ASCENDING'"> asc  </if>
+			</if>
+			 ) AS rowNum 
+		    FROM
+		    (
+				<include refid="pageSql_body" />
+             )t
+		) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+	</select>
+
+	<select id="countMemberCallNoCall" resultType="int">
+		SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable
+	</select>
+	
+</mapper>

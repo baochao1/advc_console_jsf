@@ -1,0 +1,70 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:p="http://primefaces.org/ui" id="setRuleDialog" header="设置策略" widgetVar="setRuleDialog" resizable="false" showEffect="fade" hideEffect="fade" height="200">
+	
+	<p:panelGrid id="showPanelGrid" columns="2">
+		<h:outputLabel value="规则设置">
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+			
+		<h:panelGroup rendered="#{smsTemplateAction.updateSmsTemplate.sendType == 1 }">
+			<p:outputLabel value="距离"/>
+			<p:spacer width="5"/>
+			
+			<p:selectOneMenu value="#{smsTemplateAction.sendRuleOne.stageID }" style="width:200px;" panelStyleClass="minLength" disabled="true">
+				<f:selectItems value="#{majorStageOther.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+			</p:selectOneMenu>
+			<p:spacer width="5"/>
+			
+			<p:selectOneMenu value="#{smsTemplateAction.sendRuleOne.startOrEnd }" style="width:100px;" panelStyleClass="tinyLength" >
+				<f:selectItems value="#{smsTemplateReqAction.startOrEnd.entrySet()}" var="st" itemLabel="#{st.value}" itemValue="#{st.key}"/>
+			</p:selectOneMenu>
+			<p:separator />
+			
+			<p:spinner value="#{smsTemplateAction.sendRuleOne.dayNum }" size="2" min="0" max="10"/>
+			<p:spacer width="5"/>
+			
+			<p:outputLabel value="天"/>
+			<p:separator />
+			
+			<h:inputText id="hourone" value="#{smsTemplateAction.sendRuleOne.hour }" />
+			<p:slider for="hourone" minValue="0" maxValue="23" />
+			<p:spacer width="5"/>
+			
+			<p:outputLabel value="时"/>
+		</h:panelGroup>
+		
+		<h:panelGroup rendered="#{smsTemplateAction.updateSmsTemplate.sendType == 2 }">
+			<p:outputLabel value="每间隔"/>
+			<p:spacer width="5"/>
+			
+			<p:spinner value="#{smsTemplateAction.sendRuleTwo.weekInterval }" size="2" min="1" max="10"/>
+			<p:spacer width="5"/>
+			
+			<p:outputLabel value="周"/>
+			<p:separator />
+			
+			<p:selectOneMenu value="#{smsTemplateAction.sendRuleTwo.weekDay }" style="width:100px;" panelStyleClass="tinyLength" >
+				<f:selectItems value="#{smsTemplateReqAction.week.entrySet()}" var="st" itemLabel="#{st.value}" itemValue="#{st.key}"/>
+			</p:selectOneMenu>
+			<p:separator />
+			
+			<h:inputText id="hour" value="#{smsTemplateAction.sendRuleTwo.hour }" />
+			<p:slider for="hour" minValue="0" maxValue="23" />
+			<p:spacer width="5"/>
+			
+			<p:outputLabel value="时"/>
+		</h:panelGroup>
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{smsTemplateAction.updateSmsTemplate.sendType}"/>
+			<h:inputHidden value="#{smsTemplateAction.updateSmsTemplate.templateID}"/>
+			<p:commandButton value="提交" actionListener="#{smsTemplateAction.setRuleSubmit}" update="msg" oncomplete="optResult('setRuleDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="setRuleDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

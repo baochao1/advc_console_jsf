@@ -1,0 +1,61 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showDialog" header="查看短信"
+	widgetVar="showDialog" resizable="false" showEffect="fade" hideEffect="fade">
+	<p:panelGrid id="showPanelGrid">
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="班级名称"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{membermessageAllReqAction.msg.className}"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="发送人"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{membermessageAllReqAction.msg.senderName}"/>
+			</p:column>
+		</p:row>
+
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="发送时间"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{membermessageAllReqAction.msg.sentTimeStr}"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="接受人"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{membermessageAllReqAction.msg.receiverName}"/>
+			</p:column>
+		</p:row>
+
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="消息标题"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{membermessageAllReqAction.msg.msgTitle}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="消息内容"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{membermessageAllReqAction.msg.msgContent}"/>
+			</p:column>
+		</p:row>
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="showDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

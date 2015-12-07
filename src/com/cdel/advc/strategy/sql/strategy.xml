@@ -1,0 +1,112 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="strategy">
+
+    <sql id="getStrategyList_body">
+        SELECT CS.strategyID, CS.majorID, CS.strategyType, CS.setDesc, CS.courseRegex, CS.courseSet, CS.limitNum, 
+        CS.priorityLevel, CS.creator, CS.createTime, CS.status, CS.mainMajorID, M.majorName, au.realName creatorName, classNum,
+        ROW_NUMBER() Over(ORDER BY CS.strategyID DESC) AS rowNum 
+        FROM ADVC_CLASS_STRATEGY CS WITH (NOLOCK) 
+        LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CS.majorID = M.majorID
+        LEFT JOIN (select strategyID,count(classID) classNum from ADVC_CLASS WITH (NOLOCK) where status = 1 group by strategyID) cn ON cn.strategyID = CS.strategyID
+        LEFT JOIN RAD_ADMIN_USER au WITH (NOLOCK)  ON cs.creator = au.adminID
+        where M.status=1 
+        <if test="siteID !=null"> AND M.siteID = #{siteID}</if>
+        <if test="strategyID !=null"> AND CS.a.siteID = #{a.siteID}</if>
+        <if test="majorID !=null"> AND CS.majorID = #{majorID}</if>
+        <if test="setDesc != null and setDesc != ''"> AND CS.setDesc = #{setDesc}</if>
+        <if test="status !=null"> AND CS.status=#{status}</if>
+    </sql>
+
+    <select id="countStrategy" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getStrategyList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageStrategy" parameterType="Strategy" resultType="Strategy">
+        SELECT * FROM (
+            <include refid="getStrategyList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="getStrategyDesc" parameterType="String" resultType="String">
+        SELECT top 30 setDesc FROM ADVC_CLASS_STRATEGY WITH (NOLOCK) where setDesc like '%'+#{setDesc}+'%' escape'#'
+    </select>
+    
+    <update id="updateStrategy">
+        UPDATE ADVC_CLASS_STRATEGY
+        <set>
+        	<if test="setDesc !=null"> setDesc= #{setDesc}, </if>
+        	<if test="courseRegex !=null"> courseRegex= #{courseRegex}, </if>
+        	<if test="courseSet !=null"> courseSet= #{courseSet}, </if>
+        	<if test="limitNum !=null"> limitNum= #{limitNum}, </if>
+        	<if test="priorityLevel !=null"> priorityLevel= #{priorityLevel}, </if>
+        	<if test="status !=null"> status= #{status}, </if>
+        	<if test="termID !=null"> termID= #{termID}, </if>
+        	<if test="andOrStr !=null"> andOrStr= #{andOrStr}, </if>
+        	<if test="isAuto !=null"> isAuto= #{isAuto}, </if>
+        	<if test="regSeq !=null"> regSeq= #{regSeq}, </if>
+        	<if test="mainMajorID !=null"> mainMajorID= #{mainMajorID} </if>
+        </set>
+        WHERE strategyID=#{strategyID} 
+    </update>
+    
+    <insert id="insertStrategy">
+        INSERT INTO ADVC_CLASS_STRATEGY ( majorID, strategyType, setDesc, courseRegex, courseSet, 
+	        creator, status, createTime, andOrStr, isAuto, regSeq, mainMajorID
+	       	<if test="limitNum != null"> ,limitNum </if>
+	       	<if test="priorityLevel != null"> ,priorityLevel </if>
+	       	<if test="termID != null"> ,termID </if>
+        )
+        VALUES ( #{majorID}, #{strategyType}, #{setDesc}, #{courseRegex}, #{courseSet}, 
+        	#{creator}, #{status}, #{createTime}, #{andOrStr}, #{isAuto}, #{regSeq}, #{mainMajorID} 
+        	<if test="limitNum != null"> ,#{limitNum} </if>
+        	<if test="priorityLevel != null"> ,#{priorityLevel} </if>
+        	<if test="termID != null"> ,#{termID} </if>
+        )
+    </insert>
+    
+    <select id="getStrategy" parameterType="Integer" resultType="Strategy">
+        SELECT CS.*, M.majorName 
+		FROM ADVC_CLASS_STRATEGY CS WITH (NOLOCK) 
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CS.majorID = M.majorID 
+		where CS.strategyID=#{strategyID}
+    </select>
+    
+    <select id="getStrategyList4I" parameterType="Integer" resultType="Strategy">
+        SELECT CS.strategyID,CS.setDesc  
+		FROM ADVC_CLASS_STRATEGY CS WITH (NOLOCK) 
+		where CS.majorID=#{majorID} 
+    </select>
+    
+    <select id="getStrategy4Class" parameterType="Integer" resultType="Strategy">
+        SELECT CS.*, CN.currClassNo 
+		FROM ADVC_CLASS_STRATEGY CS WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS_NO CN WITH (NOLOCK) ON CN.majorID = CS.majorID AND CN.classType=CS.strategyType 
+		where CS.strategyID=#{strategyID}
+    </select>
+    
+    <select id="judgeRegexHasExistByRegex" parameterType="Strategy" resultType="Integer">
+        SELECT count(*) FROM ADVC_CLASS_STRATEGY WITH (NOLOCK) 
+        WHERE majorID=#{majorID} 
+        <if test="strategyID != null"> and strategyID != #{strategyID} </if>
+        AND courseRegex=#{courseRegex} AND strategyType=#{strategyType} and status=1 
+    </select>
+    
+    <delete id="deleteStrategy" parameterType="java.lang.Integer">
+    	DELETE FROM ADVC_CLASS_STRATEGY WHERE strategyID=#{value}
+    </delete>
+    
+    <select id="getStrategyAndTerm" resultType="Strategy">
+		SELECT S.*, T.termID, T.termYear, T.termMonth, T.termName, T.termType, M.majorName 
+		FROM ADVC_CLASS_STRATEGY S WITH (NOLOCK) 
+		LEFT JOIN ADVC_TESTTERM T WITH (NOLOCK) ON S.termID = T.termID 
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON S.majorID=M.majorID 
+		WHERE S.status = 1 AND T.status = 1
+		<foreach collection="majorIDs" item="id" open=" and (" close=")" separator=" or " >
+			S.majorID = #{id}
+		</foreach>
+		<if test="isAuto != null"> and S.isAuto=#{isAuto} </if>
+    </select>
+
+</mapper>

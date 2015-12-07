@@ -1,0 +1,8 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="tempdetail">
+	<delete id="removeBatch">
+    	DELETE ADVC_TEMP_DETAIL WHERE chapterID 
+    	in(select chapterID from ADVC_TEMP_CHAPTER where courseID = #{courseID})
+    </delete>
+    
+</mapper>

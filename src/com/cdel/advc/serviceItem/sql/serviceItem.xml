@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="serviceitem">
+    
+    <select id="getServiceItemList4I" parameterType="Integer" resultType="ServiceItem">
+		select serviceID, serviceName 
+		from advc_home_ServiceItem WITH (NOLOCK) where stageID=#{stageID} and status=1
+    </select>
+    
+</mapper>

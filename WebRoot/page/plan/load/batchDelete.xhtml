@@ -1,0 +1,36 @@
+<h:form xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"  
+	id="deleteForm">
+<p:dialog header="#{memberChapterSetAction.flag == 0?'已停止学习的计划':'正在学习的计划'}" id="deleteDialog" widgetVar="deleteDialog" 
+	resizable="false" showEffect="fade" hideEffect="fade" height="500" width="700">
+	<p:dataTable value="#{memberChapterSetAction.planChapters}" 
+		var="c" 
+		emptyMessage="对不起，没有查询到数据！"
+		selection="#{memberChapterSetReqAction.selectedChapters}"
+		rowKey="#{c.sequence}">
+		<p:column selectionMode="multiple" width="7%"/>
+		<p:column headerText="课程" width="43%">
+			<h:outputText value="#{c.courseName}"/>
+		</p:column>	
+		<p:column headerText="章节" width="40%">
+			<h:outputText value="#{c.chapterName}"/>
+			<span class="chapterOpenStatus-#{c.openStatus}">(阶段 #{c.phaseNo}, #{c.openStatusStr})</span>				
+		</p:column>
+		<p:column width="10%" headerText="状态">
+			<h:outputText value="#{c.isStudyStr}" styleClass="status-#{c.isStudy}"/>
+		</p:column>
+	</p:dataTable>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<p:commandButton value="#{memberChapterSetAction.flag == 0?'恢复学习':'停止学习'}" oncomplete="optResultAlert(args,#{memberChapterSetAction.flag},'myReload');" 
+				actionListener="#{memberChapterSetReqAction.updateStudyStatuss(memberChapterSetAction.flag,memberChapterSetAction.planType,memberChapterSetAction.planID,memberChapterSetAction.userID)}"/>
+			<p:commandButton value="关闭" type="button" onclick="deleteDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>
+</h:form>

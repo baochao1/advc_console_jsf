@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="gdbtestpaper">
+	<resultMap type="GdbTestPaper" id="gdbTestPaperMap">
+		<id property="studyPlanID" column="studyPlanID" jdbcType="NUMERIC" javaType="java.lang.Integer" />
+		<association property="pointIDList" column="studyPlanID" javaType="java.util.List" select="gdbstudyplanpoint.getPointByStudyPlanID" />
+	</resultMap>
+	
+	<sql id="pageSql_body">
+		SELECT a.id, a.paperID,a.paperViewID, a.paperName, a.studyPlanID, a.paperType, 
+		a.createtime,b.realName, ROW_NUMBER() Over(ORDER BY a.id DESC) AS rowNum 
+        FROM GDB_TEST_PAPER a WITH (NOLOCK) ,RAD_ADMIN_USER b WITH (NOLOCK) 
+        where b.adminID=a.createUserId and a.studyPlanID=#{studyPlanID}
+        <if test="paperType != null"> and a.paperType=#{paperType} </if>
+        <if test="paperName != null and paperName != ''"> and a.paperName like '%'+#{paperName}+'%' </if>
+    </sql>
+    
+    <select id="findPageGdbTestPaper" resultMap="gdbTestPaperMap" parameterType="GdbTestPaper">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countGdbTestPaper" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+    <insert id="insertGdbTestPaper">
+        INSERT INTO GDB_TEST_PAPER ( paperID,paperViewID,studyPlanID,paperName,paperType,testTime,createUserId,createTime
+        <if test="paperDesc != null and paperDesc != ''">,paperDesc</if> )
+        VALUES ( #{paperID},#{paperViewID},#{studyPlanID},#{paperName},#{paperType},#{testTime},#{createUserId},#{createTime}
+        <if test="paperDesc != null and paperDesc != ''">,#{paperDesc}</if> )
+    </insert>
+    
+    <select id="getGdbTestPaper" resultType="GdbTestPaper" parameterType="java.lang.Integer">
+    	SELECT * from GDB_TEST_PAPER where id=#{value}
+    </select>
+    
+    <update id="updateGdbTestPaper">
+        UPDATE GDB_TEST_PAPER
+        <set>
+        	<if test="paperName != null and paperName != ''"> paperName=#{paperName}, </if>
+        	<if test="paperType != null"> paperType=#{paperType}, </if>
+        	<if test="testTime != null"> testTime=#{testTime}, </if>
+        	<if test="paperDesc != null and paperName != ''"> paperDesc=#{paperDesc}, </if>
+        </set>
+        where id=#{id}
+    </update>
+    
+</mapper>

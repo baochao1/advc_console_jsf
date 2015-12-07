@@ -1,0 +1,32 @@
+ <p:outputPanel xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	 style="text-align:center;align:center;width:500px;" 
+	    header="该套餐包含的课程" 
+		widgetVar="teachMemberStatisDialog" resizable="false" showEffect="fade" 
+		hideEffect="fade" height="450" width="1000"  >
+ 
+	
+	<p:dataTable scrollable="true" scrollHeight="#{comboAction.heighti2}" 
+		id="courseList"
+		value="#{comboAction.courseList}" 
+		var="course" 
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！"
+		>
+			<p:column headerText="课程名称"  >
+				<h:outputText value="#{course.courseName}" />
+			</p:column>
+			<p:column headerText="课程代码"  >
+				<h:outputText value="#{course.courseCode}" />
+			</p:column>
+			<p:column headerText="是否有效"  >
+				<h:outputText value="#{course.statusStr}" />
+			</p:column>
+		 
+	</p:dataTable>
+</p:outputPanel>
+ 

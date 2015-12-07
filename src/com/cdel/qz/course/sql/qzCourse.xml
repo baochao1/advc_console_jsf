@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="qzcourse">
+
+	<sql id="getList_body">
+		SELECT a.majorID,a.courseID,a.courseName,b.majorName,c.businessName,a.status, 
+		ROW_NUMBER() Over(ORDER BY a.majorID asc,a.courseID asc) AS rowNum 
+        FROM qz_course a WITH (NOLOCK) 
+        LEFT JOIN advc_major b WITH (NOLOCK) ON a.majorID=b.majorID 
+        LEFT JOIN QZ_BUSINESS c WITH (NOLOCK) ON b.businessID=c.businessID 
+		<where>
+			<if test="siteID != null"> and b.siteID=#{siteID}</if>
+			<if test="status != null"> and a.status=#{status}</if>
+			<if test="majorID != null"> and a.majorID=#{majorID}</if>
+		</where>
+    </sql>
+
+    <select id="countQzCourse" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageQzCourse" parameterType="QzCourse" resultType="QzCourse">
+        SELECT * FROM (
+            <include refid="getList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+
+	<select id="getQzCourseList4I" parameterType="Integer" resultType="QzCourse">
+		SELECT * FROM QZ_COURSE
+		WHERE status = 1 and majorID=#{majorID} order by sequence asc
+	</select>
+	
+	<select id="getQzCourse" parameterType="Integer" resultType="QzCourse">
+		SELECT * FROM QZ_COURSE
+		WHERE courseID=#{courseID}
+	</select>
+
+</mapper>

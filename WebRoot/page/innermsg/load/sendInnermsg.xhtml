@@ -1,0 +1,38 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	<h:outputLabel for="sReferUser" value="相关学员" />
+	<h:outputText id="sReferUser" value="#{innerMsgReqAction.detailInnerMsg.referUser}" />
+	
+	<h:outputLabel value="管理员">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectManyCheckbox value="#{innerMsgReqAction.innerMsgManagers}" layout="pageDirection">
+		<f:selectItems value="#{classteacherOther.managers}" var="m" itemLabel="#{m.teacherName}" itemValue="#{m.teacherID}"/>
+	</p:selectManyCheckbox>			
+
+	<h:outputLabel for="sInnerMsgContent" value="内容">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputTextarea id="sInnerMsgContent" cols="50" rows="2" autoResize="false" value="#{innerMsgReqAction.detailInnerMsg.innerMsgContent}" />  
+	
+	<h:link value="【收件箱】" outcome="/page/innermsg/innermsgList.xhtml" includeViewParams="true" target="_blank">
+		<f:param name="flag" value="1"/>
+	</h:link>
+	<h:link value="【发件箱】" outcome="/page/innermsg/innermsgList.xhtml" includeViewParams="true" target="_blank">
+		<f:param name="flag" value="2"/>
+	</h:link>
+	
+  	<f:facet name="footer">
+  		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{innerMsgReqAction.detailInnerMsg.referClass}"/>
+			<h:inputHidden value="#{innerMsgReqAction.detailInnerMsg.referUser}"/>
+			<p:commandButton value="发送" update="msg" actionListener="#{innerMsgReqAction.addInnerMsg(0)}"
+				 oncomplete="optResult('sendInnermsgDialog',args,5);" rendered="#{innerMsgReqAction.optAuth}"/>
+			<p:commandButton type="button" value="关闭" onclick="sendInnermsgDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+		
+</p:panelGrid>

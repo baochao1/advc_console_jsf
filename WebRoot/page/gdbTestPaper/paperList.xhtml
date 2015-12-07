@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>高端班测试试卷</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+	<script>
+	function add(studyPlanID,paperName,paperType,testTime,paperDesc,courseID,savePaperUrl,creator) { 
+	    //往原题表中放数据，没有基础试卷
+	    var hasPhone=0;
+	    var hasPaper=0;
+	    //试卷年份
+	    var paperYear="2012";
+	    //章节
+	    var chapterID="1";
+	    //套数
+	    var suitNum="1";
+	    //试卷模板
+	    var paperCatID="14";
+	    //试卷名称
+	    var paperViewName=paperName;
+	    //不启用竞赛模式
+	    var isContest=false;
+	    var paperParam="10111111011011111011111100100000";
+	    $.post(savePaperUrl,{
+	    	courseID:courseID,hasPaper:hasPaper,paperYear:paperYear,chapterID:chapterID,
+	    	suitNum:suitNum,paperCatID:paperCatID,paperType:0,paperViewName:paperViewName,creator:creator,
+	    	isContest:isContest,paperParam:paperParam,paperDesc:paperDesc,hasPhone:hasPhone,ranNum:Math.random()
+	    	},
+		    function(data){
+				if(data.msg != 'error'){
+					var arr=data.msg.split("_");
+					savaPaperjs(arr[0],arr[1],studyPlanID,paperName,paperType,testTime,paperDesc);
+				}else{
+					alert("添加试卷异常，调用题库接口返回错误信息！");
+				} 
+			}
+	    );	
+	}
+	function savaPaperjs(paperID,paperViewID,studyPlanID,paperName,paperType,testTime,paperDesc){
+		savePaper([{name:'paperID', value:paperID},{name:'paperViewID', value:paperViewID},{name:'studyPlanID', value:studyPlanID},{name:'paperName', value:paperName},{name:'paperType', value:paperType},{name:'testTime', value:testTime},{name:'paperDesc', value:paperDesc}]);
+	}
+	function optResultjs(submitSuccess,flag){
+		optResult2('addDialog',submitSuccess,flag);
+	}
+	/**
+	 * 调整题目
+	 */
+	function viewPaperQuestion(paperID,paperName,paperViewID){
+		$("#paperID").val(paperID);
+		$("#paperName").val(paperName);
+		$("#paperViewID").val(paperViewID);
+		$("#submitForm").submit();
+	}
+	/***
+	 * 给高端班试卷添加题目
+	 */
+	function addGdbPaperQuestion(paperID,gdbViewType,pointIDs){
+		$("#gdbpaperID").val(paperID);
+		$("#gdbPointID").val(pointIDs);
+		$("#gdbViewType").val(gdbViewType);
+		$("#submitGdbForm").submit();
+	}
+	</script>
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+	<p:remoteCommand name="savePaper" actionListener="#{gdbTestPaperReqAction.savePaper}" oncomplete="optResult('addDialog',args,0);"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel value="试卷名称" />
+			<p:inputText value="#{gdbTestPaperAction.searchGdbTestPaper.paperName}"/>
+			
+			<h:outputLabel value="试卷类型" />	
+			<p:selectOneMenu value="#{gdbTestPaperAction.searchGdbTestPaper.paperType}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{gdbTestPaperReqAction.paperTypes.entrySet()}" var="paperType" itemLabel="#{paperType.value}" itemValue="#{paperType.key}"/>
+			</p:selectOneMenu>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" update="paperTable" actionListener="#{gdbTestPaperAction.search}" rendered="#{gdbTestPaperAction.viewAuth}" />
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="addDialog.show();" update=":addForm:addDialog"
+				actionListener="#{gdbTestPaperReqAction.add}" rendered="#{gdbTestPaperAction.optAuth}" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{gdbTestPaperAction.heighti2}" 
+			widgetVar="paperTable"
+			id="paperTable"
+			binding="#{gdbTestPaperAction.pageTable}"
+			lazy="true"
+			value="#{gdbTestPaperAction.page}" 
+			rows="20"
+			var="paper" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="序号" width="10%">
+				<h:outputText value="#{paper.id}"/>
+			</p:column>
+			<p:column headerText="试卷名称" width="20%">
+				<p:commandLink value="#{paper.paperName}" title="#{paper.paperName}" actionListener="#{gdbTestPaperReqAction.update(paper.id)}"
+					oncomplete="addDialog.show();" update=":addForm:addDialog" rendered="#{gdbTestPaperReqAction.optAuth}" />
+			</p:column>
+			<p:column headerText="试卷类型" width="10%">
+				<h:outputText value="#{paper.paperTypeStr}"/>
+			</p:column>
+			<p:column headerText="本卷题目" width="15%">
+				<a onclick="viewPaperQuestion(#{paper.paperID},'#{paper.paperName}',#{paper.paperViewID});">调整</a>
+				<p:spacer width="5px"/>
+				<a onclick="addGdbPaperQuestion(#{paper.paperID},#{paper.viewType},'#{paper.pointIDs}');">加题</a>
+			</p:column>
+			<p:column headerText="修改" width="10%">
+				<a href="#{gdbTestPaperAction.qzurl3}?flag=modify&amp;paperID=#{paper.paperID}&amp;paperViewID=#{paper.paperViewID}" target="_blank">修改</a>
+			</p:column>
+			<p:column headerText="创建时间" width="20%">
+				<h:outputText value="#{paper.createTimeStr}"/>
+			</p:column>
+			<p:column headerText="创建人" width="15%">
+				<h:outputText value="#{paper.realName}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="paperTable" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 添加页面 -->
+	<h:form id="addForm" >
+		<p:dialog id="addDialog" header="#{(gdbTestPaperReqAction.flag==0)?'添加':'修改'}" widgetVar="addDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/paperAdd.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<form action="#{gdbTestPaperAction.qzurl}" method="post" target="_blank" name="submitForm" id="submitForm">
+	    <input type="hidden" id="paperID" name="paperID"/>
+	    <input type="hidden" id="paperViewID" name="paperViewID"/>
+		<input type="hidden" id="realPaperType" name="realPaperType" value="0"/>
+		<input type="hidden" id="paperType" name="paperType" value="1"/>
+		<input type="hidden" id="paperName" name="paperName"/>
+		<input type="hidden" id="courseID" name="courseID" value="#{gdbTestPaperAction.courseID}"/>
+	</form>
+	<form action="#{gdbTestPaperAction.qzurl2}" method="post" target="_blank" name="submitGdbForm" id="submitGdbForm">
+	    <input type="hidden" id="gdbpaperID" name="paperID"/>
+		<input type="hidden" id="gdbPointID" name="gdbPointID"/>
+		<input type="hidden" id="gdbViewType" name="gdbViewType"/>
+		<input type="hidden" id="realPaperType" name="realPaperType" value="0"/>
+		<input type="hidden" id="studyPlan" name="studyPlan" value="studyPlan"/>
+		<input type="hidden" id="courseID" name="courseID" value="#{gdbTestPaperAction.courseID}"/>
+	</form>
+</h:body>
+</html>

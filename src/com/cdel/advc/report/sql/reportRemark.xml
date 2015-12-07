@@ -1,0 +1,39 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="reportremark">
+	
+	<sql id="getReportList_body">
+		SELECT R.*, t.teacherName, m.userName, C.className, tea.teacherName manager, 
+		ROW_NUMBER() Over(ORDER BY R.reportID DESC) AS rowNum 
+		FROM ADVC_REPORT R WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON R.classID=C.classID
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID=CS.strategyID
+		LEFT JOIN ADVC_MAJOR AM WITH (NOLOCK) ON AM.majorID = CS.majorID
+		LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON R.teacherID = t.teacherID
+		LEFT JOIN ADVC_CLASS_TEACHER CT2 WITH (NOLOCK) ON CT2.classID = C.classID AND CT2.teacherType = 1 
+		LEFT JOIN ADVC_TEACHER tea with (nolock) ON CT2.TeacherID = tea.TeacherID 
+		LEFT JOIN ADVC_MEMBER m WITH (NOLOCK) ON m.userID = R.userID
+		WHERE C.status = 1 AND AM.status = 1 
+		<if test="classQueryType == 1">
+			and R.classID IN (
+				SELECT DISTINCT ACT.classID FROM ADVC_CLASS_TEACHER ACT WITH (NOLOCK) 
+	            LEFT JOIN ADVC_TEACHER AT  WITH (NOLOCK) ON ACT.teacherID=AT.teacherID
+	            WHERE AT.orgID = (SELECT orgID FROM ADVC_TEACHER  WITH (NOLOCK) WHERE teacherID=#{teacherID})
+			)
+		</if>
+		<if test="applyStatus != null"> and R.applyStatus=#{applyStatus} </if>
+		<if test="majorID != null"> and CS.majorID=#{majorID} </if>
+    </sql>
+
+    <select id="countReportRemark" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getReportList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageReportRemark" parameterType="ReportRemark" resultType="ReportRemark">
+        SELECT * FROM (
+            <include refid="getReportList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+</mapper>

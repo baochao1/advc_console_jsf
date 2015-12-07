@@ -1,0 +1,44 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	
+	<h:outputLabel value="专业名称" />
+	<h:outputText value="#{majorAction.updateMajor.businessName}"/>
+	
+	<h:outputLabel value="辅导名称" />
+	<h:outputText value="#{majorAction.updateMajor.majorName}"/>
+	
+	<h:outputLabel value="简称" />
+	<h:outputText value="#{majorAction.updateMajor.shortName}"/>
+	
+	<h:outputLabel value="学习报告生成间隔时间">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<h:panelGroup>
+		<p:inputText value="#{majorAction.updateMajor.reportDateSpace}" styleClass="minLength"/><p:spacer width="5"/>天
+	</h:panelGroup>
+	
+	<h:outputLabel value="是否开启短信发送" />
+	<p:selectOneMenu value="#{majorAction.updateMajor.isNewService}" style="width:200px;" panelStyleClass="minLength">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{majorReqAction.isNewService.entrySet()}" var="isNewService" itemLabel="#{isNewService.value}" itemValue="#{isNewService.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="短信模板" />
+	<h:panelGroup style="display:block; text-align:left">
+		<p:inputTextarea cols="25" rows="5" autoResize="false" value="#{majorAction.updateMajor.planSmsTemplate}" /><br/>
+		<h:outputLabel value="注：{|}代表周次，{||}代表章节名" />
+	</h:panelGroup>
+	
+	<h:outputLabel value="考试日期"/>
+	<p:calendar value="#{majorAction.updateMajor.examDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<p:commandButton value="更新" actionListener="#{majorAction.updateSubmit}" update="msg" oncomplete="optResult('loadDialog',args,'1');"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统--批量生成学习计划</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+		$(function(){
+			$("#searchForm\\:generatePlanButton").click(function(){
+				if(planTable.getSelectedRowsCount() == 0){
+					cdInfo.show();				
+				}else{
+					cd.show();
+				}
+			});
+		});
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000"/>
+	<h:form id="searchForm">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sClassesName" value="班级名称" />
+			<h:outputText id="sClassesName" value="#{studyPlanAction.classeName}" />	
+
+			<h:outputLabel for="sPlanType" value="计划类型" />
+			<p:selectOneMenu id="sPlanType" value="#{studyPlanAction.plan.planType}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItems value="#{studyPlanReqAction.planTypes.entrySet()}" var="p" itemLabel="#{p.value}" itemValue="#{p.key}"/>
+			</p:selectOneMenu>
+		
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton value="查找学员" update="planList :info" actionListener="#{studyPlanAction.searchPlanForAdd}" />
+					<p:commandButton value="生成学习计划" widgetVar="generatePlanButton" id="generatePlanButton" update=":info" 
+						actionListener="#{studyPlanReqAction.checkGenPlans}"/>
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		
+		<p:confirmDialog widgetVar="cd" severity="alert" message="确定生成计划?" header="提示">
+			<p:commandButton value="确定" async="true" onstart="generatePlanButton.disable();cd.hide();messageHandle.start();" update="planList" 
+				oncomplete="messageHandle.stop();generatePlanButton.enable();" actionListener="#{studyPlanReqAction.generatePlans}"/>
+			<p:commandButton value="取消" onclick="cd.hide();" type="button" />
+		</p:confirmDialog>
+		
+		<p:separator/>
+		<p:dataTable 
+			widgetVar="planTable"
+			id="planList"
+			value="#{studyPlanAction.plans}" 
+			var="plan" 
+			styleClass="gridTable" 
+			emptyMessage=""
+			selection="#{studyPlanReqAction.selectPlans}"
+			rowKey="#{plan.userID}"
+			>
+			<p:column width="8%" selectionMode="multiple" />
+			
+			<p:column headerText="学员代码" width="13%">
+				<h:outputText value="#{plan.userName}" title="#{plan.userName}"/>
+			</p:column>
+			
+			<p:column headerText="加入时间 " width="13%">
+				<h:outputText value="#{plan.createTimeStr}" />
+			</p:column>
+			
+			<p:column headerText="反馈学习时间 " width="16%">
+				<h:outputText value="#{plan.memberHours}" />
+			</p:column>
+			
+			<p:column headerText="学习时间 " width="17%">
+				<h:outputText value="#{plan.setStudyHours}"/>
+			</p:column>
+			
+			<p:column headerText="预习学习时间 " width="17%">
+				<h:outputText value="#{plan.setPreStudyHours}"/>
+			</p:column>
+			
+			<p:column headerText="学习计划 " width="8%">
+				<h:link outcome="/page/plan/showPlan" includeViewParams="true" target="_blank">
+					<h:outputText styleClass="planCreated-#{plan.planCreated}" value="#{plan.planCreatedStr}"/>
+					<f:param name="classID" value="#{plan.classID}"/>
+					<f:param name="userID" value="#{plan.userID}"/>
+					<f:param name="planType" value="0"/>
+				</h:link>
+			</p:column>
+
+			<p:column headerText="预习计划 " width="8%">
+				<h:link outcome="/page/plan/showPlan" includeViewParams="true" target="_blank">
+					<h:outputText styleClass="planCreated-#{plan.prePlanCreated}" value="#{plan.prePlanCreatedStr}"/>
+					<f:param name="classID" value="#{plan.classID}"/>
+					<f:param name="userID" value="#{plan.userID}"/>
+					<f:param name="planType" value="1"/>
+				</h:link>
+			</p:column>
+		</p:dataTable>
+		
+		<p:poll autoStart="false" widgetVar="messageHandle" update="messagesTable" interval="1" />
+		
+		<p:separator/>
+		<p:outputPanel id="messagesTable" autoUpdate="true">
+			<p:dataTable  value="#{studyPlanReqAction.messages}" var="m" rendered="#{!empty studyPlanReqAction.messages}">
+				<p:column headerText="日志信息">
+					<h:outputText value="#{m}" escape="false" />
+				</p:column>
+			</p:dataTable>
+		</p:outputPanel>
+		
+		<ui:include src="/page/common/blockUI3.xhtml">
+			<ui:param name="reflushID" value="planList" />
+			<ui:param name="triggerID" value="generatePlanButton" />
+		</ui:include>
+	</h:form>
+
+</h:body>
+</html>

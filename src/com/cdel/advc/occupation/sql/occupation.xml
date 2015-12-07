@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="occupation">
+
+	<select id="getOccupationList" parameterType="Occupation" resultType="Occupation">
+		SELECT a.occupationID, a.siteID, a.occupationName, a.creator, a.createTime 
+		FROM ADVC_OCCUPATION a WITH (NOLOCK) 
+		where siteID = #{siteID}
+    </select>
+	
+
+</mapper>

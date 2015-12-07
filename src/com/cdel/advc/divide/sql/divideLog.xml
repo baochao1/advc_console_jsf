@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dividelog">
+    <insert id="insertDivideLog">
+        INSERT INTO ADVC_DIVIDE_LOG ( userID,logDesc,creator,createDate,operator )
+        VALUES ( #{userID},#{logDesc},#{creator},#{createDate},#{operator})
+    </insert>
+    
+    <sql id="getDivideLogList_body">
+        SELECT L.logID, L.userID, L.logDesc, L.creator, L.createDate,at.teacherName,L.operator,
+        ROW_NUMBER() Over(ORDER BY logID DESC) AS rowNum 
+        FROM ADVC_DIVIDE_LOG L WITH (NOLOCK) 
+        left join ADVC_TEACHER at WITH (NOLOCK) on at.teacherID = L.creator 
+        <where>
+        	<if test="userID != null"> and userID=#{userID} </if>
+        </where>
+    </sql>
+
+    <select id="countDivideLog" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getDivideLogList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageDivideLog" parameterType="DivideLog" resultType="DivideLog">
+        SELECT * FROM (
+            <include refid="getDivideLogList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+
+</mapper>

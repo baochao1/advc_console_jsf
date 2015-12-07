@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="innermsgall">
+	<sql id="pageSql_body">
+        SELECT a.innerMsgID ,a.status ,c.classID referClass, 
+        c.className ,teacher.teacherCode ,innerMsgContent ,teacher.teacherName senderName ,
+        a.referUser ,ROW_NUMBER() OVER ( ORDER BY sendTime DESC ) AS rowNum
+		FROM ADVC_INNER_MSG a WITH ( NOLOCK )
+        LEFT JOIN ADVC_TEACHER teacher WITH ( NOLOCK ) ON teacher.teacherID = a.sender
+        LEFT JOIN ADVC_CLASS c WITH ( NOLOCK ) ON c.classID = a.referClass 
+        <if test="receiveName !=null and receiveName !=''">
+        	left join ADVC_INNER_MSG_RECEIVE imr WITH (NOLOCK) ON imr.innerMsgID = a.innerMsgID 
+        	left join ADVC_TEACHER t WITH (NOLOCK) on t.teacherID = imr.receiveTeacherID 
+        </if>
+        where c.classID IS NOT NULL 
+        <if test="className !=null and className !=''"> and c.className = #{className} </if>
+        <if test="referUser !=null and referUser !=''"> and a.referUser like '%'+#{referUser}+'%' </if>
+        <if test="senderName !=null and senderName !=''"> and teacher.teacherName=#{senderName} </if>
+        <if test="orgID !=null"> and teacher.orgID = #{orgID} </if>
+        <if test="status !=null"> and a.status = #{status} </if>
+        <if test="receiveName !=null and receiveName !=''"> and t.teacherName=#{receiveName} </if>
+	</sql>
+    
+    <select id="findPageInnerMsgAll" resultType="InnerMsg" parameterType="InnerMsg">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countInnerMsgAll" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+</mapper>

@@ -1,0 +1,33 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+xmlns:h="http://java.sun.com/jsf/html"
+xmlns:f="http://java.sun.com/jsf/core"
+xmlns:p="http://primefaces.org/ui" id="showDialog" header="查看课程" widgetVar="showDialog" resizable="false" showEffect="fade" hideEffect="fade" height="350">
+	<p:panelGrid id="showPanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+		<h:outputLabel value="课程ID" />
+		<h:outputText value="#{courseReqAction.showCourse.courseID}" />
+		<h:outputLabel value="辅导名称" />
+		<h:outputText value="#{courseReqAction.showCourse.majorName}" />
+		<h:outputLabel value="课程名称" />
+		<h:outputText value="#{courseReqAction.showCourse.courseName}" />
+		<h:outputLabel value="课程类别" />
+		<h:outputText value="#{courseReqAction.showCourse.courseTypeStr}" />
+		<h:outputLabel value="课程代码" />
+		<h:outputText value="#{courseReqAction.showCourse.courseCode}" />
+		<h:outputLabel value="课程年份" />
+		<h:outputText value="#{courseReqAction.showCourse.courseYear}" />
+		<h:outputLabel value="是否面授课程" />
+		<h:outputText value="#{courseReqAction.showCourse.faceTypeStr}" />
+		<h:outputLabel value="状态" />
+		<h:outputText value="#{courseReqAction.showCourse.statusStr}" />
+		<h:outputLabel value="创建人" />
+		<h:outputText value="#{courseReqAction.showCourse.teacherName}" />
+		<h:outputLabel value="创建时间" />
+		<h:outputText value="#{courseReqAction.showCourse.createTimeStr}" />
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="showDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

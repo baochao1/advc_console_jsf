@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学员电话回访记录</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+	<script>
+	jQuery(document).ready(function() {
+		var mcFlag=jQuery("#mcFlag").val();
+		if(mcFlag==1){
+			if(confirm('学员在本班级中的报课课程已关闭，是否将此学员退班？?')){
+				jQuery("#searchForm\\:exitBtn").click();
+	        }
+		}
+	});
+	function myOptResultAlert(args){
+		optResultAlert(args,3);
+		var show = args.result;
+		if(show == 1 &amp;&amp; args.callStatus == 0){
+			showSendMsg([{name:'userID', value:args.userID},{name:'classID', value:args.classID},{name:'callID', value:args.callID}]);
+		}else{
+			if(show == 1){
+				window.close();
+			}
+		}
+	}
+	
+	function learningProcess(userID,time,key){
+		window.open("http://member.chinaacc.com/api/mycenter/myCourse.shtm?uid="+userID+"&amp;time="+time+"&amp;key="+key);
+	}
+
+	</script>
+</h:head>
+<h:body align="center">
+<p:panel id="dataTablePanel">
+<h:form id="searchForm">
+	<p:remoteCommand name="showSendMsg" actionListener="#{membermsgReqAction.showMsg}" oncomplete="msgDialog.show();" update=":msgForm:msgDialog" />
+	<p:growl for="info" id="info" life="3000" />
+	<p:panelGrid id="membetCallRecordTable1" style="width:100%;">
+		<p:row>
+			<p:column headerText="基本资料" rowspan="5" style="width:200px;text-align:center;">
+				<h:outputText value="基本资料" style="font-weight: bold;" />
+				<p:commandLink value="【修改】" oncomplete="loadDialog.show();" style="color:red; "
+					process="@this" actionListener="#{memberCallRecordReqAction.updateShow(memberCallRecordAction.userID)}" 
+					update=":loadForm:loadDialog"/>
+			</p:column>
+			<p:column style="width:100px;">
+				<h:outputText value="工作状态：" />
+			</p:column>
+			<p:column>
+				<h:outputText value="#{memberCallRecordAction.memberdefine.jobStatusStr}" />
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="考试经历：" style="width:100px;">
+				<h:outputText value="考试经历：" />
+			</p:column>
+			<p:column>
+				<h:outputText value="#{memberCallRecordAction.memberdefine.examKill}" />
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="学习方法：" style="width:100px;">
+				<h:outputText value="学习方法："/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{memberCallRecordAction.memberdefine.studyWayStr}" />
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="学习方式：" style="width:100px;">
+				<h:outputText value="学习方式："/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{memberCallRecordAction.memberdefine.studyHabit}" />
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="记忆能力：" style="width:100px;">
+				<h:outputText value="记忆能力：" />
+			</p:column>
+			<p:column style="text-align:left;">
+				<h:outputText value="#{memberCallRecordAction.memberdefine.memoryStr}" />
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="学员代码" style="width:200px;text-align:center;">
+				<h:outputText value="学员代码" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<h:outputText value="#{memberCallRecordAction.userName}" />
+				<h:link value="【反馈修改】" outcome="/page/memberdefine/feedbackUpdate.xhtml" includeViewParams="true" target="_blank" style="color:red; ">
+					<f:param name="siteID" value="#{memberCallRecordAction.siteID}"/>
+					<f:param name="userID" value="#{memberCallRecordAction.userID}"/>
+					<f:param name="userName" value="#{memberCallRecordAction.userName}"/>
+				</h:link>
+			</p:column>
+		</p:row>
+		
+		<c:if test="#{memberCallRecordAction.reservecallInfo !=null}">
+			<p:row>
+				<p:column headerText="预约情况" rowspan="4" style="width:200px;text-align:center;">
+					<h:outputText value="预约情况" style="font-weight: bold;" />
+				</p:column>
+				<p:column style="width:100px;">
+					<h:outputText value="预约时间：" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{memberCallRecordAction.reservecallInfo.reservedDateStr}" />
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column headerText="预约时间段：" style="width:100px;">
+					<h:outputText value="预约时间段：" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{memberCallRecordAction.reservecallInfo.reservedTimeStr}" />
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column headerText="预约备注：" style="width:100px;">
+					<h:outputText value=" 预约备注：" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{memberCallRecordAction.reservecallInfo.reserveRemark}" />
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column headerText="回访分类：" style="width:100px;">
+					<h:outputText value="回访分类：" />
+				</p:column>
+				
+				<p:column style="text-align:left;" colspan="3"> 
+				<p:selectOneRadio value="#{memberCallRecordAction.reservecallInfo.callType}">
+					<f:selectItem itemLabel="专业问题" itemValue="1" />
+					<f:selectItem itemLabel="客服问题" itemValue="2" />
+				</p:selectOneRadio>
+			   	<p:commandButton value="修改分类" oncomplete="optResultAlert(args,1);" actionListener="#{memberCallRecordReqAction.updateCallType}"   />
+			   	</p:column>
+			</p:row>
+     	</c:if>
+     	
+		<p:row>
+			<p:column headerText="班级信息" style="width:200px;text-align:center;">
+				<h:outputText value="班级信息" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<h:outputText value="#{memberCallRecordAction.classesInfo.className}" />
+				<c:if test="#{memberCallRecordAction.classesInfo.displayAdviser != null}">
+					&nbsp;&nbsp;<b>班主任: </b>#{memberCallRecordAction.classesInfo.displayAdviser}
+				</c:if>
+				<c:if test="#{memberCallRecordAction.classesInfo.teacherNames != ''}">
+					&nbsp;&nbsp;<b>管理员: </b>#{memberCallRecordAction.classesInfo.teacherNames}
+				</c:if>
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="报课信息" style="width:200px;text-align:center;">
+				<h:outputText value="报课信息" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<h:outputText value="#{memberCallRecordAction.memberClassInfo.studyCourseListStr}"/>
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="加入时间" style="width:200px;text-align:center;">
+				<h:outputText value="加入时间" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<h:outputText value="#{memberCallRecordAction.memberClassInfo.enterTimeStr}" />
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="学习状态" style="width:200px;text-align:center;">
+				<h:outputText value="学习状态" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<p:inputTextarea cols="100" rows="2" autoResize="false" value="#{memberCallRecordAction.studyStatus}"/>
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="个性要求" style="width:200px;text-align:center;">
+				<h:outputText value="个性要求" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<p:inputTextarea cols="100" rows="2" autoResize="false" value="#{memberCallRecordAction.personalAsk}"/>
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="意见反馈" style="width:200px;text-align:center;">
+				<h:outputText value="意见反馈" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<p:inputTextarea cols="100" rows="2" autoResize="false" value="#{memberCallRecordAction.feedback}"/>
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column headerText="回访状态" style="width:200px;text-align:center;">
+				<h:outputText value="回访状态" style="font-weight: bold;" />
+			</p:column>
+			<p:column style="text-align:left;" colspan="2">
+				<p:selectOneRadio value="#{memberCallRecordReqAction.callStatus}">
+					<f:selectItem itemLabel="回访成功" itemValue="1"/>
+					<f:selectItem itemLabel="回访失败(电话不通)" itemValue="0" />
+				</p:selectOneRadio>
+			</p:column>
+		</p:row>
+	</p:panelGrid>
+	
+	<p:panelGrid columns="2" style="width:100%; text-align:left;">
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:commandButton id="searchBtn" value="提交回访记录" actionListener="#{memberCallRecordReqAction.updateSubmit}" 
+					update="info" oncomplete="myOptResultAlert(args);" rendered="#{memberCallRecordAction.optAuth and memberCallRecordAction.searchBtn}"/>
+				<p:commandButton id="exitBtn" value="退班" actionListener="#{memberCallRecordReqAction.exitClass(memberCallRecordAction.userID,memberCallRecordAction.classID)}" 
+					update="info searchForm" rendered="#{memberCallRecordAction.optAuth and memberCallRecordAction.exitBtn}"/>
+				<p:commandButton id="delBtn" value="删除预约记录" actionListener="#{memberCallRecordReqAction.delRecord(memberCallRecordAction.reservecallInfo.callID)}" 
+					oncomplete="optResultAlert(args,2,'window.close');" rendered="#{memberCallRecordAction.optAuth and memberCallRecordAction.delBtn and memberCallRecordAction.reservecallInfo.callID != null}"/>
+				&#160;&#160;&#160;
+				<p:commandLink value="此学员消息记录" id="msgLink" style="color:red; " oncomplete="msgDialog.show();" 
+					actionListener="#{membermsgReqAction.showMsg(memberCallRecordAction.userID,memberCallRecordAction.classID)}" update=":msgForm:msgDialog" rendered="#{memberCallRecordAction.optAuth}"/>
+				&#160;&#160;&#160;
+				<p:commandLink id="learnBtn" value="此学员学习进度" style="color:red; " actionListener="#{membermsgReqAction.showLearningProcess(memberCallRecordAction.userID)}"  rendered="#{memberCallRecordAction.optAuth}" />
+			</h:panelGroup>
+		</f:facet>	
+	</p:panelGrid>
+</h:form>
+
+<h:form id="searchForm2">
+	<p:dataTable widgetVar="mcrTable"
+		id="mcrList"
+		binding="#{memberCallRecordAction.pageTable}"
+		lazy="true"
+		value="#{memberCallRecordAction.page}" 
+		rows="10"
+		var="mcr" 
+		paginator="true" 
+		paginatorPosition="bottom"
+		currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+		paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+		rowsPerPageTemplate="10,50"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！">
+		<p:column headerText="回访状态" width="8%">
+			<h:outputText value="#{mcr.callStatusStr}"/>
+			<h:outputText value="(预)" rendered="#{mcr.reservedDate !=null}" styleClass="callStatus-1"/>
+		</p:column>
+		<p:column headerText="班级名称" width="12%">
+			<h:outputText value="#{mcr.className}"/>
+		</p:column>
+		<p:column headerText="记录人" width="8%">
+			<h:outputText value="#{mcr.teacherName}"/>
+		</p:column>
+		<p:column headerText="学习状态" width="*">
+			<h:outputText value="#{mcr.studyStatus}" />
+		</p:column>
+		<p:column headerText="个性要求" width="10%">
+			<h:outputText value="#{mcr.personalAsk}"/>
+		</p:column>
+		<p:column headerText="意见反馈" width="10%">
+			<h:outputText value="#{mcr.feedback}"/>
+		</p:column>
+		<p:column headerText="回访时间" width="10%">
+			<h:outputText value="#{mcr.callTimeStr}" />
+		</p:column>		
+	</p:dataTable>
+</h:form>
+<!-- 学员基本信息 -->
+<h:form id="loadForm" >
+	<p:dialog id="loadDialog" header="修改学员辅助信息" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+		<ui:include src="memberCallBaseUpdate.xhtml"/>
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:messages id="msg" />
+				<p:commandButton value="提交" actionListener="#{memberCallRecordReqAction.updateMemberDefine}" oncomplete="optResult('loadDialog',args,1);" update="msg" />
+				<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();" />
+			</h:panelGroup>
+		</f:facet>
+	</p:dialog>
+</h:form>
+<!-- 学员以往消息 -->
+<h:form id="msgForm" >
+	<ui:include src="/page/membermsg/load/sendMembermsg.xhtml"/>
+</h:form>
+<ui:include src="/page/common/blockUI2.xhtml">
+	<ui:param name="tableID" value=":searchForm2:mcrList,:searchForm:searchBtn" />
+</ui:include>
+</p:panel>
+<h:inputHidden id="mcFlag" value="#{memberCallRecordAction.mcFlag}"/>
+</h:body>
+</html>

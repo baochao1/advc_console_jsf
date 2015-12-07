@@ -1,0 +1,56 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	
+	<h:outputLabel value="所属课程">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu value="#{gdbStudyPlanReqAction.uGdbStudyPlan.siteCourseID}" style="width:200px;" panelStyleClass="minLength" >
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{qzSiteCourseOther.siteCourseList}" var="siteCourse" itemLabel="#{siteCourse.siteCourseName}" itemValue="#{siteCourse.siteCourseID}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="计划周次">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu value="#{gdbStudyPlanReqAction.uGdbStudyPlan.weekNum}" style="width:200px;" panelStyleClass="minLength" >
+		<f:selectItems value="#{gdbStudyPlanReqAction.weekNum.entrySet()}" var="weekNum" itemLabel="#{weekNum.value}" itemValue="#{weekNum.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="开始时间" >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:calendar value="#{gdbStudyPlanReqAction.uGdbStudyPlan.startDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+	
+	<h:outputLabel for="sStatus" value="状态" />	
+	<p:selectOneMenu id="sStatus" value="#{gdbStudyPlanReqAction.uGdbStudyPlan.status}" style="width:200px;" panelStyleClass="minLength">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{gdbStudyPlanReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="建议时长" >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<h:panelGroup>
+		<p:inputText value="#{gdbStudyPlanReqAction.uGdbStudyPlan.studyHours}" styleClass="minLength"/>小时
+	</h:panelGroup>
+	
+	<h:outputLabel value="学习要求">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:editor value="#{gdbStudyPlanReqAction.uGdbStudyPlan.studyContent}" height="100" controls="bold italic underline strikethrough bullets numbering"/>
+	
+	<h:outputLabel value="学习方法">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:editor value="#{gdbStudyPlanReqAction.uGdbStudyPlan.studyMethods}" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<p:commandButton value="添加" actionListener="#{gdbStudyPlanReqAction.updateSubmit(0)}" update="msg" oncomplete="optResult('addDialog',args,'0');"/>
+			<p:commandButton type="button" value="关闭" onclick="addDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

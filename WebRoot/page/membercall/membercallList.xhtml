@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>电话回访</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function goClassView(classID){
+		alert("跳转至课件课程页面！课程id为"+classID);
+	}
+	</script>
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(memberCallAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:remoteCommand name="setTeacherOrgs" actionListener="#{teacherOrgOther.setTeacherOrgs}" update="sOrgID" autoRun="true" />
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid id="searchPanel" columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="所属辅导" />
+			<p:selectOneMenu id="sMajorID" value="#{memberCallAction.searchMemberCall.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			<h:outputLabel for="sClassName" value="班级名称"  />
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sClassName" value="#{memberCallAction.searchMemberCall.className}" completeMethod="#{comRequestMethod.completeClassName}" var="className" itemLabel="#{className}" itemValue="#{className}" maxResults="30" queryDelay="500" styleClass="minLength"/>
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sTeacherName" value="班主任或管理员"/>
+			<h:panelGroup id="sTeacherName" style="display:block;">
+				<p:autoComplete panelStyleClass="minLength" 
+					value="#{memberCallAction.searchMemberCall.teacherName}" completeMethod="#{comRequestMethod.completeTeacherName}" var="teacherName" itemLabel="#{teacherName}" itemValue="#{teacherName}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sUserName" value="学员代码" />
+			<p:inputText id="sUserName" value="#{memberCallAction.searchMemberCall.userName}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sOrgID" value="组织" />
+			<p:selectOneMenu id="sOrgID" style="width:200px;" panelStyleClass="minLength" value="#{memberCallAction.searchMemberCall.orgID}" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{teacherOrgOther.teacherOrgs}" var="org" itemLabel="#{org.orgName}" itemValue="#{org.orgID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sCall30status" value="回访天数>60"/>
+			<p:selectBooleanCheckbox id="sCall30status"  value="#{memberCallAction.searchMemberCall.call30status}"/>
+  
+        	<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{memberCallAction.search}"  rendered="#{memberCallAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{memberCallAction.heighti}" 
+			widgetVar="memberCall"
+			id="memberCallList"
+			binding="#{memberCallAction.pageTable}"
+			lazy="true"
+			value="#{memberCallAction.memberCallPage}" 
+			rows="20"
+			var="memberCall" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="考期" width="17%">
+				<h:outputText value="#{memberCall.termName}"/>
+			</p:column>
+			<p:column headerText="班级名称" width="30%">
+				<h:link value="#{memberCall.className}" title="#{memberCall.className}" 
+					outcome="/page/memberClass/memberClassList" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{memberCall.classID}"/>
+					<f:param name="siteID" value="#{memberCallAction.siteID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="班主任" width="11%" style="text-align:center">
+				<h:outputText value="#{memberCall.displayAdviser}"/>
+			</p:column>
+			<p:column headerText="本班管理员" width="11%" style="text-align:center">
+				<p:commandLink value="#{memberCall.teacherName}" oncomplete="showDialog.show();" 
+					actionListener="#{classteacherReqAction.show(memberCall.classID)}"
+					update=":showForm:showDialog" rendered="#{memberCallAction.viewAuth}"/>
+			</p:column>
+			<p:column headerText="学员数" width="7%" style="text-align:center">
+				<h:outputText value="#{memberCall.currCount}"/>
+			</p:column>
+			<p:column headerText="创建时间" width="10%" style="text-align:center">
+				<h:outputText value="#{memberCall.createTimeStr}"/>
+			</p:column>
+			<p:column sortBy="#{memberCall.callTimeStr}" headerText="最后回访时间" width="12%" style="text-align:center">
+				<h:outputText value="#{memberCall.callTimeStr}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="memberCallList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 查看页面 -->
+	<h:form id="showForm" >
+		<ui:include src="/page/classteacher/load/teacherListShow.xhtml"/>
+	</h:form>
+</h:body>
+</html>

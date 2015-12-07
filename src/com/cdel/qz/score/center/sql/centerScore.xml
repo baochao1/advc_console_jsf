@@ -1,0 +1,29 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="centerscore">
+	
+	<select id="getRptCenterList" parameterType="java.util.Map" resultType="CenterScore">
+		with tmp as (
+			select mps.paperScoreID,mps.userID,mps.centerID,mps.paperViewID,c.courseID,c.courseName,
+			pv.paperViewName,qc.centerName,mps.createTime 
+			from QZ_MEMBER_PAPER_SCORE mps WITH (NOLOCK),QZ_SITE_COURSE sc WITH (NOLOCK),QZ_COURSE c WITH (NOLOCK), 
+			QZ_PAPER_VIEW pv WITH (NOLOCK),QZ_CENTER qc WITH (NOLOCK) 
+			where sc.siteCourseID=mps.siteCourseID and c.courseID=sc.courseID and pv.paperViewID=mps.paperViewID and qc.centerID=mps.centerID 
+			and mps.userID=#{userID} 
+			<if test="startDate != null">AND mps.createTime &gt;= #{startDate} </if>
+			<if test="endDate != null">AND mps.createTime &lt;= #{endDate} </if>
+			<foreach collection="siteCourseIDList" item="item" separator="OR" close=")" open=" and (">
+				mps.siteCourseID = #{item}
+			</foreach>
+		)
+		select myTable.paperScoreID,myTable.paperViewID,myTable.userID,myTable.courseName,myTable.centerName,
+		myTable.paperViewName,a.lastScore as lastMark,
+		a.autoScore as machineMark,a.paperScore as paperTotalScore,myTable.playCount,myTable.lastPlayTime
+		from (
+			select max(paperScoreID) as paperScoreID,userID,courseID,paperViewID,max(paperViewName) as paperViewName,
+			max(courseName) as courseName,centerID,max(centerName) as centerName,count(*) as playCount,max(createTime) as lastPlayTime 
+			from tmp 
+			group by userID,courseID,centerID,paperViewID
+		) myTable left join QZ_MEMBER_PAPER_SCORE a on a.paperScoreID=myTable.paperScoreID 
+	</select>
+
+</mapper>

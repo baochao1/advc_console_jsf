@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统--班级管理</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(classesAction.siteID)}" update="sMajorID" autoRun="true" rendered="#{classesAction.from == ''}" />
+	<p:remoteCommand name="setTeacherOrgs" actionListener="#{teacherOrgOther.setTeacherOrgs}" update="sOrgID" autoRun="true" />
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			
+			<h:outputLabel for="sMajorID" value="所属辅导" rendered="#{classesAction.from == ''}" />
+			<p:selectOneMenu id="sMajorID" value="#{classesAction.filterClasses.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" rendered="#{classesAction.from == ''}" >
+				<f:selectItem itemLabel="--请选择辅导--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sClassesName" value="班级名称" />
+			<h:panelGroup id="sClassesName" style="display:block;">
+				<p:autoComplete id="sClassName" panelStyleClass="minLength" 
+					value="#{classesAction.filterClasses.className}" completeMethod="#{comRequestMethod.completeClassName}" var="className" itemLabel="#{className}" itemValue="#{className}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sManager" value="班主任或管理员" />
+			<h:panelGroup id="sManager" style="display:block;">
+				<p:autoComplete id="sTeacherCode" panelStyleClass="minLength" 
+					value="#{classesAction.filterClasses.manager}" completeMethod="#{comRequestMethod.completeTeacherName}" var="teacherName" itemLabel="#{teacherName}" itemValue="#{teacherName}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sUserName" value="学员代码" />
+			<p:inputText id="sUserName" value="#{classesAction.filterClasses.userName}" styleClass="minLength"/>
+
+			<h:outputLabel for="sOrgID" value="组织" />
+			<p:selectOneMenu id="sOrgID" value="#{classesAction.filterClasses.orgID}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择组织--" itemValue="" />
+				<f:selectItems value="#{teacherOrgOther.teacherOrgs}" var="org" itemLabel="#{org.orgName}" itemValue="#{org.orgID}"/>
+			</p:selectOneMenu>
+		
+			<h:outputLabel />
+			<h:outputLabel />
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" update="classesList" actionListener="#{classesAction.search}" rendered="#{classesAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{classesAction.heighti2}" 
+			widgetVar="classesTable"
+			id="classesList"
+			binding="#{classesAction.pageTable}"
+			lazy="true"
+			value="#{classesAction.page}" 
+			rows="20"
+			var="classes" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rowKey="#{classes.classID}"
+			>
+			<p:column headerText="其他" width="5%">
+				<p:rowToggler />
+			</p:column>
+			<p:rowExpansion>
+			<p:panelGrid style="width:500px; text-align:left;">
+				<p:row>
+					<p:column>
+						<h:outputText value="班级动态" />
+					</p:column>
+					<p:column>
+						<h:link value="查看" outcome="/page/classnews/classnewsList.xhtml" includeViewParams="true" target="_blank" rendered="#{classesAction.viewAuth}">
+							<f:param name="classID" value="#{classes.classID}"/>
+						</h:link>
+					</p:column>
+					<p:column>
+						<h:outputText value="班级留言" />
+					</p:column>
+					<p:column>
+						<h:link value="查看" outcome="/page/membernoteAll/membernoteAllList.xhtml" includeViewParams="true" target="_blank" rendered="#{classesAction.viewAuth}">
+							<f:param name="classID" value="#{classes.classID}"/>
+							<f:param name="from" value="class"/>
+						</h:link>
+					</p:column>
+				</p:row>
+				<p:row>
+					<p:column>
+						<h:outputText value="班级短信" />
+					</p:column>
+					<p:column>
+						<h:link value="查看" outcome="/page/membermessageAll/membermessageAllList.xhtml" includeViewParams="true" target="_blank" rendered="#{classesAction.viewAuth}">
+							<f:param name="classID" value="#{classes.classID}"/>
+							<f:param name="from" value="class"/>
+						</h:link>
+					</p:column>
+					<p:column>
+						<h:outputText value="互助答疑" />
+					</p:column>
+					<p:column>
+						<h:link value="查看" outcome="/page/faqAll/faqAllList.xhtml" includeViewParams="true" target="_blank" rendered="#{classesAction.viewAuth}">
+							<f:param name="classID" value="#{classes.classID}"/>
+							<f:param name="from" value="class"/>
+						</h:link>
+					</p:column>
+				</p:row>
+				<p:row>
+					<p:column>
+						<h:outputText value="口号" />
+					</p:column>
+					<p:column colspan="3">
+						<p:inplace label="单击修改" editor="true" rendered="#{classesAction.optAuth}">
+							<p:ajax event="save" listener="#{classesReqAction.updateClassDesc}" update=":info" />
+							<p:inputTextarea cols="30" rows="5" autoResize="false" value="#{classes.classDesc}" />
+						</p:inplace>
+					</p:column>
+				</p:row>
+			</p:panelGrid>
+			</p:rowExpansion>
+			<p:column headerText="考期" width="18%">
+				<h:outputText value="#{classes.termName}" title="#{classes.termName}"/>
+			</p:column>
+			<p:column headerText="班级名称" width="22%">
+				<h:link value="#{classes.className}" title="#{classes.className}" 
+					outcome="/page/memberClass/memberClassList" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{classes.classID}"/>
+					<f:param name="siteID" value="#{classesAction.siteID}"/>
+					<f:param name="userName" value="#{classesAction.filterClasses.userName}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="班主任" width="15%">
+				<h:outputText value="#{classes.displayAdviser}" title="#{classes.displayAdviser}"/>
+			</p:column>
+			<p:column headerText="管理员" width="10%">
+				<p:commandLink value="#{classes.teacherName}" 
+					oncomplete="showDialog.show();" 
+					actionListener="#{classteacherReqAction.show(classes.classID)}"
+					update=":showManagerForm:showDialog" rendered="#{memberCallPostAction.viewAuth}">
+				</p:commandLink>
+			</p:column>
+			<p:column headerText="学员数" width="8%">
+				<h:outputText value="#{classes.currCount}"/>
+			</p:column>
+			<p:column headerText="公告" width="5%">
+				<h:link value="#{classes.classMsg1Day}" outcome="/page/classmsgNotice/classmsgNoticeList.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{classes.classID}"/>
+					<f:param name="siteID" value="#{classesAction.siteID}"/>
+					<f:param name="from" value="class"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="活动" width="5%">
+				<h:link value="#{classes.classMsg2Day}" outcome="/page/classmsgActive/classmsgActiveList.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{classes.classID}"/>
+					<f:param name="siteID" value="#{classesAction.siteID}"/>
+					<f:param name="from" value="class"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="创建时间 " width="11%">
+				<h:outputText value="#{classes.createTimeStr}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="classesList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 查看管理员页面 -->
+	<h:form id="showManagerForm" >
+		<ui:include src="/page/classteacher/load/teacherListShow.xhtml"/>
+	</h:form>
+	
+</h:body>
+</html>

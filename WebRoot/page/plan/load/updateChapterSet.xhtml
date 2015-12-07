@@ -1,0 +1,50 @@
+<h:form xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"  
+	id="updateChapterSetFrom">
+	<p:dialog header="学员特殊学习要求设置"     
+		id="updateChapterSetDialog" widgetVar="updateChapterSetDialog" 
+		resizable="false" showEffect="fade" hideEffect="fade" height="500">
+		<p:panelGrid>
+			<p:row>
+				<p:column><h:outputLabel value="计划项（章节）时长" /></p:column>
+				<p:column>
+					<p:spinner value="#{memberChapterSetReqAction.chapterSet.suggestStyTimeHour}" stepFactor="0.5" size="3" min="0.5" max="24"/>H
+				</p:column>
+			</p:row>
+			<p:row>
+				<p:column><h:outputLabel value="学习提示" /></p:column>
+				<p:column><p:editor value="#{memberChapterSetReqAction.chapterSet.studyAsk1}" controls="bold italic underline strikethrough link" width="400" height="120"/></p:column>
+			</p:row>
+			<p:row>
+				<p:column><h:outputLabel value="学习建议" /></p:column>
+				<p:column><p:editor value="#{memberChapterSetReqAction.chapterSet.studyAsk2}" controls="bold italic underline strikethrough link" width="400" height="120"/></p:column>
+			</p:row>
+			<p:row>
+				<p:column><h:outputLabel value="完成标准" /></p:column>
+				<p:column><p:editor value="#{memberChapterSetReqAction.chapterSet.studyAsk3}" controls="bold italic underline strikethrough link" width="400" height="120"/></p:column>
+			</p:row>
+			<p:row>
+				<p:column><h:outputLabel value="备注" /></p:column>
+				<p:column><p:editor value="#{memberChapterSetReqAction.chapterSet.studyAsk4}" controls="bold italic underline strikethrough link" width="400" height="120"/></p:column>
+			</p:row>
+		</p:panelGrid>
+		
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<h:inputHidden value="#{memberChapterSetReqAction.type}"/>
+				<h:inputHidden value="#{memberChapterSetReqAction.chapterSet.chapterSetID}"/>
+				<h:inputHidden value="#{memberChapterSetReqAction.chapterSet.planID}"/>
+				<h:inputHidden value="#{memberChapterSetReqAction.chapterSet.chapterID}"/>
+				<h:inputHidden value="#{memberChapterSetReqAction.chapterSet.userID}"/>
+				<p:messages id="msg"/>
+				<p:commandButton 
+					value="提交" update="msg :searchForm:dataTablePanel" oncomplete="optResult('updateChapterSetDialog',args,'1');" 
+					actionListener="#{memberChapterSetReqAction.updateChapterSet}"/> 
+				<p:commandButton type="button" value="关闭" onclick="updateChapterSetDialog.hide();"/>
+			</h:panelGroup>
+		</f:facet>
+	</p:dialog>
+</h:form>

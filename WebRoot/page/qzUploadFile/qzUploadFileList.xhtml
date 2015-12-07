@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>文件上传</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="addDialog.show();" 
+				actionListener="#{qzUploadFileReqAction.add}" rendered="#{qzUploadFileReqAction.optAuth}" update=":addForm:addDialog" />
+		</p:menubar>
+		
+		<p:dataTable scrollable="true" scrollHeight="#{qzUploadFileAction.heighti2}" 
+			widgetVar="qzUploadFileActionTable"
+			id ="qzUploadFileList"
+			binding="#{qzUploadFileAction.pageTable}"
+			lazy="true"
+			value="#{qzUploadFileAction.qzUploadFilePage}" 
+			rows="20"
+			var="qzUploadFile" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} / {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="ID" width="7%">
+				<h:outputText value="#{qzUploadFile.id}" />
+			</p:column>
+			<p:column headerText="路径" width="*">
+				<h:outputText value="#{qzUploadFile.fileUrl}" />
+			</p:column>
+			<p:column headerText="上传人" width="12%">
+				<h:outputText value="#{qzUploadFile.realName}"/>
+			</p:column>
+			<p:column headerText="操作" width="7%">
+				<h:outputLink value="#{qzUploadFile.fileUrl}" title="#{qzUploadFile.fileUrl}" target="_blank">
+					<h:outputText value="预览" />
+				</h:outputLink>
+			</p:column>			
+		</p:dataTable>
+	</p:panel>
+	</h:form>
+	
+	
+	<!-- 添加页面 -->
+	<h:form id="addForm">
+		<ui:include src="load/qzUploadFileAdd.xhtml"/>
+	</h:form>
+
+</h:body>
+</html>

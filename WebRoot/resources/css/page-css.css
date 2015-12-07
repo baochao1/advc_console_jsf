@@ -1,0 +1,209 @@
+BODY {
+	MARGIN: 0px;
+	padding: 0px;
+	FONT-SIZE: 11px;
+	FONT-FAMILY: verdana, Geneva, Arial, Helvetica, sans-serif;
+	background: rgb(240, 248, 255);
+}
+
+a {
+	cursor: pointer;
+}
+
+#searchForm .sfLabel {
+	width: 95%;
+}
+
+#searchForm .sfText {
+	width: 90%;
+}
+
+#searchForm a,.gridTable a {
+	color: #20b2aa;
+	text-decoration: none;
+}
+
+#searchForm a:visited,.gridTable a:visited {
+	color: #808000;
+}
+
+#searchForm a:hover,.gridTable a:hover {
+	color: #C71585;
+}
+
+#searchForm td,#searchForm2 td,#msgForm td,#smsForm td {
+	word-wrap: break-word;
+	word-break: break-all;
+	white-space: normal;
+}
+
+#loadForm a {
+	color: #20b2aa;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+#loadForm a:visited {
+	color: #808000;
+}
+
+#loadForm a:hover {
+	color: #C71585;
+}
+
+.formClass a {
+	color: #20b2aa;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.formClass a:visited {
+	color: #808000;
+}
+
+.formClass a:hover {
+	color: #C71585;
+}
+
+.requiredFlag {
+	color: red;
+}
+
+.addObjectClass {
+	width: 150px;
+}
+
+.addContentClass {
+	width: 250px;
+}
+
+.addObjectMinClass {
+	width: 60px;
+}
+
+.addObjectMinClass2 {
+	width: 100px;
+}
+
+.addObjectClass a,.addContentClass a {
+	color: #20b2aa;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.addObjectClass a:visited,.addContentClass a:visited {
+	color: #808000;
+}
+
+.addObjectClass a:hover,.addContentClass a:hover {
+	color: #C71585;
+}
+
+.readStatus-0,.status-0,.solveStatus-0,.answerStatus-0,.notifyType-2,.callStatus-0,.strategyType-4,.termType-4,.planCreated-false,.chapterOpenStatus-0,.planStatus-0,.planStatus-2,.planStatus-3,.planStatus-4,.planStatus-5,.planStatus-6,.planStatus-7,.planStatus-8,.planStatus-9,.planStatus-10,.planStatus-11,.planStatus-12,.planStatus-13,.planStatus-14,.finishStatus-0,.finishStatus-
+	{
+	color: red;
+}
+
+.readStatus-1,.status-1,.solveStatus-1,.answerStatus-1,.notifyType-1,.callStatus-1,.planCreated-true,.chapterOpenStatus-1,.planStatus-1,.finishStatus-1
+	{
+	color: green;
+}
+
+.callStatus-0,.notifyType-0,.chapterOpenStatus-2,.finishStatus-2 {
+	color: blue;
+}
+
+.ui-selectoneradio td {
+	border: none;
+	padding: 2px;
+}
+
+.ui-cell-editor-output {
+	color: #20B2AA
+}
+
+td label {
+	font-weight: bolder;
+}
+
+.myOrderList {
+	width: 400px;
+}
+
+.myBody {
+	padding: 10px 10px 100px 10px;
+}
+
+.myTable {
+	font-size: 13px;
+	width: 100%;
+}
+
+.labelColumn {
+	width: 12%;
+	height: 25px;
+	padding-left: 30px;
+}
+
+.textlColumn {
+	width: 40%;
+	height: 25px;
+	padding-left: 30px;
+}
+
+.facetColumn {
+	height: 25px;
+	text-align: center;
+	font-size: 13px;
+}
+
+.tinyLength {
+	width: 100px;
+}
+
+.minLength {
+	width: 200px;
+}
+
+.maxLength {
+	width: 400px;
+}
+
+.largeLength {
+	width: 700px;
+}
+
+.largeLength3 {
+	width: 800px;
+}
+
+.largeLength2 {
+	width: 900px;
+}
+
+.panelGridCenter {
+	margin: 0 auto;
+}
+
+.rptTime,.rptPoint,.rptCenter,.rptError {
+	width: 100%;
+}
+
+.rptTime,.rptPoint,.rptCenter,.rptError,.rptTime td,.rptPoint td,.rptCenter td,.rptError td
+	{
+	border: 1px solid #DDDDDD;
+	padding: 4px 10px;
+	border-collapse: collapse;
+}
+
+.rptTime tr,.rptPoint tr,.rptCenter tr,.rptError tr {
+	border: 1px solid #DDDDDD;
+	color: #362B36;
+}
+
+.rptTime th,.rptPoint th,.rptCenter th,.rptError th {
+	background: repeat-x scroll 50% 50% #D7EBF9;
+	border: 1px solid #AED0EA;
+	color: #2779AA;
+	font-weight: bold;
+}

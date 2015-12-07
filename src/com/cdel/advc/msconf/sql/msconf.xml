@@ -1,0 +1,34 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="msconf">
+	
+    <insert id="insertMsconf">
+        INSERT INTO ADVC_MSCONF ( classID,status,creator,creatTime )
+        VALUES ( #{classID},#{status},#{creator},#{creatTime} )
+    </insert>
+    
+    <select id="getIsMs" parameterType="int" resultType="int">
+		SELECT 
+			case when msStartTime is not null and msEndTime is not null then 1 
+			when msStartTime is null or msEndTime is null then 2 
+			else 3 end as isMs 
+	 	FROM ADVC_MSCONF WITH (NOLOCK) 
+		where classID = #{classID}
+    </select>
+    
+    <select id="getMsconf" parameterType="int" resultType="Msconf">
+		SELECT msStartTime,msEndTime,tzTime,classID 
+	 	FROM ADVC_MSCONF WITH (NOLOCK) 
+		where classID = #{classID}
+    </select>
+    
+    <update id="updateMsconf" parameterType="Msconf">
+        UPDATE ADVC_MSCONF 
+        <set>
+        	<if test="msStartTime != null">msStartTime = #{msStartTime},</if>
+        	<if test="msEndTime != null">msEndTime = #{msEndTime},</if>
+        	<if test="tzTime != null">tzTime = #{tzTime},</if>
+        </set>
+        WHERE classID = #{classID}
+    </update>
+    
+</mapper>

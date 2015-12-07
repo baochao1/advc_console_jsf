@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学员分班管理</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	$(document).ready(function(){
+		 var  isInterface =  "#{divideAction.isInterface}";
+		 if(isInterface==1){
+			 searchForm2();
+		 }
+	    });
+	function searchForm2(){
+		jQuery("#searchForm2\\:searchBtn").click();
+		searchFieldSet.toggle();
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm2">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="3" style="width:100%; text-align:left;">
+			<h:outputLabel value="学员代码"><span class="requiredFlag">*</span></h:outputLabel>
+		    <p:inputText value="#{divideAction.searchDivide.userName}" styleClass="minLength"/>
+		
+			<p:commandButton id="searchBtn" value="查询" actionListener="#{divideAction.search}" update=":info showTabView" oncomplete="changeDialog.hide();searchFieldSet.toggle();" rendered="#{divideAction.viewAuth}" />
+		</p:panelGrid>
+		</p:fieldset>
+		<p:tabView id="showTabView" rendered="#{divideAction.viewAuth}" style="height:#{divideAction.heighti2}px;">
+			<p:tab title="学员所在班级">
+				<p:commandLink value="分班日志 " oncomplete="logDialog.show();" update=":logForm:logDialog"
+				 	actionListener="#{divideLogAction.showLog}" rendered="#{divideAction.show}" style="font-weight:bold; color:red; "/>
+				<p:outputLabel rendered="#{divideAction.isInterface == 1}">
+					<a href="#{divideAction.infoAddUrl }?UserName=${divideAction.searchDivide.userName}" target="_blank" >信息添加</a>
+				</p:outputLabel>
+				<p:dataTable id="mcList"
+					value="#{divideAction.mcList}" 
+					var="mc" 
+					rowIndexVar="row"
+					styleClass="gridTable" 
+					emptyMessage="没有加入任何班！"
+					rendered="#{divideAction.show}" >
+					<p:column headerText="考期" width="20%">
+						<h:outputText value="#{mc.termName}"/>
+					</p:column>
+					<p:column headerText="班级名称" width="15%" styleClass="termType-#{mc.termType}" >
+						<h:outputText value="#{mc.className}"/>
+					</p:column>
+					<p:column headerText="班主任" width="15%">
+						<h:outputText value="#{mc.displayAdviser}"/>
+					</p:column>
+					<p:column headerText="类别" styleClass="termType-#{mc.termType}" width="8%">
+						<h:outputText value="#{mc.termTypeStr}"/>
+					</p:column>
+					<p:column headerText="包含课程" >
+						<h:outputText value="#{mc.studyCourseListStrShort}" title="#{mc.studyCourseListStr}"/>
+					</p:column>
+					<p:column headerText="分班时间" width="10%">
+						<h:outputText value="#{mc.createTimeStr}"/>
+					</p:column>
+					<p:column headerText="操作" width="10%">
+						<p:commandLink value="退班 " onstart="return confirmDia('确认退班么？');" actionListener="#{divideReqAction.exitClass(divideAction.userID,mc.classID)}" 
+							oncomplete="optResultClick(args,8,'searchForm2\\:searchBtn');searchFieldSet.toggle();" update=":info"/>
+						<p:commandLink value="换班 " oncomplete="changeDialog.show();" update=":changeForm:changeDialog" 
+							actionListener="#{divideReqAction.showChangeClass(divideAction.userID,mc.strategyID,mc.classID)}" />
+					</p:column>
+				</p:dataTable>
+			</p:tab>
+			<p:tab title="匹配学员的考期及分班策略">
+				<p:tabView id="showClTabView" value="#{divideAction.autoList}" var="auto" rendered="#{divideAction.showCl}" >
+					<p:tab title="#{auto.majorName}">
+						<p:dataTable value="#{auto.strategyList}" 
+							var="sl" styleClass="gridTable" >
+							<p:column headerText="考期" width="10%">
+								<h:outputText value="#{sl.termYear}#{sl.termMonth}"/>
+							</p:column>
+							<p:column headerText="考期名称" width="20%">
+								<h:outputText value="#{sl.termName}"/>
+							</p:column>
+							<p:column headerText="类别" styleClass="strategyType-#{sl.strategyType}" width="8%">
+								<h:outputText value="#{sl.strategyTypeStr}"/>
+							</p:column>
+							<p:column headerText="策略名称" styleClass="strategyType-#{sl.strategyType}" >
+								<h:outputText value="#{sl.setDesc}"/>
+							</p:column>
+							<p:column headerText="包含课程" width="18%">
+								<h:outputText value="#{sl.courseNamesShort}" title="#{sl.courseNames}"/>
+							</p:column>
+							<p:column headerText="操作" width="6%">
+								<p:commandLink value="分班 " actionListener="#{divideReqAction.divide(divideAction.userID,sl.termID,sl.strategyID,sl.studyCourse,sl.strategyType,auto.majorID,sl.limitNum)}" 
+								oncomplete="optResultClick(args,7,'searchForm2\\:searchBtn');searchFieldSet.toggle();" update=":info"/>
+							</p:column>
+						</p:dataTable>
+					</p:tab>
+				</p:tabView>
+			</p:tab>
+			<p:tab title="学员开通的课程列表">
+				<p:dataTable value="#{divideAction.bcList}" 
+					var="bc" 
+					rowIndexVar="row"
+					styleClass="gridTable" 
+					emptyMessage="#{divideAction.bcListMsg}"
+					rendered="#{divideAction.show}" >
+					<p:column headerText="课程代码" width="20%">
+						<h:outputText value="#{bc.courseCode}"/>
+					</p:column>
+					<p:column headerText="课程名称">
+						<font color='#ff6600'><h:outputText value="[#{bc.majorName}]"/></font>
+						<h:outputText value="#{bc.courseName}"/>
+					</p:column>
+					<p:column headerText="开课时间" width="15%">
+						<h:outputText value="#{bc.openTime}"/>
+					</p:column>
+				</p:dataTable>
+			</p:tab>
+		</p:tabView>
+		
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="searchBtn" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 日志页面 -->
+	<h:form id="logForm" >
+		<p:dialog id="logDialog" header="查看日志" widgetVar="logDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/divideLogList.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 换班页面 -->
+	<h:form id="changeForm" >
+		<p:dialog id="changeDialog" header="换班" widgetVar="changeDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/changeClassList.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<!--  选择分班学员 -->
+	<h:form id="memberForm" >
+		<p:dialog id="memberDialog" header="选择学员" widgetVar="memberDialog" resizable="false" showEffect="fade" hideEffect="fade" height="150" modal="true" dynamic="true">
+			<ui:include src="load/selectDivideMemberList.xhtml"/>
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:messages id="msg"/>
+					<p:commandButton value="提交" actionListener="#{divideAction.search}" update="msg" oncomplete="memberDialog.hide();optResult2('memberDialog',args);"  />
+					<p:commandButton type="button" value="关闭" onclick="memberDialog.hide();"   />
+				</h:panelGroup>
+			</f:facet>
+		</p:dialog>
+	</h:form>
+	
+</h:body>
+</html>

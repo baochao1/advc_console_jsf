@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学员选课信息</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sUserName" value="学员代码" />
+			<p:inputText id="sUserName" value="#{studentCourseReqAction.searchStudentCourse.userName}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sSiteType" value="网站" />
+			<p:selectOneMenu id="sSiteType" style="width:200px;" panelStyleClass="minLength" value="#{studentCourseReqAction.searchStudentCourse.siteType}">
+				<f:selectItems value="#{studentCourseReqAction.siteType.entrySet()}" var="siteType" itemLabel="#{siteType.value}" itemValue="#{siteType.key}"/>
+			</p:selectOneMenu>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{studentCourseReqAction.search}" rendered="#{courseAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable 
+			id="buyCourseList"
+			value="#{studentCourseReqAction.buyCourseList}" 
+			var="buyCourse" 
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{courseAction.viewAuth}"
+			>
+			<p:column headerText="课程代码">
+				<h:outputText value="#{buyCourse.courseCode}" title="#{buyCourse.courseCode}"/>
+			</p:column>
+			<p:column headerText="课程名称">
+				<font color='#ff6600'>[#{buyCourse.majorName}]</font><h:outputText value="#{buyCourse.courseName}" title="#{buyCourse.courseName}"/>
+			</p:column>
+			<p:column headerText="开课时间">
+				<h:outputText value="#{buyCourse.openTime}" title="#{buyCourse.openTime}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="buyCourseList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+</h:body>
+</html>

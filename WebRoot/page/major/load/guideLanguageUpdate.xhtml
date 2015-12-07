@@ -1,0 +1,58 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" style="width:800px">
+ 	
+	<h:outputLabel for="uStageID" value="阶段名称"   >
+	  <span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:outputLabel id="uStageID" value="#{guideLangueReqAction.guideLanguage.stageName}" style="width:200px;" panelStyleClass="minLength" />
+			
+	<h:outputLabel for="uServiceID" value="服务项名称"  >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:outputLabel id="uServiceID" value="#{guideLangueReqAction.guideLanguage.serviceName}" style="width:200px;" panelStyleClass="minLength" />
+	 
+	<h:outputLabel for="uPromptKey" value="提示类型">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:outputLabel id="uPromptKey" value="#{guideLangueReqAction.guideLanguage.promptName}" style="width:200px;" panelStyleClass="minLength" />
+	
+	<c:if test="${guideLangueReqAction.guideLanguage.promptKey == 5 }">
+		<h:outputLabel value="开始时间" id="starttime" />
+		<p:calendar pattern="yyyy-MM-dd" style="width:200px;" 
+		   value="#{guideLangueReqAction.guideLanguage.beginTime}" />
+	</c:if>
+	
+	<c:if test="${guideLangueReqAction.guideLanguage.promptKey == 4 }">
+		<h:outputLabel value="结束时间"  id="endTime" />
+    	<p:calendar pattern="yyyy-MM-dd" style="width:200px;"  
+			value="#{guideLangueReqAction.guideLanguage.endTime}" />
+	</c:if>
+	
+	<c:if test="${guideLangueReqAction.guideLanguage.promptKey == 6}">
+		<h:outputLabel value="开始时间" id="starttime1"  />  
+		<p:calendar pattern="yyyy-MM-dd"   style="width:200px;" value="#{guideLangueReqAction.guideLanguage.beginTime}" widgetVar="starttime2" />
+		<h:outputLabel value="结束时间"  id="endTime1"   ></h:outputLabel>
+	    <p:calendar pattern="yyyy-MM-dd"   style="width:200px;"   value="#{guideLangueReqAction.guideLanguage.endTime}"  widgetVar="endTime2" />  
+	</c:if>
+	
+	<h:outputLabel for="uPromptContent" value="提示内容">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+    <p:inputTextarea id="uPromptContent" cols="50" rows="5" autoResize="false" value="#{guideLangueReqAction.guideLanguage.promptContent}" />
+  	
+  	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{guideLangueReqAction.guideLanguage.guideLanguageID}"/>
+			<h:inputHidden value="#{guideLangueReqAction.guideLanguage.stageID}" />
+			<h:inputHidden value="#{guideLangueReqAction.guideLanguage.serviceID}" />
+			<h:inputHidden value="#{guideLangueReqAction.guideLanguage.promptKey}" />
+			<h:inputHidden value="#{guideLangueReqAction.guideLanguage.promptID}" />
+			<p:commandButton value="保存" actionListener="#{guideLangueReqAction.updateSubmit(1)}" update="msg" oncomplete="optResult('loadDialog',args,'1');"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

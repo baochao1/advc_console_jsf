@@ -1,0 +1,51 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" style="width:800px">
+ 	
+	<h:outputLabel for="uStageID" value="阶段名称" >
+	  <span class="requiredFlag">*</span>
+	</h:outputLabel>
+	
+	<p:selectOneMenu id="uStageID" value="#{guideLangueReqAction.guideLanguage.stageID}" style="width:200px;" panelStyleClass="minLength" >
+		<p:ajax process="@this" event="change" update="uServiceID" listener="#{serviceItemOther.changeStageID}" />
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+ 	   <f:selectItems value="#{majorStageOther.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+ 	</p:selectOneMenu>
+			
+	<h:outputLabel for="uServiceID" value="服务项名称"  >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="uServiceID" value="#{guideLangueReqAction.guideLanguage.serviceID}" style="width:200px;" panelStyleClass="minLength" >
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{serviceItemOther.serviceItemList}" var="serviceItem" itemLabel="#{serviceItem.serviceName}" itemValue="#{serviceItem.serviceID}"/>
+	</p:selectOneMenu>	
+	
+	<h:outputLabel for="uPromptKey" value="提示类型">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	
+	<p:selectOneMenu  id="uPromptKey" widgetVar="aa" value="#{guideLangueReqAction.guideLanguage.promptKey}" onchange="hiddTime();" style="width:200px;" panelStyleClass="minLength" >
+    	<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{guideLangueReqAction.promptTimeMap.entrySet()}" var="promptTime" itemLabel="#{promptTime.value}" itemValue="#{promptTime.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="开始时间" id="starttime" />
+	<p:calendar pattern="yyyy-MM-dd" style="width:200px;" value="#{guideLangueReqAction.guideLanguage.beginTime}" widgetVar="starttime2" />
+	
+	<h:outputLabel value="结束时间"  id="endTime" />
+    <p:calendar pattern="yyyy-MM-dd" style="width:200px;" value="#{guideLangueReqAction.guideLanguage.endTime}" widgetVar="endTime2" />  
+	 
+	<h:outputLabel for="uPromptContent" value="提示内容">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+    <p:inputTextarea id="uPromptContent" cols="50" rows="5" autoResize="false" value="#{guideLangueReqAction.guideLanguage.promptContent}" />
+  	
+  	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<p:commandButton value="添加" actionListener="#{guideLangueReqAction.updateSubmit(0)}" update="msg" oncomplete="optResult('addDialog',args,'0');"/>
+			<p:commandButton type="button" value="关闭" onclick="addDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

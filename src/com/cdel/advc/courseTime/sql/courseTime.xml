@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="coursetime">
+    
+    <insert id="insertCourseTime">
+    	insert into advc_home_courseTime (qzCourseID, stageID, scheduleTime, status, createTime ) 
+    	values (#{qzCourseID}, #{stageID}, #{scheduleTime}, #{status}, #{createTime} )
+    </insert>
+    
+    <select id="hasSameTime" parameterType="CourseTime" resultType="Integer">
+		SELECT count(courseTimeID)
+		FROM advc_home_courseTime WITH (NOLOCK) 
+		where qzCourseID=#{qzCourseID} and stageID=#{stageID} and status=1
+    </select>
+    
+    <select id="getCourseTimeList" parameterType="CourseTime" resultType="CourseTime">
+		SELECT a.qzCourseID,a.stageID,b.stageName,a.status,a.courseTimeID,a.scheduleTime 
+		FROM advc_home_courseTime a WITH (NOLOCK) 
+		Left join advc_home_Stage b WITH (NOLOCK) on a.stageID=b.stageID 
+		where a.qzCourseID=#{qzCourseID}
+		order by stageID,status desc 
+    </select>
+    
+    <update id="updateCourseTime">
+		UPDATE advc_home_courseTime 
+		<set>
+			<if test="scheduleTime !=null"> scheduleTime =#{scheduleTime}, </if>
+			<if test="status !=null"> status =#{status} </if>
+		</set>
+		WHERE courseTimeID=#{courseTimeID}
+	</update>
+    
+</mapper>

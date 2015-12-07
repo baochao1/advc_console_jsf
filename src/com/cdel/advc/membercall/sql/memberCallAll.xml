@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membercallall">
+	<sql id="getMembercallAll_body">
+		SELECT a.callID, a.userID,b.userName, a.classID,c.classCode,c.displayAdviser, 
+		a.studyStatus, a.personalAsk, a.reservedTime,a.callType,
+		a.feedback, a.callStatus, a.caller, a.callTime,a.reservedDate,
+		a.reserveRemark, t.teacherName,c.className, ROW_NUMBER() Over(ORDER BY a.callTime DESC,a.callID desc) AS rowNum 
+		<if test="callStatus==3">
+		FROM (
+			select min(callID) callID,count(callID) countCallID,classID,userID,
+			min(caller) caller,min(callStatus) callStatus ,
+			min(studyStatus) studyStatus, min(personalAsk) personalAsk, min(reservedTime) reservedTime,min(callType) callType,
+			min(feedback) feedback, min(callTime) callTime,min(reservedDate) reservedDate,min(reserveRemark) reserveRemark 
+			from ADVC_MEMBER_CALL 
+			group by classID,userID 
+			having count(callID)=1
+		) a 
+		</if>
+		<if test="callStatus!=3">
+			FROM ADVC_MEMBER_CALL a WITH (NOLOCK)
+		</if>
+		LEFT JOIN ADVC_MEMBER b WITH (NOLOCK) on a.userID=b.userID
+		LEFT JOIN ADVC_CLASS c WITH (NOLOCK) on a.classID=c.classID
+		LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) on a.caller=t.teacherID
+		WHERE a.callTime is not null 
+		<if test="status">AND c.status=#{status} </if>
+		<if test="userID!=null">AND a.userID=#{userID} </if>
+		<if test="classID!=null">AND a.classID=#{classID} </if>
+		<if test="callStatus!=null">
+			<if test="callStatus==3"> and callStatus=0 </if>
+			<if test="callStatus!=3"> AND callStatus=#{callStatus} </if>
+		</if>
+		<if test="caller!=null">AND caller=#{caller} </if>
+		<if test="startDate!=null">AND callTime>=#{startDate} </if>
+		<if test="endDate!=null">AND callTime &lt;=#{endDate} </if>
+		<if test="className!=null and className !=''">AND c.className like '%'+#{className}+'%' </if>
+		<if test="userName!=null and userName !=''">AND b.userName=#{userName} </if>
+		<if test="displayAdviser!=null and displayAdviser !=''">AND (c.displayAdviser like #{displayAdviser}+'%') </if>
+		<if test="teacherName!=null and teacherName !=''">AND (t.teacherName = #{teacherName} or t.teacherCode = #{teacherName}) </if>
+	</sql>
+
+	<select id="countMemberCallAll" resultType="int">
+		SELECT COUNT(*) FROM (
+			<include refid="getMembercallAll_body" />
+		) AS myTable
+	</select>
+
+	<select id="findPageMemberCallAll" resultType="MemberCallAll" parameterType="MemberCallAll">
+		SELECT * FROM (
+			<include refid="getMembercallAll_body" />
+		) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+	</select>
+	
+	<sql id="getMembercallAll4T_body">
+		SELECT *, ROW_NUMBER() Over(ORDER BY callCount DESC) AS rowNum 
+        FROM (
+	        SELECT t.teacherID,t.teacherCode,t.teacherName,count(a.callID) as callCount
+	        FROM ADVC_MEMBER_CALL a WITH (NOLOCK) 
+	        LEFT JOIN ADVC_MEMBER b WITH (NOLOCK) on a.userID=b.userID
+	        LEFT JOIN ADVC_CLASS c WITH (NOLOCK) on a.classID=c.classID
+	        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) on a.caller=t.teacherID 
+	        WHERE a.callTime is not null 
+	        <if test="status">AND c.status=#{status} </if>
+			<if test="userID!=null">AND a.userID=#{userID} </if>
+			<if test="classID!=null">AND a.classID=#{classID} </if>
+			<if test="callStatus!=null">AND callStatus=#{callStatus} </if>
+			<if test="caller!=null">AND caller=#{caller} </if>
+			<if test="startDate!=null">AND callTime>=#{startDate} </if>
+			<if test="endDate!=null">AND callTime &lt;=#{endDate} </if>
+			<if test="className!=null and className !=''">AND c.className like '%'+#{className}+'%' </if>
+			<if test="userName!=null and userName !=''">AND b.userName=#{userName} </if>
+			<if test="displayAdviser!=null and displayAdviser !=''">AND (c.displayAdviser like #{displayAdviser}+'%') </if>
+			<if test="teacherName!=null and teacherName !=''">AND (t.teacherName = #{teacherName} or t.teacherCode = #{teacherName}) </if>
+			group by t.teacherID,t.teacherCode,t.teacherName 
+        )t
+	</sql>
+
+	<select id="countMemberCallAll4T" resultType="int">
+		SELECT COUNT(*) FROM (
+			<include refid="getMembercallAll4T_body" />
+		) AS myTable
+	</select>
+
+	<select id="findPageMemberCallAll4T" resultType="MemberCallAll" parameterType="MemberCallAll">
+		SELECT * FROM (
+			<include refid="getMembercallAll4T_body" />
+		) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+	</select>
+
+</mapper>

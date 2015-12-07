@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="allclasses">
+	<!-- 总班级管理相关 分页 查询个数语句 -->
+	<select id="countAllClasses" resultType="int">
+		SELECT COUNT(classID) FROM (
+		<include refid="classes.getClassesList_classManage" />
+		) AS myTable
+	</select>
+
+	<!-- 总班级管理相关 分页查询列表语句 -->
+	<select id="findPageAllClasses" parameterType="AllClasses" resultType="AllClasses">
+		SELECT * FROM (
+			SELECT t.*, ROW_NUMBER() Over(ORDER BY t.classID DESC) AS rowNum 
+			FROM (
+				<include refid="classes.getClassesList_classManage" />
+			)t
+		) AS myTable WHERE rowNum BETWEEN #{rowNumStart} AND #{rowNumEnd}
+	</select>
+
+</mapper>

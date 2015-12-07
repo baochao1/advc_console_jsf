@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="smstemplate">
+    
+    <sql id="getSmsTemplateList_body">
+		SELECT a.title,a.sendContent,a.createTime,b.stageName,a.status,a.templateID,a.sendType, 
+		ROW_NUMBER() Over(ORDER BY a.stageID asc,a.templateID asc) AS rowNum,a.stageID 
+        FROM advc_home_sms_template a WITH (NOLOCK) 
+        LEFT JOIN advc_home_Stage b WITH (NOLOCK) ON a.stageID=b.stageID 
+		<where>
+			<if test="title != null and title != ''"> and a.title=#{title}</if>
+			<if test="status != null"> and a.status=#{status}</if>
+			<if test="majorID != null"> and a.majorID=#{majorID}</if>
+			<if test="stageID != null"> and a.stageID=#{stageID}</if>
+		</where>
+    </sql>
+
+    <select id="countSmsTemplate" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getSmsTemplateList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageSmsTemplate" parameterType="SmsTemplate" resultType="SmsTemplate">
+        SELECT * FROM (
+            <include refid="getSmsTemplateList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+    <insert id="insertSmsTemplate">
+    	insert into advc_home_sms_template (majorID, stageID, title, sendContent, creator, createTime, status, sendType ) 
+    	values (#{majorID}, #{stageID}, #{title}, #{sendContent}, #{creator}, #{createTime}, #{status}, #{sendType} )
+    </insert>
+    
+    <update id="updateSmsTemplate">
+		UPDATE advc_home_sms_template 
+		<set>
+			<if test="title != null and title != ''"> title=#{title},</if>
+			<if test="sendContent != null and sendContent != ''"> sendContent=#{sendContent},</if>
+			<if test="sendRule != null and sendRule != ''"> sendRule=#{sendRule},</if>
+			<if test="status !=null"> status =#{status}</if>
+		</set>
+		WHERE templateID=#{templateID}
+	</update>
+	
+	<select id="getSmsTemplate" parameterType="Integer" resultType="SmsTemplate">
+		SELECT a.templateID,a.title,a.sendContent,a.sendType,a.sendRule,b.stageName 
+		FROM advc_home_sms_template a WITH (NOLOCK) 
+		LEFT JOIN advc_home_Stage b WITH (NOLOCK) ON a.stageID=b.stageID 
+		where a.templateID=#{templateID}
+    </select>
+    
+	<select id="getSmsTemplateList" parameterType="SmsTemplate" resultType="SmsTemplate">
+		SELECT templateID,sendContent,sendType,sendRule 
+		FROM advc_home_sms_template WITH (NOLOCK) 
+		where majorID=#{majorID} and stageID=#{stageID} and status=#{status}
+    </select>
+    
+</mapper>

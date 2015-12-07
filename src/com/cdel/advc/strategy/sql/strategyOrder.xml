@@ -1,0 +1,20 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="strategyorder">
+	<select id="getStrategyOrderList" parameterType="StrategyOrder" resultType="StrategyOrder">
+        SELECT a.courseName,a.courseID,b.sequence,${strategyID} strategyID 
+        FROM ADVC_COURSE a WITH (NOLOCK) 
+        left join ADVC_CLASS_STRATEGY_COURSEORDER b WITH (NOLOCK) on a.courseID=b.courseID and b.strategyID=#{strategyID} 
+        where a.courseID in (${courseIDs}) 
+        order by b.strategyID,b.sequence
+    </select>
+    
+    <update id="updateStrategyOrder" parameterType="StrategyOrder">
+		IF EXISTS (SELECT 1 FROM ADVC_CLASS_STRATEGY_COURSEORDER with (nolock) WHERE strategyID=#{strategyID} and courseID=#{courseID})
+			UPDATE ADVC_CLASS_STRATEGY_COURSEORDER SET sequence=#{sequence} 
+			WHERE strategyID=#{strategyID} and courseID=#{courseID}
+		ELSE
+			INSERT INTO ADVC_CLASS_STRATEGY_COURSEORDER 
+			VALUES(#{strategyID}, #{courseID}, #{sequence}, #{status})
+	</update>
+	
+</mapper>

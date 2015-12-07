@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="major">
+	<select id="getMajor" parameterType="Integer" resultType="Major">
+		SELECT m.*,b.businessName 
+		FROM ADVC_MAJOR m WITH (NOLOCK) 
+		LEFT JOIN ADVC_BUSINESS b WITH (NOLOCK) ON m.businessID=b.businessID 
+		where m.majorID=#{majorID}
+    </select>
+
+	<select id="getMajorList" resultType="Major">
+		SELECT am.* FROM ADVC_MAJOR am WITH (NOLOCK)
+		LEFT JOIN ADVC_WEBSITE aw WITH (NOLOCK) ON am.siteID = aw.siteID
+		LEFT JOIN ADVC_BUSINESS ab WITH (NOLOCK) ON ab.businessID = am.businessID
+		WHERE aw.status = 1 and ab.status = 1
+		<if test="businessID!=null"> and am.businessID=#{businessID}</if>
+		<if test="siteID!=null"> and am.siteID=#{siteID}</if>
+		<if test="status!=null"> and am.status=#{status}</if>
+		<if test="isNewService !=null"> and am.isNewService=#{isNewService}</if>
+	</select>
+    
+    <select id="getMajorNameByMajorName" parameterType="String" resultType="String">
+    	SELECT top 20 majorName FROM ADVC_MAJOR WHERE majorName like '%'+#{majorName}+'%'
+    	order by majorName 
+    </select>
+    
+    <sql id="getMajorList_body">
+		SELECT m.*,b.businessName,at.teacherName creatorName,w.siteName,
+		ROW_NUMBER() Over(ORDER BY majorID DESC) AS rowNum 
+        FROM ADVC_MAJOR m WITH (NOLOCK) LEFT JOIN ADVC_BUSINESS b WITH (NOLOCK) ON m.businessID=b.businessID 
+        LEFT JOIN ADVC_WEBSITE w WITH (NOLOCK) ON m.siteID=w.siteID 
+        LEFT JOIN ADVC_TEACHER at WITH (NOLOCK) on at.teacherID = m.creator 
+		<where>
+			<if test="siteID != null"> and m.siteID=#{siteID}</if>
+			<if test="majorID != null"> and m.majorID=#{majorID}</if>
+			<if test="businessID != null"> and m.businessID=#{businessID}</if>
+			<if test="majorName != null and majorName != ''"> and m.majorName=#{majorName}</if>
+			<if test="status != null"> and m.status=#{status}</if>
+		</where>
+    </sql>
+
+    <select id="countMajor" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getMajorList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageMajor" parameterType="Major" resultType="Major">
+        SELECT * FROM (
+            <include refid="getMajorList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+    <update id="updateMajor" parameterType="Course">
+        UPDATE 
+        	ADVC_MAJOR 
+        <set>
+        	<if test="isNewService != null">isNewService = #{isNewService},</if>
+        	<if test="planSmsTemplate != null and planSmsTemplate != ''">planSmsTemplate = #{planSmsTemplate},</if>
+        	<if test="examDate != null">examDate = #{examDate},</if>
+        	<if test="reportDateSpace != null">reportDateSpace = #{reportDateSpace},</if>
+        	<if test="status != null">status = #{status},</if>
+        	<if test="roomStatus != null">roomStatus = #{roomStatus},</if>
+        	<if test="enterRoom != null">enterRoom = #{enterRoom},</if>
+        	<if test="reportStatus != null">reportStatus = #{reportStatus},</if>
+        	<if test="reportDate != null">reportDate = #{reportDate},</if>
+        </set>
+        WHERE
+        	majorID = #{majorID}
+    </update>
+    
+    <select id="getMajorByClassID" parameterType="Integer" resultType="Major">
+        SELECT M.* 
+        FROM ADVC_MAJOR M WITH (NOLOCK)
+        	LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON CS.majorID = M.majorID
+        	LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON C.strategyID = CS.strategyID
+        WHERE C.classID = #{classID}
+    </select>
+
+</mapper>

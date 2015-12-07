@@ -1,0 +1,42 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="1" styleClass="largeLength" >
+	
+	<p:dataTable scrollable="true" scrollHeight="#{recordAction.heighti}" 
+		id="stat"
+		value="#{recordReqAction.pointStatList}" 
+		var="stat" 
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！"
+		>
+		<p:column headerText="序号" width="5%">
+			<h:outputText value="#{row+1}" />
+		</p:column>
+		<p:column headerText="课程名" width="20%">
+			<h:outputText value="#{stat.courseName}" />
+		</p:column>
+		<p:column headerText="章节" width="20%">
+			<h:outputText value="#{stat.chapterName}" />
+		</p:column>
+		<p:column headerText="知识点个数" width="20%">
+			<h:outputText value="#{stat.pointNum}" />
+		</p:column>
+		<p:column headerText="测试题数" width="10%">
+			<h:outputText value="#{stat.totleNum}" />
+		</p:column>
+		<p:column headerText="正确题数" width="10%">
+			<h:outputText value="#{stat.correctCount}" />
+		</p:column>
+		<p:column headerText="正确率" width="15%">
+			<h:outputText value="#{stat.correctScale}" />
+		</p:column>
+	</p:dataTable>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="statDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

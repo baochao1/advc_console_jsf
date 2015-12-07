@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="infomodify">
+	<sql id="pageSql_body">
+        select c.*,ROW_NUMBER() Over(ORDER BY teacherID DESC) AS rowNum  from (
+        select count(b.teacherID) myCount,b.teacherID,b.teacherName,a.msgTitle,a.msgContent 
+		from ADVC_MEMBER_MSG a WITH (NOLOCK), ADVC_TEACHER b WITH (NOLOCK) 
+		where a.teacherID=b.teacherID and b.status=1 and a.status=1 
+	    <if test="msgTitle !=null and msgTitle !=''"> and a.msgTitle like '%'+#{msgTitle}+'%' </if>
+	    <if test="msgContentNew !=null and msgContentNew !=''"> and a.msgContent like '%'+#{msgContentNew}+'%' </if>
+		group by b.teacherID,b.teacherName,a.msgTitle,a.msgContent
+		) c
+    </sql>
+    
+    <select id="findPageInfoModify" resultType="InfoModify" parameterType="InfoModify">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countInfoModify" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+</mapper>

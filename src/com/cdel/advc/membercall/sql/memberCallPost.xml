@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membercallpost">
+
+	<!-- 过期电话回访，查询条件  -->
+	<!--  不同身份人员没有区分, 以班级为单位统计过期电话回访（忽略 isNewService = 0 条件）  -->
+	<sql id="getMembercallPost_where"> 		
+		WHERE C.status = 1 AND MC.status = 1 
+		<if test="startDate != null"> 
+			AND CR.lastCallTime &gt;= #{startDate}
+		</if>
+		<if test="endDate != null"> 
+			AND CR.lastCallTime &lt; #{endDate}
+		</if>
+		<if test="orgID !=null"> AND T2.orgID = #{orgID} </if>
+		<if test="teacherID != null"> AND 
+			<if test="teachUser">
+			(
+				<foreach collection="sameOrgTeachers" index="index" item="sameOrgTeacher" open="(" close=")" separator=" or ">   
+					CT2.teacherID = #{sameOrgTeacher} 
+				</foreach>
+			)
+			</if>
+			<if test="!teachUser"> CT2.teacherID=#{teacherID} </if>
+		</if>
+		<if test="className !=null and className !=''"> AND C.className = #{className}</if>
+		<if test="teacherName !=null and teacherName !=''"> AND (C.displayAdviser LIKE #{teacherName}+ '%' OR T.teacherName LIKE #{teacherName} + '%' ) </if>
+		<if test="userName !=null and userName !=''"> AND M.userName = #{userName} </if>
+		<if test="classID !=null"> AND MC.classID=#{classID} </if>
+ 	</sql>
+		
+	<select id="countMemberCallPost" resultType="int">
+        SELECT  
+ 			COUNT(DISTINCT CR.callRecordID)
+ 		FROM 
+ 			ADVC_MEMBER_CALL_RECORD CR WITH (NOLOCK) 
+	 		INNER JOIN 
+	 			ADVC_MEMBER_CLASS MC WITH (NOLOCK) ON MC.classID = CR.classID and MC.userID = CR.userID
+	 		
+			INNER JOIN 
+				ADVC_CLASS C WITH (NOLOCK) ON C.classID = MC.classID
+		<if test="teacherName !=null and teacherName !=''"> 
+	 		LEFT JOIN
+	 			ADVC_CLASS_TEACHER CT WITH (NOLOCK)	ON CT.classID = C.classID AND CT.teacherType = 1
+	 		LEFT JOIN
+	 			ADVC_TEACHER T WITH (NOLOCK) ON T.teacherID = CT.teacherID 
+ 		</if>
+ 		<if test="userName !=null and userName !=''"> 
+	 		INNER JOIN 
+				ADVC_MEMBER M WITH (NOLOCK) ON MC.userID = M.userID 
+		</if>
+		<if test="orgID !=null || teacherID != null">
+	 		LEFT JOIN
+	 			ADVC_CLASS_TEACHER CT2 WITH (NOLOCK) ON CT2.classID = C.classID
+	 		LEFT JOIN
+	 			ADVC_TEACHER T2 WITH (NOLOCK) ON T2.teacherID = CT2.teacherID 
+ 		</if>
+		<include refid="getMembercallPost_where" />
+    </select>
+    
+    <select id="findPageMemberCallPost" resultType="MemberCallPost" parameterType="MemberCallPost">
+        SELECT * FROM (
+			SELECT distinct 
+	 			CR.lastCallTime, C.classID, C.className, C.displayAdviser,
+	 			CT.teacherID, T.teacherName,M.userID,M.userName, MC.createTime,
+	 			DATEDIFF (day,CR.lastCallTime,getDate()) callDay,
+	 			DATEDIFF (day,CR.successCallTime,getDate()) callSuccessDay ,
+	 			ROW_NUMBER() Over(ORDER BY 
+		 			<if test="sortField == null or sortField == ''"> CR.lastCallTime ASC </if>
+					<if test="sortField == 'createTimeStr'"> MC.createTime
+						<if test="sortOrder == 'DESCENDING'"> DESC  </if>
+						<if test="sortOrder == 'ASCENDING'"> ASC  </if>
+					</if>) AS rowNum 
+	 		FROM 
+	 			ADVC_MEMBER_CALL_RECORD CR WITH (NOLOCK) 
+	 		INNER JOIN 
+	 			ADVC_MEMBER_CLASS MC WITH (NOLOCK) ON MC.classID = CR.classID and MC.userID = CR.userID
+			INNER JOIN 
+				ADVC_CLASS C WITH (NOLOCK) ON C.classID = MC.classID
+	 		LEFT JOIN
+	 			ADVC_CLASS_TEACHER CT WITH (NOLOCK)	ON CT.classID = C.classID AND CT.teacherType = 1
+	 		LEFT JOIN
+	 			ADVC_TEACHER T WITH (NOLOCK) ON T.teacherID = CT.teacherID 
+	 		INNER JOIN 
+				ADVC_MEMBER M WITH (NOLOCK) ON MC.userID = M.userID 
+			<if test="orgID !=null || teacherID != null">
+	 		LEFT JOIN
+	 			ADVC_CLASS_TEACHER CT2 WITH (NOLOCK) ON CT2.classID = C.classID
+	 		LEFT JOIN
+	 			ADVC_TEACHER T2 WITH (NOLOCK) ON T2.teacherID = CT2.teacherID 
+	 		</if>
+	 		<include refid="getMembercallPost_where" />
+		) AS myTable WHERE rowNum BETWEEN #{rowNumStart} AND #{rowNumEnd}
+    </select>	
+
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="teacherStatistics">
+    
+    <!-- 获取老师的统计信息 -->
+    <select id="getTeacherStatisticses" resultType="TeacherStatistics">
+    	SELECT T.*,bb.blackboardNewsNum,ca.classActivityNum,replyMessageNum,memberCallNum,memberCallSuccessNum,
+    	messageOTNum,reportRemarkOTNum,memberCallOTNum 
+        FROM ADVC_TEACHER T  WITH (NOLOCK) 
+        
+        LEFT JOIN (SELECT creator teacherID,COUNT(classMsgID) blackboardNewsNum FROM ADVC_CLASS_MSG  WITH (NOLOCK) 
+        WHERE msgType=1 AND createTime &gt; #{startDate} and createTime &lt;#{endDate} 
+        GROUP BY creator) bb ON bb.teacherID = T.teacherID  
+        
+        
+        LEFT JOIN (SELECT creator teacherID,COUNT(classMsgID) classActivityNum FROM ADVC_CLASS_MSG  WITH (NOLOCK) 
+        WHERE msgType=2 AND createTime  &gt;  #{startDate} and createTime &lt; #{endDate} 
+        GROUP BY creator) ca ON ca.teacherID = T.teacherID
+        
+        
+        LEFT JOIN (SELECT teacherID,COUNT(msgID) replyMessageNum FROM ADVC_MEMBER_MSG  WITH (NOLOCK) 
+        WHERE teacherID IS NOT NULL AND sentTime &gt; #{startDate} and sentTime &lt; #{endDate} 
+        GROUP BY teacherID) rm ON rm.teacherID = T.teacherID
+        
+        
+        LEFT JOIN (SELECT teacherID,COUNT(reportID) replyReportRemarkNum FROM ADVC_REPORT  WITH (NOLOCK) 
+        WHERE teacherID IS NOT NULL AND applyStatus = 2 AND applyTime &gt; #{startDate} AND applyTime &lt; #{endDate}
+        GROUP BY teacherID) rrr ON rrr.teacherID = T.teacherID
+        
+        
+        LEFT JOIN (SELECT caller teacherID, COUNT(callID) memberCallNum FROM ADVC_MEMBER_CALL  WITH (NOLOCK) 
+        WHERE caller IS NOT NULL AND callTime &gt; #{startDate} and callTime &lt; #{endDate} 
+        GROUP BY caller) mc ON mc.teacherID = T.teacherID
+        
+        
+        LEFT JOIN (SELECT caller teacherID,COUNT(callID) memberCallSuccessNum FROM ADVC_MEMBER_CALL  WITH (NOLOCK) 
+        WHERE caller IS NOT NULL AND callStatus =2 AND callTime &gt; #{startDate} and callTime &lt; #{endDate} 
+        GROUP BY caller) mcs ON mcs.teacherID = T.teacherID
+        
+        
+        LEFT JOIN (SELECT teacherID,COUNT(msgID) messageOTNum FROM ADVC_MEMBER_MSG  WITH (NOLOCK) 
+        WHERE teacherID IS NOT NULL  AND sentTime  &gt; #{startDate} and sentTime &lt; #{endDate} AND DATEDIFF(hh, sentTime,replyTime) &gt; 24 
+        GROUP BY teacherID) mot ON mot.teacherID = T.teacherID
+        
+        
+        LEFT JOIN (SELECT teacherID,COUNT(reportID) reportRemarkOTNum FROM ADVC_REPORT  WITH (NOLOCK) 
+        WHERE teacherID IS NOT NULL AND applyStatus = 2 AND applyTime &gt; #{startDate} and applyTime &lt; #{endDate} 
+        AND DATEDIFF(hh, applyTime,remarkTime) &gt; 24 GROUP BY teacherID) rrot ON rrot.teacherID = T.teacherID
+        
+        
+        LEFT JOIN (SELECT caller teacherID,COUNT(callID) memberCallOTNum FROM ADVC_MEMBER_CALL  WITH (NOLOCK) 
+        WHERE caller IS NOT NULL AND callTime &gt; #{startDate} and callTime &lt;#{endDate} AND DATEDIFF(day,callTime,getDate()) &gt; 30 
+        GROUP BY caller) mcot ON mcot.teacherID = T.teacherID
+        
+        
+        WHERE T.teacherID = #{teacherID}
+    </select>
+    
+</mapper>

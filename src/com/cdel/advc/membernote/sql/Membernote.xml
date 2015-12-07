@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membernote">
+
+    <sql id="getMembernoteList_body">
+		SELECT distinct cn.noteID, cn.classID, cn.msgType, cn.msgTitle, cn.msgContent, cn.creator, cn.createTime, 
+		cn.status, c.className,t.userName,cn.hit,cn.viewType,m.majorName,cn.isSolve,cn.marks,
+		case when cn.parentID = 0 then cn.isTop else cnn.isTop end as isTop 
+		FROM ADVC_MEMBER_NOTE cn  WITH (NOLOCK) 
+		LEFT JOIN ADVC_MEMBER_NOTE cnn  WITH (NOLOCK) on cn.parentID = cnn.noteID
+		LEFT JOIN (
+			SELECT DISTINCT c.* FROM ADVC_CLASS c WITH (NOLOCK) 
+			LEFT JOIN ADVC_CLASS_TEACHER ct  WITH (NOLOCK) ON c.classID = ct.classID
+			LEFT JOIN ADVC_TEACHER t  WITH (NOLOCK) ON t.teacherID = ct.teacherID
+			<where>
+				<if test="orgID!=null"> t.orgID = #{orgID} </if>
+			</where>
+		) c ON c.classID = cn.classID 
+	    LEFT JOIN ADVC_CLASS_STRATEGY CS  WITH (NOLOCK) ON c.strategyID=CS.strategyID
+		LEFT JOIN ADVC_MEMBER t  WITH (NOLOCK) ON t.userID = cn.creator
+		LEFT JOIN ADVC_MAJOR m  WITH (NOLOCK) ON m.majorID = CS.majorID
+	    WHERE c.classID IS NOT NULL
+		<if test="noteID!=null"> AND cn.noteID=#{noteID} </if>
+	    <if test="classID!=null"> AND cn.classID=#{classID} </if>
+	    <if test="majorID!=null"> AND CS.majorID=#{majorID} </if>
+		<if test="msgTitle!=null and msgTitle!=''"> AND cn.msgTitle like '%'+#{msgTitle}+'%' </if>
+	    <if test="createTime!=null"> AND cn.createTime=#{createTime} </if>
+	    <if test="status!=null"> AND cn.status=#{status} </if>
+	    <if test="creator!=null"> AND t.userID=#{creator} </if>
+	    <if test="msgType!=null"> AND cn.msgType=#{msgType} </if>
+	    <if test="isSolve ==0"> AND cn.isSolve is null </if>
+	    <if test="isSolve ==1"> AND cn.isSolve = 1 </if>
+	    <if test="startDate!=null"> AND cn.createTime &gt;= #{startDate} </if>
+	    <if test="endDate!=null"> AND cn.createTime &lt;= #{endDate} </if>
+    </sql>
+
+    <select id="countMembernote" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getMembernoteList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageMembernote" parameterType="Membernote" resultType="Membernote">
+        SELECT * FROM (
+			SELECT t.*,
+			ROW_NUMBER() Over(
+			    ORDER BY 
+			    <if test="sort != null"> 
+			    <if test="sort == 0"> t.hit DESC</if>
+			    <if test="sort == 1"> t.noteID DESC</if>
+			    </if>
+			    <if test="sort == null"> t.noteID DESC </if>
+		    ) AS rowNum 
+			FROM
+			(
+				<include refid="getMembernoteList_body" />
+			)t
+		) AS myTable WHERE rowNum BETWEEN #{rowNumStart} AND #{rowNumEnd}
+    </select>
+    
+    <update id="updateMembernote">
+        UPDATE ADVC_MEMBER_NOTE
+		<set>
+      		<if test="msgType !=null"> msgType=#{msgType}, </if>
+            <if test="msgTitle !=null and msgTitle !=''"> msgTitle=#{msgTitle},</if>
+            <if test="msgContent !=null and msgContent !=''"> msgContent=#{msgContent}, </if>
+            <if test="status !=null"> status=#{status}, </if>
+            <if test="isSolve !=null"> isSolve=#{isSolve}, </if>
+            <if test="isTop !=null"> isTop=#{isTop}, </if>
+            <if test="marks !=null"> marks=#{marks}, </if>
+		</set>     
+		WHERE noteID=#{noteID} 
+    </update>
+    
+    <update id="updateMembernoteIsTop">
+        IF EXISTS (SELECT 1 FROM ADVC_MEMBER_NOTE WITH (NOLOCK) WHERE parentID=0 AND noteID=#{noteID})
+             UPDATE ADVC_MEMBER_NOTE set isTop = #{isTop} where noteID=#{noteID} 
+        ELSE 
+             UPDATE ADVC_MEMBER_NOTE set isTop = #{isTop} where noteID=(SELECT parentID FROM ADVC_MEMBER_NOTE where noteID=#{noteID} ) 
+    </update>
+    
+    <!-- 查看留言 -->
+    <select id="getMembernote" resultType="Membernote">
+        SELECT mn.noteID, mn.msgTitle, mn.msgType, mn.msgContent, mn.creator, mn.createTime ,
+        mn.status,c.className,t.userName,mn.hit,mn.viewType,m.majorName,mn.isSolve,mn.marks
+        FROM ADVC_MEMBER_NOTE mn WITH (NOLOCK) 
+        LEFT JOIN ADVC_CLASS c WITH (NOLOCK) ON c.classID = mn.classID 
+        LEFT JOIN ADVC_MEMBER t WITH (NOLOCK) ON t.userID = mn.creator
+		LEFT JOIN ADVC_MAJOR m WITH (NOLOCK) ON m.majorID = mn.majorID
+        WHERE mn.noteID=#{noteID}
+    </select>
+
+</mapper>

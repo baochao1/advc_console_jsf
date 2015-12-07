@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学员消息</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function setValue(userName){
+		jQuery("#searchForm\\:sUserName").val(userName);
+		jQuery("#searchForm\\:sReply_input").val("");
+		jQuery("#searchForm\\:sReply_label").text("--请选择--");
+		jQuery("#searchForm\\:sStatus_input").val("");
+		jQuery("#searchForm\\:sStatus_label").text("--请选择--");
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(membermsgAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="所属辅导" />
+			<p:selectOneMenu id="sMajorID" value="#{membermsgAction.searchMembermsg.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" >
+				<p:ajax event="change" update="sClassID" listener="#{classesOther.changeMajorID}" />
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sClassID" value="所属班级(先选辅导)" />
+			<p:selectOneMenu id="sClassID" value="#{membermsgAction.searchMembermsg.classID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{classesOther.classList}" var="classes" itemLabel="#{classes.className}" itemValue="#{classes.classID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sManager" value="班主任或管理员" />
+			<h:panelGroup id="sManager" style="display:block;">
+				<p:autoComplete id="sTeacherCode" value="#{membermsgAction.searchMembermsg.manager}" completeMethod="#{comRequestMethod.completeTeacherName}" var="teacherName" itemLabel="#{teacherName}" itemValue="#{teacherName}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sUserName" value="学员代码" />
+			<p:inputText id="sUserName" value="#{membermsgAction.searchMembermsg.userName}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sReply" value="回复状态" />
+			<p:selectOneMenu id="sReply" style="width:200px;" panelStyleClass="minLength" value="#{membermsgAction.searchMembermsg.reply}">
+				<f:selectItem itemLabel="--请选择--" itemValue=""/>
+				<f:selectItems value="#{membermsgReqAction.answerStatus.entrySet()}" var="answerStatus" itemLabel="#{answerStatus.value}" itemValue="#{answerStatus.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sStatus" value="状态" />
+			<p:selectOneMenu id="sStatus" style="width:200px;" panelStyleClass="minLength" value="#{membermsgAction.searchMembermsg.status}">
+				<f:selectItem itemLabel="--请选择--" itemValue=""/>
+				<f:selectItems value="#{membermsgReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{membermsgAction.search}" rendered="#{membermsgAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{membermsgAction.heighti}" 
+			widgetVar="membermsg"
+			id="membermsgList"
+			binding="#{membermsgAction.pageTable}"
+			lazy="true"
+			value="#{membermsgAction.membermsgPage}" 
+			rows="20"
+			var="membermsg" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="班级名称" width="12%" >
+				<h:link value="#{membermsg.className}" title="#{membermsg.className}" 
+					outcome="/page/memberClass/memberClassList" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{membermsg.classID}"/>
+					<f:param name="siteID" value="#{membermsgAction.siteID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="班主任" width="8%" >
+				<h:outputText value="#{membermsg.displayAdviser}"/>
+			</p:column>
+			<p:column headerText="管理员" width="8%" style="text-align:center">
+				<p:commandLink value="#{membermsg.teacherName}" oncomplete="showDialog.show();" 
+					actionListener="#{classteacherReqAction.show(membermsg.classID)}"
+					update=":showForm:showDialog" rendered="#{membermsgReqAction.viewAuth}"/>
+			</p:column>
+			<p:column headerText="学员代码" width="10%" >
+				<p:commandLink value="#{membermsg.userName}" onstart="setValue('#{membermsg.userName}')" actionListener="#{membermsgAction.search}" rendered="#{membermsgAction.viewAuth}"/>
+				<h:link value="【记录】" outcome="/page/record/recordList.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="userName" value="#{membermsg.userName}"/>
+					<f:param name="userID" value="#{membermsg.userID}"/>
+					<f:param name="classID" value="#{membermsg.classID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="消息主题" width="25%" >
+				<h:outputText style="color:red;" value="#{(membermsg.msgType==1)?'[技术]':''}"/>
+				<h:outputText value="#{membermsg.msgTitle}"/>
+			</p:column>
+			<p:column headerText="发送时间" width="11%" >
+				<h:outputText value="#{membermsg.sentTimeStr}"/>
+			</p:column>
+			<p:column headerText="回复时间" width="11%" >
+				<h:outputText value="#{membermsg.replyTimeStr}"/>
+			</p:column>
+			<p:column headerText="阅读" width="7%" styleClass="status-#{membermsg.readFlag}">
+				<h:outputText value="#{membermsg.readFlagStr}"/>
+			</p:column>
+			<p:column headerText="操作" width="7%" >
+				<p:commandLink value="#{membermsg.statusStr}" update=":searchForm:membermsgList :info" actionListener="#{membermsgReqAction.changeStatus(membermsg.msgID,membermsg.status)}" rendered="#{membermsgAction.optAuth}"/>
+				<h:outputText value="#{membermsg.statusStr}" rendered="#{!membermsgAction.optAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="回复" oncomplete="loadDialog.show();" 
+					actionListener="#{membermsgReqAction.updateShow(membermsg.msgID,'')}"
+					update=":loadForm:loadDialog" rendered="#{membermsgAction.optAuth}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="membermsgList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 查看页面 -->
+	<h:form id="showForm" >
+		<ui:include src="/page/classteacher/load/teacherListShow.xhtml"/>
+	</h:form>
+	<!-- 添加/修改页面 -->
+	<h:form id="loadForm" >
+		<ui:include src="load/membermsgUpdate.xhtml">
+			<ui:param name="siteID" value="#{membermsgAction.siteID}" />
+		</ui:include>
+	</h:form>
+</h:body>
+</html>

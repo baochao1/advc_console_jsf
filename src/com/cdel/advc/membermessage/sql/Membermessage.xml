@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membermessage">
+
+	<sql id="getMembermessageList_body">
+		SELECT mm.msgID, mm.classID, mm.sender, mm.receiver, mm.msgType,
+		mm.msgTitle, mm.msgContent,
+		mm.sentTime, mm.replyContent, mm.replyTime, mm.readFlag, mm.status,
+		am1.userName as senderName,am2.userName as receiverName, c.className,
+		ROW_NUMBER() Over(ORDER BY msgID DESC) AS rowNum
+		FROM ADVC_MEMBER_MESSAGE mm WITH (NOLOCK)
+		left join ADVC_MEMBER am1 WITH (NOLOCK) on am1.userID = mm.sender 	<!-- am1 发消息人 -->
+		left join ADVC_MEMBER am2 WITH (NOLOCK) on am2.userID = mm.receiver	<!-- am2接受消息人 -->
+		left join (
+			SELECT DISTINCT c.* FROM ADVC_CLASS c WITH (NOLOCK)
+			LEFT JOIN ADVC_CLASS_TEACHER ct WITH (NOLOCK) ON c.classID = ct.classID
+			LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = ct.teacherID
+			<where>
+				<if test="orgID != null"> t.orgID = #{orgID}</if>			   <!--学员所在班级的教师所在组织 -->
+			</where>
+		) c on c.classID = mm.classID
+		left join ADVC_TESTTERM at WITH (NOLOCK) on at.termID = c.termID     <!--学员所在班级的考期 -->
+		WHERE c.classID IS NOT NULL
+		<if test="msgID!=null"> AND mm.msgID=#{msgID} </if>
+		<if test="classID!=null"> AND mm.classID=#{classID} </if>
+		<if test="msgTitle!=null and msgTitle !=''"> AND mm.msgTitle=#{msgTitle} </if>
+		<if test="senderName!=null and senderName !=''"> AND am1.userName=#{senderName} </if>
+		<if test="receiverName!=null and receiverName!=''"> AND am2.userName=#{receiverName} </if>
+		<if test="readFlag!=null"> AND mm.readFlag=#{readFlag} </if>
+		<if test="status!=null"> AND mm.status=#{status} </if>
+		<if test="majorID!=null"> AND at.majorID=#{majorID} </if>
+	</sql>
+
+	<select id="countMembermessage" resultType="int">
+		SELECT COUNT(*) FROM (
+			<include refid="getMembermessageList_body" />
+		) AS myTable
+	</select>
+
+	<select id="findPageMembermessage" parameterType="Membermessage" resultType="Membermessage">
+		SELECT * FROM (
+			<include refid="getMembermessageList_body" />
+		) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+	</select>
+
+	<!-- 根据ID 查询 学员间消息相关内容 -->
+	<select id="getMembermessage" parameterType="int" resultType="Membermessage">
+		SELECT mm.msgID, mm.classID, mm.sender, mm.receiver, mm.msgType,
+		mm.msgTitle, mm.msgContent,
+		mm.sentTime, mm.replyContent, mm.replyTime, mm.readFlag, mm.status,
+		am1.userName as senderName, am2.userName as receiverName, c.className
+		FROM ADVC_MEMBER_MESSAGE mm WITH (NOLOCK)
+		left join ADVC_MEMBER am1 WITH (NOLOCK) on am1.userID = mm.sender
+		left join ADVC_MEMBER am2 WITH (NOLOCK) on am2.userID = mm.receiver
+		left join ADVC_CLASS c WITH (NOLOCK) on c.classID = mm.classID WHERE
+		mm.msgID=#{msgID}
+	</select>
+
+	<insert id="insertMembermessage">
+		INSERT INTO ADVC_MEMBER_MESSAGE (
+		<trim prefix="" suffixOverrides=",">
+			<if test="classID!=null"> classID, </if>
+			<if test="sender!=null"> sender ,</if>
+			<if test="receiver!=null"> receiver, </if>
+			<if test="msgType!=null"> msgType, </if>
+			<if test="msgTitle!=null"> msgTitle ,</if>
+			<if test="msgContent!=null"> msgContent, </if>
+			<if test="sentTime!=null"> sentTime, </if>
+			<if test="replyContent!=null"> replyContent, </if>
+			<if test="replyTime!=null"> replyTime, </if>
+			<if test="readFlag!=null"> readFlag, </if>
+			<if test="status!=null"> status </if>
+		</trim>
+		)
+		VALUES (
+		<trim prefix="" suffixOverrides=",">
+			<if test="classID!=null"> #{classID}, </if>
+			<if test="sender!=null"> #{sender}, </if>
+			<if test="receiver!=null"> #{receiver}, </if>
+			<if test="msgType!=null"> #{msgType}, </if>
+			<if test="msgTitle!=null"> #{msgTitle},</if>
+			<if test="msgContent!=null"> #{msgContent}, </if>
+			<if test="sentTime!=null"> #{sentTime}, </if>
+			<if test="replyContent!=null"> #{replyContent}, </if>
+			<if test="replyTime!=null"> #{replyTime}, </if>
+			<if test="readFlag!=null"> #{readFlag}, </if>
+			<if test="status!=null"> #{status} </if>
+		</trim>
+		)
+		<selectKey keyProperty="msgID" resultType="int">
+			SELECT @@IDENTITY AS msgID
+		</selectKey>
+	</insert>
+
+	<update id="updateMembermessage">
+		UPDATE ADVC_MEMBER_MESSAGE
+		<set>
+			<if test="classID!=null"> classID=#{classID}, </if>
+			<if test="sender!=null"> sender=#{sender}, </if>
+			<if test="receiver!=null"> receiver=#{receiver}, </if>
+			<if test="msgType!=null"> msgType=#{msgType}, </if>
+			<if test="msgTitle!=null"> msgTitle=#{msgTitle:VARCHAR}, </if>
+			<if test="msgContent!=null"> msgContent=#{msgContent:VARCHAR}, </if>
+			<if test="sentTime!=null"> sentTime=#{sentTime}, </if>
+			<if test="replyContent!=null"> replyContent=#{replyContent:VARCHAR}, </if>
+			<if test="replyTime!=null"> replyTime=#{replyTime}, </if>
+			<if test="readFlag!=null"> readFlag=#{readFlag}, </if>
+			<if test="status!=null"> status=#{status}, </if>
+		</set>
+		where msgID=#{msgID}
+	</update>
+	
+</mapper>

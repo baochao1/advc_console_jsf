@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统--学习计划</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+		.chapterTable thead{display:none;}
+		.ui-orderlist .ui-orderlist-list {height: 600px;width: 800px;}
+	</style>
+	<script>
+		$(function(){
+			//删除datatable默认存在的表头
+			$(".chapterTable thead").remove();
+		});
+		
+		function isReload(args){
+			if(args.result==1){
+				window.location.reload();
+			}
+		}
+	</script>
+</h:head>
+<h:body styleClass="myBody">
+	<p:growl for="info" id="info" life="3000"/>
+	<h:form id="searchForm">
+		<p:panelGrid id="dataTablePanel" styleClass="myTable">
+			<f:facet name="header">
+				<p:row>
+					<p:column colspan="4" styleClass="facetColumn">
+						<h:outputLabel value="#{planChapterAction.memberClass.userName}学习计划" />
+					</p:column>		
+				</p:row>
+			</f:facet>
+			
+			<p:row>
+				<p:column styleClass="labelColumn">
+					<h:outputLabel for="sUserName" value="学员代码" />
+				</p:column>		
+				<p:column styleClass="textlColumn">
+					<h:outputText id="sUserName" value="#{planChapterAction.memberClass.userName}"/>	
+				</p:column>	
+				
+				<p:column styleClass="labelColumn">
+					<h:outputLabel for="sEnterTime" value="入学时间" />
+				</p:column>		
+				<p:column styleClass="textlColumn">
+					<h:outputText id="sEnterTime" value="#{planChapterAction.memberClass.enterTimeStr}"/>	
+				</p:column>	
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="labelColumn">
+					<h:outputLabel for="sClassName" value="所在班级" />
+				</p:column>		
+				<p:column>
+					<h:outputText id="sClassName" value="#{planChapterAction.classesInfo.className}"/>	
+				</p:column>	
+				
+				<p:column styleClass="labelColumn">
+					<h:outputLabel for="sDisplayAdviser" value="班主任" />
+				</p:column>		
+				<p:column>
+					<h:outputText id="sDisplayAdviser" value="#{planChapterAction.classesInfo.displayAdviser}"/>
+					(<h:outputText value="#{planChapterAction.classesInfo.teacherNames}"/>)
+				</p:column>	
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="labelColumn">
+					<h:outputLabel value="计划状态" />
+				</p:column>		
+				<p:column colspan="3">
+					<h:outputText style="color:red;" id="showPlanStatus" value="#{planChapterAction.planStatusStr}"/>&nbsp;&nbsp;
+					<p:spacer width="5"/>
+					<h:outputText style="color:red;" value="#{planChapterAction.isSameCourseStr}"/>
+				</p:column>	
+			</p:row>	
+			
+			<p:row>
+				<p:column styleClass="labelColumn">
+					<h:outputLabel for="sStudyCourses" value="学习课程" />
+				</p:column>		
+				<p:column styleClass="textlColumn">
+					<h:outputText id="sStudyCourses" value="#{planChapterAction.memberClass.studyCourseListStr}"/>
+				</p:column>	
+				
+				<p:column styleClass="labelColumn">
+					<h:outputLabel value="预习计划" />
+				</p:column>		
+				<p:column styleClass="textlColumn">
+					<h:link target="_blank" outcome="showPrePlan" includeViewParams="true">
+						<h:outputText value="#{planChapterAction.prePlanStatusStr}" />	
+						<f:param name="userID" value="#{planChapterAction.memberClass.userID}" />
+						<f:param name="userName" value="#{planChapterAction.userName}"/>
+						<f:param name="classID" value="#{planChapterAction.memberClass.classID}" />
+						<f:param name="siteID" value="#{planChapterAction.siteID}"/>
+						<f:param name="termID" value="#{planChapterAction.termID}"/>
+						<f:param name="planType" value="1" />
+					</h:link>
+				</p:column>	
+			</p:row>	
+			
+			<p:row>
+				<p:column styleClass="labelColumn">
+					<h:outputLabel value="计划开始时间" />
+				</p:column>		
+				<p:column>
+					<p:calendar value="#{planChapterAction.plan.startDay}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+					<p:spacer width="5"/>
+					<p:commandButton rendered="#{planChapterAction.plan.planID != null}" update=":info :searchForm:dataTablePanel"
+						value="修改" actionListener="#{studyPlanReqAction.updatePlanTime('start')}"/>
+				</p:column>	
+				
+				<p:column styleClass="labelColumn">
+					<h:outputLabel value="计划结束时间" />
+				</p:column>		
+				<p:column>
+					<p:calendar value="#{planChapterAction.plan.endDay}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+					<p:spacer width="5"/>
+					<p:commandButton rendered="#{planChapterAction.plan.planID != null}" update=":info :searchForm:dataTablePanel"
+						value="修改" actionListener="#{studyPlanReqAction.updatePlanTime('end')}"/>
+				</p:column>	
+			</p:row>	
+			
+			<p:row>
+				<p:column styleClass="labelColumn" >
+					<h:outputLabel value="学员信息反馈表" />
+					<p:separator/>
+					<h:link target="_blank" value="[设置]" outcome="/page/memberdefine/feedbackUpdate" includeViewParams="true">
+						<f:param name="siteID" value="#{planChapterAction.siteID}"/>
+						<f:param name="userID" value="#{planChapterAction.memberClass.userID}" />
+						<f:param name="userName" value="#{planChapterAction.memberClass.userName}" />
+					</h:link>
+				</p:column>		
+				<p:column colspan="3"> 
+					<p:panelGrid styleClass="myTable">
+						<f:facet name="header">
+							<p:row>
+								<p:column><h:outputLabel value="类别" />	</p:column>
+								<p:column><h:outputLabel value="星期日" /></p:column>
+								<p:column><h:outputLabel value="星期一" /></p:column>
+								<p:column><h:outputLabel value="星期二" /></p:column>
+								<p:column><h:outputLabel value="星期三" /></p:column>
+								<p:column><h:outputLabel value="星期四" /></p:column>
+								<p:column><h:outputLabel value="星期五" /></p:column>
+								<p:column><h:outputLabel value="星期六" /></p:column>
+								<p:column><h:outputLabel value="总和" /></p:column>
+								<p:column><h:outputLabel value="最大学习时间" /></p:column>
+							</p:row>
+						</f:facet>
+						<p:row>
+							<p:column><h:outputLabel value="学员反馈" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.week7}" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.week1}" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.week2}" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.week3}" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.week4}" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.week5}" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.week6}" /></p:column>
+							<p:column><h:outputText value="#{planChapterAction.define.sum}" /></p:column>
+							<p:column/>
+						</p:row>
+					</p:panelGrid>
+				</p:column>	
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="labelColumn" >
+					<h:outputLabel value="教师设定时间" />
+				</p:column>		
+				<p:column colspan="3">
+					<p:dataTable id="teacherSetTime" 
+						value="#{planChapterAction.hours}" var="hour" 
+						styleClass="gridTable" emptyMessage="对不起，没有查询到数据！"
+						editable="true"
+						>
+						<p:column width="8%" headerText="修改">
+							<p:rowEditor />
+						</p:column>
+						<p:ajax event="rowEdit" listener="#{memberTermHoursReqAction.updateTime}" oncomplete="isReload(args);" update=":info" />
+						<p:column headerText="星期日">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.sundayHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.sundayHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column headerText="星期一">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.mondayHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.mondayHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column headerText="星期二">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.tuesdayHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.tuesdayHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column headerText="星期三">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.wednesdayHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.wednesdayHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column headerText="星期四">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.thursdayHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.thursdayHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column headerText="星期五">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.fridayHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.fridayHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column headerText="星期六">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.saturdayHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.saturdayHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+						<p:column headerText="最大学习时间">
+							<p:cellEditor>
+								<f:facet name="output">
+									<h:outputText value="#{hour.maxStudyTimeHour}" />
+								</f:facet>
+								<f:facet name="input">
+									<p:inputText value="#{hour.maxStudyTimeHour}" style="width:50px;" />
+								</f:facet>
+							</p:cellEditor>
+						</p:column>
+					</p:dataTable>
+				</p:column>
+			</p:row>
+			
+			<p:row>
+				<p:column styleClass="labelColumn">
+					<h:outputLabel for="sExamTime" value="考试时间" />
+				</p:column>		
+				<p:column>
+					<h:outputText id="sExamTime" value="#{planChapterAction.define.examDateStr}"/>
+				</p:column>	
+
+				<p:column styleClass="labelColumn">
+					<h:outputLabel value="特殊学习时间" />
+				</p:column>		
+				<p:column>
+					<h:link target="_blank" value="[设置]" outcome="specialDateSet" includeViewParams="true" rendered="#{planChapterAction.plan.planID != null}">
+						<f:param name="planID" value="#{planChapterAction.plan.planID}"/>
+					</h:link>
+				</p:column>
+			</p:row>
+			
+			<f:facet name="footer">
+				<p:row>
+					<p:column colspan="4" styleClass="facetColumn">
+						<h:outputLabel value="当前学习计划" /><p:spacer width="20"/>
+						<p:commandButton value="查看日志" update=":logForm:logDialog" oncomplete="logDialog.show();"
+							actionListener="#{planLogAction.showLogs(planChapterAction.plan.planID)}"/>
+						<p:commandButton type="button" value="生成学习计划" onclick="cd.show()" id="searchBtn" 
+							rendered="#{planChapterAction.plan.planID == null || planChapterAction.reGeneratePlan}"/>
+					</p:column>		
+				</p:row>
+			</f:facet>
+		</p:panelGrid>
+
+		<p:confirmDialog widgetVar="cd" severity="alert" message="你确定要生成学习计划吗?" header="信息提示">
+			<p:commandButton value="确定" update=":info"
+				oncomplete="optResultAlert(args,9,'myReload');" 
+				actionListener="#{planChapterReqAction.generatePlan(planChapterAction.memberClass.userID)}"/>
+			<p:commandButton value="取消" onclick="cd.hide();" type="button" />
+		</p:confirmDialog>
+		
+		<p:panelGrid id="planTable" style="width:100%" rendered="#{!empty planChapterAction.weekChapters}">
+			<f:facet name="header">
+				<p:row>
+					<p:column style="width:18%" styleClass="facetColumn">
+						<h:outputLabel value="学习进度" />
+					</p:column>	
+					<p:column styleClass="facetColumn">
+						<h:outputLabel value="课程/学习内容" />
+					</p:column>		
+					<p:column style="width:30%" styleClass="facetColumn">
+						<p:commandButton value="已停止学习" update=":info" 
+							actionListener="#{memberChapterSetAction.showChangeChapters(0,0,planChapterAction.plan.planID,planChapterAction.memberClass.userID,planChapterAction.plan.studyCourse)}"/>
+						<p:commandButton value="正在学习" update=":info" 
+							actionListener="#{memberChapterSetAction.showChangeChapters(1,0,planChapterAction.plan.planID,planChapterAction.memberClass.userID,planChapterAction.plan.studyCourse)}"/>
+						<p:commandButton value="排序" update=":info" 
+							actionListener="#{planChapterSequenceSetReqAction.showSortChapters(planChapterAction.plan.planID)}"/>
+					</p:column>	
+				</p:row>
+			</f:facet>
+			
+			<c:forEach items="#{planChapterAction.weekChapters}" var="wc" >
+				<p:row>
+					<p:column style="width:18%" styleClass="textlColumn">
+						<h:outputText value="第#{wc.key.weekNo}周"/>	
+						<h:outputText value="(#{wc.key.weekStartTimeStr}~#{wc.key.weekEndTimeStr})"/>		
+					</p:column>		
+					<p:column colspan="2">
+						<p:dataTable 
+							styleClass="chapterTable" 
+							rowKey="#{c.planChpID}" 
+							value="#{planChapterAction.weekChapters[wc.key]}" 	
+						    var="c" style="width:100%" >
+						   <p:column style="width:7%" >
+								<h:outputText value="排序#{c.sequence}" />					
+							</p:column>	
+							<p:column style="width:18%">
+								<h:outputText  value="#{c.courseName}"/>					
+							</p:column>	
+							<p:column style="width:30%">
+								#{c.chapterName}#{c.isPreStr}
+								<span class="chapterOpenStatus-#{c.openStatus}">(#{c.stageName}, #{c.openStatusStr})</span>				
+							</p:column>	
+							<p:column style="width:6%">
+								<h:outputText value="#{c.suggestStyTime/60}H"/>					
+							</p:column>
+							<p:column style="width:18%">
+								<h:outputText value="#{c.startTimeStr}~#{c.endTimeStr}"/>
+							</p:column>
+							<p:column style="width:18%">
+								<p:inplace label="#{c.finishStatusStr}" styleClass="finishStatus-#{c.finishStatus}" >
+									<p:selectOneMenu value="#{c.finishStatus}">
+										<f:attribute name="chapterID" value="#{c.chapterID}"/>
+										<f:attribute name="userID" value="#{c.userID}"/>
+										<f:attribute name="planID" value="#{c.planID}"/>
+										
+										<f:selectItems value="#{memberChapterReqAction.planFinishStatuss.entrySet()}" 
+											var="f" itemValue="#{f.key}" itemLabel="#{f.value}"/>
+										<p:ajax update=":info" 
+											event="change" oncomplete="window.location.reload();"
+											listener="#{memberChapterReqAction.updateFinishStatus}"/>
+									</p:selectOneMenu>
+								</p:inplace>
+								<p:spacer width="5"/>
+								<p:commandLink 
+									actionListener="#{memberChapterSetReqAction.showChapterSet(c.planID,planChapterAction.type,c.chapterID, c.userID, c.suggestStyTime/60)}"
+									value="要求/时长"/>											
+								<p:spacer width="5"/>
+								<h:outputText value="#{c.isStudyStr}" styleClass="status-#{c.isStudy}"/>
+								
+							</p:column>
+						</p:dataTable>
+					</p:column>	
+				</p:row>	
+			</c:forEach>
+		</p:panelGrid>
+	</h:form>
+
+	<!-- 学员特殊学习要求设置 -->
+	<ui:include src="load/updateChapterSet.xhtml"/>
+	<!-- 正在学习/已停止学习 -->
+	<ui:include src="load/batchDelete.xhtml"/>
+	<!-- 批量排序 -->
+	<ui:include src="load/batchSort.xhtml"/>
+	<!-- 查看日志 -->
+	<ui:include src="load/showLog.xhtml"/>
+	
+</h:body>
+</html>

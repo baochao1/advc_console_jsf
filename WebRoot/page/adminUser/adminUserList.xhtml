@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>个人中心</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+		<p:tabView id="showPanelGrid">
+			<p:tab id="tab1" title="用户信息">
+				<p:panelGrid columns="2" columnClasses="addObjectClass, addContentClass">
+					<p:outputLabel value="用户名"/>
+					<p:outputLabel value="#{adminUserAction.adminUser.adminName}"/>
+					<p:outputLabel value="真实姓名">
+						<span class="requiredFlag">*</span>
+					</p:outputLabel>
+					<p:inputText value="#{adminUserAction.adminUser.realName}" styleClass="minLength"/>
+					<p:outputLabel value="称呼"/>
+					<p:inputText value="#{adminUserAction.adminUser.displayName}" styleClass="minLength"/>
+					<p:outputLabel value="电话分机"/>
+					<p:inputText value="#{adminUserAction.adminUser.cellPhone}" styleClass="minLength"/>
+					<f:facet name="footer">
+						<h:panelGroup style="display:block; text-align:center">
+							<p:commandButton value="提交" actionListener="#{adminUserReqAction.updateSubmit}" update=":info" oncomplete="optResultAlert(args,1);"/>
+						</h:panelGroup>
+					</f:facet>
+				</p:panelGrid>
+			</p:tab>
+			
+			<p:tab id="tab2" title="修改密码">
+				<p:panelGrid columns="2" columnClasses="addObjectClass, addContentClass">
+					<p:outputLabel value="旧密码">
+						<span class="requiredFlag">*</span>
+					</p:outputLabel>
+					<h:inputSecret value="#{adminUserReqAction.passWd}" styleClass="minLength"/>
+					<p:outputLabel value="新密码">
+						<span class="requiredFlag">*</span>
+					</p:outputLabel>
+					<h:inputSecret value="#{adminUserAction.adminUser.newPassWd}" styleClass="minLength"/>
+					<p:outputLabel value="确认新密码">
+						<span class="requiredFlag">*</span>
+					</p:outputLabel>
+					<h:inputSecret value="#{adminUserAction.adminUser.conNewPassWd}" styleClass="minLength"/>
+					<f:facet name="footer">
+						<h:panelGroup style="display:block; text-align:center">
+							<p:commandButton value="提交" actionListener="#{adminUserReqAction.updatePass}" update=":info" oncomplete="optResultAlert(args,1);"/>
+						</h:panelGroup>
+					</f:facet>
+				</p:panelGrid>
+			</p:tab>
+		</p:tabView>
+	</h:form>
+</h:body>
+</html>

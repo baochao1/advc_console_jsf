@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="servicetext">
+    
+    <sql id="getList_body">
+		SELECT a.textID,a.content,a.createTime,a.status,c.stageName,b.serviceName,m.majorName,
+		qc.courseName,a.serviceID,ROW_NUMBER() Over(ORDER BY b.stageID asc,b.serviceID asc) AS rowNum 
+        FROM advc_home_ServiceText a WITH (NOLOCK) 
+        LEFT JOIN advc_major m WITH (NOLOCK) ON m.majorID=a.majorID 
+        LEFT JOIN qz_course qc WITH (NOLOCK) ON qc.courseID=a.courseID 
+        LEFT JOIN advc_home_ServiceItem b WITH (NOLOCK) ON a.serviceID=b.serviceID 
+        LEFT JOIN advc_home_Stage c WITH (NOLOCK) ON c.stageID=b.stageID 
+		<where>
+			<if test="stageID != null"> and b.stageID=#{stageID}</if>
+			<if test="status != null"> and a.status=#{status}</if>
+			<if test="majorID != null"> and a.majorID=#{majorID}</if>
+			<if test="courseID != null"> and a.courseID=#{courseID}</if>
+		</where>
+    </sql>
+
+    <select id="countServiceText" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageServiceText" parameterType="ServiceText" resultType="ServiceText">
+        SELECT * FROM (
+            <include refid="getList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+    <update id="updateServiceText">
+		UPDATE advc_home_ServiceText 
+		<set>
+			<if test="content !=null and content != ''"> content =#{content}, </if>
+			<if test="status !=null"> status =#{status} </if>
+		</set>
+		WHERE textID=#{textID}
+	</update>
+	
+	<insert id="insertServiceText">
+    	insert into advc_home_ServiceText (content, serviceID, majorID, courseID, status, createTime ) 
+    	values (#{content}, #{serviceID}, #{majorID}, #{courseID}, #{status}, #{createTime} )
+    </insert>
+	
+	<select id="getServiceText" parameterType="Integer" resultType="ServiceText">
+		SELECT a.textID,a.content,a.status,qc.courseName,m.majorName,c.stageName,b.serviceName 
+		FROM advc_home_ServiceText a WITH (NOLOCK) 
+		LEFT JOIN advc_major m WITH (NOLOCK) ON m.majorID=a.majorID 
+        LEFT JOIN qz_course qc WITH (NOLOCK) ON qc.courseID=a.courseID 
+        LEFT JOIN advc_home_ServiceItem b WITH (NOLOCK) ON a.serviceID=b.serviceID 
+        LEFT JOIN advc_home_Stage c WITH (NOLOCK) ON c.stageID=b.stageID 
+		where a.textID=#{textID}
+    </select>
+    
+    <select id="hasSameServiceText" parameterType="ServiceText" resultType="Integer">
+		SELECT count(textID)
+		FROM advc_home_ServiceText WITH (NOLOCK) 
+		where majorID=#{majorID} and courseID=#{courseID} and serviceID=#{serviceID} and status=1
+    </select>
+    
+</mapper>

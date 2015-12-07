@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="privilege">
+	<select id="getAllPrivilegeRoleAndUser" parameterType="java.util.Map" resultType="String">
+        with tmp as (
+	        SELECT distinct p.privilegeID,p.actionURL 
+	        FROM RAD_ADMIN_PRIVILEGE p,RAD_ADMIN_ROLE_PRIVILEGE r 
+	        where r.privilegeID = p.privilegeID and p.treeType <![CDATA[>]]> 1 and r.roleID in (-1
+	        <foreach collection="roleIDList" index="index" item="role" >   
+				,#{role} 
+			</foreach>
+			)
+	        and p.systemType=#{systemType}
+	        union  
+	        SELECT distinct p.privilegeID,p.actionURL 
+	        FROM RAD_ADMIN_PRIVILEGE p,RAD_ADMIN_USER_PRIVILEGE a 
+	        where a.privilegeID = p.privilegeID and p.treeType <![CDATA[>]]> 1 and a.adminID=#{adminID} and p.systemType=#{systemType}
+        )
+        select tmp.actionURL from tmp 
+        union 
+        select distinct p.actionURL 
+        from RAD_ADMIN_PRIVILEGE p,tmp,RAD_ADMIN_PRIVILEGE_REL r 
+        where p.privilegeID=r.relPrivilegeID and tmp.privilegeID=r.privilegeID 
+        union 
+        select distinct p.actionURL 
+        from RAD_ADMIN_PRIVILEGE p,tmp,RAD_ADMIN_PRIVILEGE_REL r 
+        where p.privilegeID=r.relNeighborID and tmp.privilegeID=r.privilegeID 
+    </select>
+    
+    <select id="getPriByUser" resultType="Privilege">
+		with tmp as (
+			SELECT distinct p.*
+			FROM RAD_ADMIN_USER_ROLE ar,RAD_ADMIN_ROLE_PRIVILEGE rp,RAD_ADMIN_PRIVILEGE p 
+			WHERE ar.adminID = #{adminID} AND ar.roleID = rp.roleID AND rp.privilegeID = p.privilegeID AND p.treeType=2
+			UNION ALL
+			SELECT p.* FROM RAD_ADMIN_PRIVILEGE p,RAD_ADMIN_USER_PRIVILEGE ap
+			WHERE ap.adminID = #{adminID} AND ap.privilegeID = p.privilegeID AND p.treeType=2 
+			UNION ALL 
+			SELECT p.* FROM RAD_ADMIN_PRIVILEGE p WHERE p.treeType=1 
+		)
+		SELECT * FROM tmp where systemType=#{systemType} 
+		ORDER BY treeType desc,treeLevel desc
+	</select>
+   
+</mapper>

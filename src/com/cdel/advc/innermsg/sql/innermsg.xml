@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="innermsg">
+	<sql id="pageSql_body">
+		<if test="mailType==1 or mailType ==null or mailType ==''">
+			SELECT imr.receiveID ,imr.innerMsgID ,imr.readStatus ,im.status ,c.classID referClass, 
+			c.className ,teacher.teacherCode ,innerMsgContent ,teacher.teacherName senderName ,
+			im.referUser ,ROW_NUMBER() OVER ( ORDER BY im.sendTime DESC ) AS rowNum
+			FROM ADVC_INNER_MSG_RECEIVE imr WITH ( NOLOCK )
+			LEFT JOIN ADVC_INNER_MSG im WITH ( NOLOCK ) ON imr.innerMsgID = im.innerMsgID
+			LEFT JOIN ADVC_TEACHER teacher WITH ( NOLOCK ) ON teacher.teacherID = im.sender
+			LEFT JOIN ADVC_CLASS c WITH ( NOLOCK ) ON c.classID = im.referClass 
+			<where>
+				<if test="receiveTeacherID !=null "> and imr.receiveTeacherID=#{receiveTeacherID} </if>
+				<if test="readStatus !=null "> and imr.readStatus=#{readStatus} </if>
+				<if test="referUser !=null and referUser !=''"> and im.referUser like '%'+#{referUser}+'%' </if>
+			</where>
+		</if>
+		<if test="mailType ==null or mailType ==''">
+			union all 
+		</if>
+		<if test="mailType==2 or mailType ==null or mailType ==''">         
+	        SELECT 0 receiveID ,innerMsgID ,null readStatus ,a.status ,c.classID referClass, 
+	        c.className ,teacher.teacherCode ,innerMsgContent ,teacher.teacherName senderName ,
+	        a.referUser ,ROW_NUMBER() OVER ( ORDER BY sendTime DESC ) AS rowNum
+			FROM ADVC_INNER_MSG a WITH ( NOLOCK )
+	        LEFT JOIN ADVC_TEACHER teacher WITH ( NOLOCK ) ON teacher.teacherID = a.sender
+	        LEFT JOIN ADVC_CLASS c WITH ( NOLOCK ) ON c.classID = a.referClass
+	        <where>
+	        	<if test="sender !=null"> and sender=#{receiveTeacherID} </if>
+	        	<if test="referUser !=null and referUser !=''"> and a.referUser like '%'+#{referUser}+'%' </if>
+			</where>
+		</if>
+	</sql>
+    
+    <select id="findPageInnerMsg" resultType="InnerMsg" parameterType="InnerMsg">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countInnerMsg" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+    <update id="updateInnerMsg" parameterType="InnerMsg">
+        UPDATE 
+        	ADVC_INNER_MSG 
+			<set> 
+	        	<if test="status !=null "> status=#{status}, </if>
+	        	<if test="innerMsgContent !=null and innerMsgContent !=''"> innerMsgContent=#{innerMsgContent} </if>
+        	</set>
+        WHERE innerMsgID=#{innerMsgID}
+    </update>
+	
+	<select id="getInnerMsg"  resultType="InnerMsg" parameterType="InnerMsg">
+     	SELECT innerMsgID,referUser,referClass,sender,t1.teacherName as senderName, t1.teacherCode,
+        innerMsgContent, sendTime, a.status 
+        FROM ADVC_INNER_MSG a WITH (NOLOCK) 
+        left join ADVC_TEACHER t1 WITH (NOLOCK) on t1.teacherID = a.sender 
+        where innerMsgID=#{innerMsgID}
+	</select>
+	
+	<insert id="insertInnerMsg" parameterType="InnerMsg">
+        INSERT INTO ADVC_INNER_MSG ( 
+	        <if test="sender != null">sender,</if>
+	        <if test="referClass != null">referClass,</if>
+	        <if test="innerMsgContent != null and innerMsgContent != '' ">innerMsgContent,</if>
+	        <if test="sendTime != null">sendTime,</if>
+	        <if test="referUser != null and referUser !='' ">referUser,</if>
+	        <if test="status != null">status</if>
+        ) VALUES (
+	        <if test="sender != null">#{sender},</if>
+	        <if test="referClass != null">#{referClass},</if>
+	        <if test="innerMsgContent != null and innerMsgContent != '' ">#{innerMsgContent},</if>
+	        <if test="sendTime != null">#{sendTime},</if>
+	        <if test="referUser != null and referUser !='' ">#{referUser},</if>
+	        <if test="status != null">#{status}</if>
+        )
+        <selectKey keyProperty="innerMsgID" resultType="int">
+        	SELECT @@IDENTITY AS innerMsgID 
+        </selectKey>
+    </insert>
+	
+</mapper>

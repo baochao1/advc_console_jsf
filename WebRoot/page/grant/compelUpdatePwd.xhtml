@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+<title>登录</title>
+<h:outputStylesheet library="css" name="css.css"/>
+<style>
+body {
+    margin-left: 0px;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    background: #FFFFFF
+}
+</style>
+</h:head>
+<h:body>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#1B93E7">
+	<tr>
+		<td><h:graphicImage url="/resources/images/index_02_login.gif" height="62" width="689"/></td>
+	</tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td height="24" bgcolor="#E9F6FF"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td width="73%">&nbsp; </td>
+        <td width="6%" align="right"><h:graphicImage url="/resources/images/index_14.gif" width="10" height="11" /></td>
+        <td width="6%"><span >&nbsp;<a href="#" target="_blank" class="log12">帮&nbsp;助</a></span></td>
+      </tr>
+    </table></td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td height="5"></td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td width="1%" valign="top">
+    <table style="width:6%; height: 50%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td height="32" valign="top">
+        <h:graphicImage url="/resources/images/index_20.gif" height="32" width="209"/>
+        </td>
+      </tr>
+      <tr>
+        <td valign="top">
+        <table bgcolor="#EDF6FF" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td height="20"></td>
+            </tr>
+            <tr>
+              <td align="center" ><a class="index12">实验班后台</a></td>
+            </tr>
+            <tr>
+              <td align="center">
+              <h:graphicImage url="/resources/images/index1_25.gif" height="2" width="183"/>
+              </td>
+            </tr>
+        </table>
+        </td>
+      </tr>
+      <tr>
+        <td bgcolor="#EDF6FF" height="400px" valign="bottom">
+        <h:graphicImage url="/resources/images/index_25.gif" height="126" width="207"/>
+        </td>
+      </tr>
+    </table></td>
+    <td width="99%" align="left" valign="top" class="padd">
+    <h:form>
+       	<h:inputHidden value="#{loginAction.userName }"/>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td><h:graphicImage url="/resources/images/index2_25.gif" width="625" height="105" /></td>
+          </tr>
+          <tr>
+            <td height="177" align="left" class="padd10">
+            <table width="60%" border="0" cellspacing="0" cellpadding="0">
+			  <tr>
+                <td align="right" class="lan14" width="40%"><h:outputText value="旧密码："/></td>
+                <td align="left" colspan="2">
+                	<h:inputSecret size="21" value="#{loginAction.password }" tabindex="1"/>
+                </td>
+              </tr>
+              <tr>
+                <td  align="right" class="lan14"><h:outputText value="新密码："/></td>
+                <td align="left" colspan="2"> 
+                	<h:inputSecret size="21" value="#{loginAction.newPass }" tabindex="2"/>
+                	<h:outputText value="(4-16位字母或数字)"/>
+                </td>
+              </tr>
+              <tr>
+                <td  align="right" class="lan14"><h:outputText value="确认新密码："/></td>
+                <td align="left" colspan="2"> 
+                	<h:inputSecret size="21" value="#{loginAction.confirmNewPass }" tabindex="3"/>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3"><table width="100%" border="0" cellspacing="10" cellpadding="0">
+                  <tr>
+                    <td width="55%" align="right">
+				<h:commandButton value=" 提 交 " action="#{loginAction.compelUpdatePwd }" type="submit" tabindex="4"/>
+			</td>
+                    <td width="45%" align="left"><h:commandButton value=" 重 置" type="reset" tabindex="5"/></td>
+                  </tr>
+                  <tr><td colspan="2" align="center">
+                    <font color="red">${msg }</font></td></tr>
+                </table></td>
+                </tr>
+            </table></td>
+          </tr>
+          <tr>
+            <td><h:graphicImage url="/resources/images/index2_32.gif" width="625" height="118" /></td>
+          </tr>
+        </table>
+    </h:form>
+    </td>
+  </tr>
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="1" bgcolor="#FFFFFF">
+  <tr>
+    <td height="25" bgcolor="#1098f5">&nbsp;</td>
+  </tr>
+</table>
+</h:body>
+</html>

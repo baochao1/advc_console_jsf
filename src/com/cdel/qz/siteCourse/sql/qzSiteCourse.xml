@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="qzsitecourse">
+	<select id="getSiteCourseList" parameterType="Integer" resultType="QzSiteCourse">
+        SELECT * from qz_site_course WITH (NOLOCK) where serverType=#{serverType}
+    </select>
+    
+    <select id="selectQzSiteCourseIDs" resultType="QzSiteCourse" parameterType="String">
+		select q.siteCourseID 
+		from qz_site_course q WITH (NOLOCK) 
+		left join advc_course a WITH (NOLOCK) on q.courseID = a.listID
+		where a.coursecode in (${value}) and q.serverType = 5 
+	</select>
+	
+	<select id="getSiteCourseByscids" resultType="QzSiteCourse" parameterType="String">
+        select siteCourseID,siteCourseName from qz_site_course WITH (NOLOCK) 
+		where siteCourseID in (${value});
+    </select>
+    
+    <select id="getSiteCourseIDList" parameterType="java.util.List" resultType="Integer">
+		SELECT DISTINCT siteCourseID
+		FROM QZ_SITE_COURSEWARE WITH (NOLOCK)
+		WHERE siteCourseID IS NOT NULL AND cwID IN
+		<foreach collection="list" close=")" open="(" separator="," item="cc">
+			#{cc.cwID}
+		</foreach>
+	</select>
+	
+    <select id="getSiteCourseIDList2" parameterType="java.util.List" resultType="Integer">
+		SELECT DISTINCT siteCourseID
+		FROM QZ_SITE_COURSEWARE WITH (NOLOCK)
+		WHERE siteCourseID IS NOT NULL AND cwID IN
+		<foreach collection="list" close=")" open="(" separator="," item="cwID">
+			#{cwID}
+		</foreach>
+	</select>
+
+</mapper>

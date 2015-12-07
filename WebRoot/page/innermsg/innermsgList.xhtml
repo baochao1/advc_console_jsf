@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>我的沟通消息</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function setValue(referUser){
+		jQuery("#searchForm\\:sReferUser").val(referUser);
+		jQuery("#searchForm\\:sReadStatus_input").val("0");
+		jQuery("#searchForm\\:sReadStatus_label").text("未读");
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm" >
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sReferUser" value="相关学员" />
+			<p:inputText id="sReferUser" value="#{innerMsgAction.searchInnerMsg.referUser}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sMailType" value="我的邮箱 "/>
+			<p:selectOneMenu id="sMailType" value="#{innerMsgAction.searchInnerMsg.mailType}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{innerMsgReqAction.mailType.entrySet()}" var="mailType" itemLabel="#{mailType.value}" itemValue="#{mailType.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sReadStatus" value="阅读状态" />
+			<p:selectOneMenu id="sReadStatus" value="#{innerMsgAction.searchInnerMsg.readStatus}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{innerMsgReqAction.readStatus.entrySet()}" var="readStatus" itemLabel="#{readStatus.value}" itemValue="#{readStatus.key}"/>
+			</p:selectOneMenu>
+			
+			<p:outputLabel/>
+			<p:outputLabel/>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{innerMsgAction.search}" rendered="#{innerMsgAction.viewAuth}" />
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar id="showMarkBtn" >
+			<p:menuitem value="标记为已读" icon="ui-icon-pencil" 
+				actionListener="#{innerMsgReqAction.markRead}" rendered="#{innerMsgAction.optAuth and innerMsgAction.searchInnerMsg.readStatus==0}" update=":info" />
+			<p:menuitem value="转到答疑板站内信" icon="ui-icon-gear" target="_blank" url="#{innerMsgReqAction.faqurl}&amp;userName=#{innerMsgReqAction.userName}&amp;secret=#{innerMsgReqAction.secret}" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{innerMsgAction.heighti2}" 
+			widgetVar="innerMsg"
+			id="innerMsgList"
+			binding="#{innerMsgAction.pageTable}"
+			lazy="true"
+			value="#{innerMsgAction.innerMsgPage}" 
+			rows="20"
+			var="innerMsg" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages}  共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowIndexVar="row"
+			rowsPerPageTemplate="20,50"
+			styleClass="gridTable" 
+			selection="#{innerMsgReqAction.selectInnerMsg}"
+			rowKey="#{innerMsg.innerMsgID}"
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column width="5%" selectionMode="multiple" rendered="#{innerMsgAction.showMark}"/>
+			<p:column headerText="详情" width="5%">
+				<p:rowToggler />
+			</p:column>
+			<p:rowExpansion>
+			<p:panelGrid columns="2" style="width:40%; text-align:left;" columnClasses="addObjectClass, addContentClass">
+				<h:outputText value="操作" />
+				<h:panelGroup style="display:block;">
+					<p:commandLink value="查看" actionListener="#{innerMsgReqAction.getRecerveDetail(innerMsg.innerMsgID,innerMsg.receiveID,0)}" 
+						oncomplete="detailDialog.show();" update=":detailForm:detailDialog" rendered="#{innerMsgReqAction.viewAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="查看接收人" actionListener="#{innerMsgReqAction.getRecerveList(innerMsg.innerMsgID,0)}" 
+						oncomplete="loadDialog.show()" update=":loadForm:loadDialog" rendered="#{innerMsgReqAction.viewAuth}"/>
+				</h:panelGroup>
+				<h:outputText value="原问题" />
+				<h:outputText value="#{innerMsg.askContent}" escape="false" />
+				<h:outputText value="回复内容" />
+				<h:outputText value="#{innerMsg.innerMsgContentStr}" escape="false" />
+			</p:panelGrid>
+			</p:rowExpansion>
+			<p:column headerText="发送人" width="15%">
+				<h:outputText value="#{innerMsg.teacherCode}(#{innerMsg.senderName})"/>
+			</p:column>
+			<p:column headerText="相关班级" width="15%">
+				<h:link value="#{innerMsg.className}" title="#{innerMsg.className}" 
+					outcome="/page/memberClass/memberClassList" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{innerMsg.referClass}"/>
+					<f:param name="siteID" value="#{innerMsgAction.siteID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="原问题" width="18%">
+				<h:outputText value="#{innerMsg.askContentPart}" escape="false" title="#{innerMsg.askContent}"/>
+			</p:column>
+			<p:column headerText="回复内容" width="18%">
+				<h:outputText value="#{innerMsg.innerMsgContentStrPart}" escape="false" />
+			</p:column>
+			<p:column headerText="阅读" width="7%">
+				<h:outputText value="#{innerMsg.readStatusStr}"/>
+			</p:column>
+			<p:column headerText="相关学员" width="10%">
+				<p:commandLink value="#{innerMsg.referUser}" onclick="setValue('#{innerMsg.referUser}')" actionListener="#{innerMsgAction.search}" title="点击查看有关此学员的未读消息" rendered="#{innerMsgAction.viewAuth}"/>
+			</p:column>
+			<p:column headerText="状态" width="7%" style="text-align:center">
+				<p:commandLink value="#{innerMsg.statusStr}" update=":searchForm:innerMsgList :info" actionListener="#{innerMsgReqAction.changeStatus(innerMsg.innerMsgID,innerMsg.status)}" styleClass="status-#{innerMsg.status}" rendered="#{innerMsgReqAction.optAuth}"/>
+				<h:outputText value="#{innerMsg.statusStr}" rendered="#{!innerMsgReqAction.optAuth}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="innerMsgList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 查看页面 -->
+	<h:form id="loadForm" >
+		<p:dialog id="loadDialog" header="接收人" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/innermsgShow.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 明细页面 -->
+	<h:form id="detailForm" >
+		<p:dialog id="detailDialog" widgetVar="detailDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/innermsgDetail.xhtml"/>
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

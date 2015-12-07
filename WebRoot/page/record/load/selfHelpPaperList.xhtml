@@ -1,0 +1,42 @@
+<p:panel xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" rendered="#{recordAction.selectType==4}" >
+
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" columns="1" columnClasses="largeLength"  style="width:100%; text-align:left;">
+	<p:dataTable scrollable="true" scrollHeight="#{selfHelpListAction.heighti2}" 
+		widgetVar="selfList"
+		id="selfList"
+		binding="#{recordReqAction.pageTable}"
+		lazy="true"
+		value="#{recordReqAction.page}"
+		rows="20"
+		var="self" 
+		paginator="true" 
+		paginatorPosition="bottom"
+		currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+		paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+		rowsPerPageTemplate="20,50"
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！">
+		<p:column headerText="编号" width="20%">
+			<h:outputText value="#{self.helpPaperID}"/>
+		</p:column>
+		<p:column headerText="自助试卷名称" width="45%">
+			<h:outputText value="#{self.helpPaperName}"/>
+		</p:column>
+		<p:column headerText="创建时间" width="25%">
+			<h:outputText value="#{self.createTimeStr}"/>
+		</p:column>
+		<p:column headerText="记录" width="10%">
+			<h:link value="查看" outcome="/page/membercallAll/membercallAllList.xhtml" includeViewParams="true" target="_blank">
+				
+			</h:link>
+		</p:column>
+	</p:dataTable>
+</p:panelGrid>
+</p:panel>

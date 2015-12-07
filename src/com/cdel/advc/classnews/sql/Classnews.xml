@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="classnews">
+
+    <sql id="getClassnewsList_body">
+       	SELECT classNewsID, cn.classID, newsType, newsTitle, cn.creator, cn.createTime, cn.status, 
+       	c.className,t.teacherName,m.userName,ROW_NUMBER() Over(ORDER BY classNewsID DESC) AS rowNum 
+       	FROM ADVC_CLASS_NEWS cn WITH (NOLOCK) 
+       	LEFT JOIN ADVC_CLASS c WITH (NOLOCK) ON c.classID = cn.classID 
+       	LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = cn.creator 
+       	LEFT JOIN ADVC_MEMBER m WITH (NOLOCK) ON m.userID = cn.creator 
+		<where>        	
+			<if test="classID!=null"> AND cn.classID=#{classID} </if>
+            <if test="status!=null"> AND cn.status=#{status} </if>
+            <if test="newsType!=null"> AND cn.newsType=#{newsType} </if>
+		</where>
+    </sql>
+
+    <select id="countClassnews" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getClassnewsList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageClassnews" parameterType="Classnews" resultType="Classnews">
+        SELECT * FROM (
+            <include refid="getClassnewsList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <update id="updateClassnews">
+        UPDATE ADVC_CLASS_NEWS
+       	<set>
+            <if test="newsType!=null">newsType=#{newsType}, </if>
+            <if test="newsTitle!=null">newsTitle=#{newsTitle},</if>
+            <if test="status!=null">status=#{status} </if>
+        </set>
+		WHERE classNewsID=#{classNewsID} 
+    </update>
+    
+    <insert id="insertClassnews">
+        INSERT INTO ADVC_CLASS_NEWS ( classID,newsType,newsTitle,creator,createTime,status ) 
+        VALUES ( #{classID},#{newsType},#{newsTitle},#{creator},#{createTime},#{status} )
+    </insert>
+    
+    <select id="getClassnews" resultType="Classnews">
+        SELECT classNewsID, newsTitle, newsType, creator, createTime ,status
+        FROM ADVC_CLASS_NEWS WITH (NOLOCK) 
+        where classNewsID=#{classNewsID}
+    </select>
+
+</mapper>

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function showRepDate(args){
+		if(args.result==1){
+			alert("开启成功，请设置开始生成学习报告的时间！");
+		}
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setBusinessList" actionListener="#{qzBusinessOther.setBusinessList}" update="sBusinessID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sBusinessID" value="专业名称" />
+			<p:selectOneMenu id="sBusinessID" value="#{majorAction.searchMajor.businessID}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{qzBusinessOther.businessList}" var="business" itemLabel="#{business.businessName}" itemValue="#{business.businessID}"/>
+			</p:selectOneMenu>
+			<h:outputLabel for="sMajorName" value="辅导名称" />
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sMajorName" value="#{majorAction.searchMajor.majorName}" completeMethod="#{comRequestMethod.completeMajorName}" var="majorName" itemLabel="#{majorName}" itemValue="#{majorName}" maxResults="30" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sStatus" value="状态" />
+			<p:selectOneMenu id="sStatus" value="#{majorAction.searchMajor.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<p:outputLabel/>
+			<p:outputLabel/>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{majorAction.search}" rendered="#{majorAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{majorAction.heighti}" 
+			widgetVar="majorTable"
+			id="majorList"
+			binding="#{majorAction.pageTable}"
+			lazy="true"
+			value="#{majorAction.majorPage}" 
+			rows="20"
+			var="major" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{majorAction.viewAuth}"
+			>
+			<p:column headerText="操作" width="5%">
+				<p:rowToggler />
+			</p:column>
+			<p:rowExpansion>
+			<p:panelGrid columns="2" style="width:500px;" columnClasses="addObjectMinClass2, addContentClass">
+				<p:outputLabel value="设置班级"/>
+				<p:commandLink value="设置" oncomplete="classNoDialog.show();" actionListener="#{classNoAction.showClassNo(major.majorID)}" update=":classNoForm:classNoDialog" rendered="#{majorAction.optAuth}"/>
+				
+				<p:outputLabel value="聊天室/进入"/>
+				<h:panelGroup style="display:block;">
+					<p:outputLabel value="已建立" rendered="#{major.roomStatus == 1}"/>
+					<p:commandLink value="未建立" rendered="#{majorAction.optAuth and major.roomStatus == 0}" oncomplete="roomDialog.show();" actionListener="#{majorReqAction.showRoomDialog(majorAction.siteID,major.majorID,major.majorName)}" update=":roomForm:roomDialog"/>
+					<p:outputLabel value="未建立" rendered="#{(!majorAction.optAuth) and major.roomStatus == 0}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="#{major.enterRoom == 1 ? '允许' : '禁止'}" rendered="#{majorAction.optAuth}" onstart="return confirmDia('确认修改聊天室状态么？');" actionListener="#{majorReqAction.changeRoomStatus(major.majorID,major.enterRoom)}" update=":info majorList"/>
+					<p:outputLabel value="#{major.enterRoom == 1 ? '允许' : '禁止'}" rendered="#{!majorAction.optAuth}"/>
+				</h:panelGroup>
+				
+				<p:outputLabel value="学习报告生成设置"/>
+				<h:panelGroup style="display:block;">
+					<p:commandLink value="#{major.reportStatus == 1 ? '开启' : '关闭'}" rendered="#{majorAction.optAuth}" onstart="return confirmDia('确认修改学习报告设置么？');" actionListener="#{majorReqAction.changeReportStatus(major.majorID,major.reportStatus)}" update=":info majorList" oncomplete="showRepDate(args);"/>
+					<p:outputLabel value="#{major.reportStatus == 1 ? '开启' : '关闭'}" rendered="#{!majorAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:inplace label="#{major.reportDate == null ? '设定' : major.reportDateStr}(单击修改)" editor="true" rendered="#{majorAction.optAuth}">
+						<p:ajax event="save" listener="#{majorReqAction.addRepDateSubmit}" update=":info" />
+						<p:calendar value="#{major.reportDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" />
+					</p:inplace>
+					<p:outputLabel value="#{major.reportDate == null ? '设定' : major.reportDateStr}" rendered="#{!majorAction.optAuth}"/>
+				</h:panelGroup>
+				
+				<p:outputLabel value="计划特殊日期"/>
+				<h:link value="进入设置" outcome="specialDateSet.xhtml" target="_blank">
+					<f:param value="#{major.majorID}" name="majorID"/>
+				</h:link>
+				
+				<p:outputLabel value="阶段舍掉顺序"/>
+				<p:commandLink value="进入设置" oncomplete="phaseSetDialog.show();" actionListener="#{phaseSetAction.showPhaseSetDialog(major.majorID,1)}" update=":phaseSetForm:phaseSetDialog"/>
+				
+				<p:outputLabel value="阶段设置"/>
+				<h:panelGroup style="display:block;">
+					<p:commandLink value="关联阶段服务项" oncomplete="stageDialog.show();" actionListener="#{majorStageAction.showStageDialog(major.majorID)}" update=":stageForm:stageDialog"/>
+					<p:spacer width="15px"/>
+					
+					<h:link value="设置服务项引导语" outcome="guideLanguageList.xhtml" target="_blank">
+					<f:param value="#{major.majorID}" name="majorID"/>
+				   </h:link>
+				</h:panelGroup>
+				<p:outputLabel value="短信设置"/>
+				<h:link value="进入设置" outcome="smsSet.xhtml" target="_blank">
+					<f:param value="#{major.majorID}" name="majorID"/>
+				</h:link>
+				
+				<p:outputLabel value="阶段引导语"/>
+				<h:link value="进入设置" outcome="guideTextSet.xhtml" target="_blank">
+					<f:param value="#{major.majorID}" name="majorID"/>
+				</h:link>
+				
+				<p:outputLabel value="操作"/>
+				<h:panelGroup style="display:block;">
+					<p:commandLink value="#{major.statusStr}" update=":searchForm:majorList :info" actionListener="#{majorReqAction.changeStatus(major.majorID,major.status)}" rendered="#{majorAction.optAuth}"/>
+					<h:outputText value="#{major.statusStr}" rendered="#{!majorAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="修改" oncomplete="loadDialog.show();" actionListener="#{majorAction.update(major.majorID)}" update=":loadForm:loadDialog" rendered="#{majorAction.optAuth}"/>
+				</h:panelGroup>
+			</p:panelGrid>
+			</p:rowExpansion>
+			<p:column headerText="辅导ID" width="7%">
+				<h:outputText value="#{major.majorID}" />
+			</p:column>
+			<p:column headerText="专业名称" width="10%">
+				<h:outputText value="#{major.businessName}" title="#{major.businessName}"/>
+			</p:column>
+			<p:column headerText="网站名称" width="10%">
+				<h:outputText value="#{major.siteName}" />
+			</p:column>
+			<p:column headerText="辅导名称" width="19%">
+				<h:outputText value="#{major.majorName}" title="#{major.majorName}"/>
+			</p:column>
+			<p:column headerText="简称" width="15%">
+				<h:outputText value="#{major.shortName}" title="#{major.shortName}"/>
+			</p:column>
+			<p:column headerText="创建者" width="12%">
+				<h:outputText value="#{major.creatorName}" />
+			</p:column>
+			<p:column headerText="创建时间" width="12%">
+				<h:outputText value="#{major.createTimeStr}" />
+			</p:column>
+			<p:column headerText="学习报告生成间隔时间" width="10%">
+				<h:outputText value="#{major.reportDateSpace}" />
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="majorList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 修改页面 -->
+	<h:form id="loadForm" >
+		<p:dialog id="loadDialog" header="修改" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="#{majorAction.url}"/>
+		</p:dialog>
+	</h:form>
+	<!-- 设置班级页面 -->
+	<h:form id="classNoForm" >
+		<p:dialog id="classNoDialog" header="设置班级" widgetVar="classNoDialog" resizable="false" showEffect="fade" hideEffect="fade" >
+			<ui:include src="load/classNoSet.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 聊天室页面 -->
+	<h:form id="roomForm" >
+		<p:dialog id="roomDialog" header="开通聊天室" widgetVar="roomDialog" resizable="false" showEffect="fade" hideEffect="fade" >
+			<ui:include src="load/roomSet.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 舍弃阶段页面 -->
+	<h:form id="phaseSetForm" >
+		<p:dialog id="phaseSetDialog" header="设置舍弃阶段" widgetVar="phaseSetDialog" resizable="false" showEffect="fade" hideEffect="fade" height="300">
+			<ui:include src="load/phaseSetDialog.xhtml"/>
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:messages id="msg"/>
+					<p:commandButton value="确定" actionListener="#{phaseSetAction.addSubmit}" oncomplete="optResult('phaseSetDialog',args,'1');" update="msg"/>
+					<p:commandButton type="button" value="关闭" onclick="phaseSetDialog.hide();"/>
+				</h:panelGroup>
+			</f:facet>
+		</p:dialog>
+	</h:form>
+	<!-- 设置阶段 -->
+	<h:form id="stageForm" >
+		<ui:include src="load/stage.xhtml"/>
+	</h:form>
+</h:body>
+</html>

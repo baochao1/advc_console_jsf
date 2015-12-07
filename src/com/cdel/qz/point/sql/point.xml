@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="point">
+	<sql id="getAddPointList_body">
+        select p.pointID, p.courseID, p.pointName, qc.chapterName,qc.chapterID,
+		p.createTime,ra.realName,ROW_NUMBER() Over( ORDER BY 
+			<if test="sortField == null or sortField == ''"> p.pointID desc </if>
+			<if test="sortField == 'pointID'"> p.pointID 
+				<if test="sortOrder == 'DESCENDING'"> desc  </if>
+				<if test="sortOrder == 'ASCENDING'"> asc  </if>
+			</if>
+			<if test="sortField == 'pointName'"> p.pointName 
+				<if test="sortOrder == 'DESCENDING'"> desc  </if>
+				<if test="sortOrder == 'ASCENDING'"> asc  </if>
+			</if>
+		) AS rowNum 
+		FROM QZ_POINT p WITH (NOLOCK) 
+		LEFT JOIN RAD_ADMIN_USER ra WITH (NOLOCK) on ra.adminID=p.creator 
+		LEFT JOIN QZ_CHAPTER qc WITH (NOLOCK) on qc.chapterID= p.chapterID 
+		LEFT JOIN GDB_STUDY_PLAN_POINT gs WITH (NOLOCK) on gs.pointID= p.pointID and gs.userID=#{userID} and gs.studyPlanID=#{studyPlanID} 
+		where p.status=1 
+		<if test="chapterID != null"> and p.chapterID=#{chapterID} </if>
+		<if test="pointListID != null"> and p.pointListID=#{pointListID} </if>
+		<if test="pointName != null and pointName != ''"> and p.pointName like '%'+#{pointName}+'%' </if>
+		and p.courseID=#{courseID} and gs.id is null 
+    </sql>
+
+    <select id="countAddPoint" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getAddPointList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageAddPoint" parameterType="Point" resultType="Point">
+        SELECT * FROM (
+            <include refid="getAddPointList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+</mapper>

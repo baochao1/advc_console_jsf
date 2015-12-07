@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="website">
+	<select id="getWebsite" resultType="Website">
+		SELECT * FROM ADVC_WEBSITE WITH (NOLOCK) where siteID=#{siteID} 
+    </select>
+    
+	<select id="getWebsiteList4I" resultType="Website">
+		SELECT * FROM ADVC_WEBSITE WITH (NOLOCK) where status=1 ORDER BY siteID
+    </select>
+    
+    <select id="getWebsiteByClassID" resultType="Website">
+		select c.siteID,d.phoneUrl,d.siteAttr 
+		from ADVC_CLASS a WITH (NOLOCK),
+			 ADVC_CLASS_STRATEGY b WITH (NOLOCK),
+			 ADVC_MAJOR c WITH (NOLOCK),
+			 ADVC_WEBSITE d WITH (NOLOCK) 
+		where a.strategyID=b.strategyID and b.majorID=c.majorID and c.siteID=d.siteID and a.classID=#{classID}
+    </select>
+    
+    <sql id="getWebsiteList_body">
+	   	SELECT aw.*,at.teacherName as creatorName,
+             ROW_NUMBER() Over(ORDER BY siteID DESC) AS rowNum 
+        FROM ADVC_WEBSITE aw WITH (NOLOCK) 
+        left join ADVC_TEACHER  at  WITH (NOLOCK) on at.teacherID = aw.creator
+	   	<where>
+	   		<if test="siteName !=null and siteName != ''"> AND aw.siteName like '%'+#{siteName}+'%'</if>
+	   		<if test="domain != null and domain != ''"> AND aw.domain like '%'+#{domain}+'%'</if>
+	   	</where>
+    </sql>
+
+    <select id="countWebsite" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getWebsiteList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageWebsite" parameterType="Website" resultType="Website">
+        SELECT * FROM (
+            <include refid="getWebsiteList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <update id="updateWebsite"  parameterType="Website">
+        UPDATE ADVC_WEBSITE 
+        <set>
+        	<if test="domain !=null and domain != '' "> domain= #{domain},</if>
+        	<if test="courseAvgTimeUrl !=null and courseAvgTimeUrl != '' "> courseAvgTimeUrl= #{courseAvgTimeUrl},</if>
+        	<if test="userTimeUrl != null and userTimeUrl != ''"> userTimeUrl= #{userTimeUrl},</if>
+        	<if test="selCourseUrl != null and selCourseUrl != ''"> selCourseUrl= #{selCourseUrl},</if>
+        	<if test="chapterTimeUrl != null and chapterTimeUrl != '' "> chapterTimeUrl= #{chapterTimeUrl},</if>
+        	<if test="phoneUrl != null and phoneUrl != '' "> phoneUrl= #{phoneUrl},</if>
+        	<if test="siteAttr != null and siteAttr != '' "> siteAttr= #{siteAttr}</if>
+        </set>
+		WHERE siteID=#{siteID}
+    </update>
+    
+</mapper>

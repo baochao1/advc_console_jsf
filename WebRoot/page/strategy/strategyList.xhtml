@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>分班策略管理</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+		.ui-picklist { width:600px;}
+		.ui-picklist .ui-widget-content{ width:300px;}
+		.ui-picklist .ui-picklist-list{ height:100px;}
+		.ui-spinner-input {width:50px;}
+		.myOrderList .ui-orderlist-list {width:370px;}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(strategyAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="辅导名称" />
+			<p:selectOneMenu id="sMajorID" value="#{strategyAction.searchStrategy.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel value="策略描述" />
+			<h:panelGroup style="display:block;">
+				<p:autoComplete value="#{strategyAction.searchStrategy.setDesc}" completeMethod="#{comRequestMethod.completeStrategyDesc}" var="strategyDesc" itemLabel="#{strategyDesc}" itemValue="#{strategyDesc}" maxResults="30" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sStatus" value="状态" />
+			<p:selectOneMenu id="sStatus" style="width:200px;" panelStyleClass="minLength" value="#{strategyAction.searchStrategy.status}">
+				<f:selectItem itemLabel="--请选择--" itemValue=""/>
+				<f:selectItems value="#{strategyReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{strategyAction.search}" rendered="#{strategyAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="addDialog.show();" 
+				actionListener="#{strategyReqAction.add}" rendered="#{strategyReqAction.optAuth}" update=":addForm:addDialog" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{strategyAction.heighti2}" 
+			widgetVar="strategyTable"
+			id="strategyList"
+			binding="#{strategyAction.pageTable}"
+			lazy="true"
+			value="#{strategyAction.strategyPage}" 
+			rows="20"
+			var="strategy" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} / {totalPages}"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="操作" width="5%">
+				<p:rowToggler />
+			</p:column>
+			<p:rowExpansion>
+			<p:panelGrid columns="2" style="width:300px; text-align:left;">
+				<h:outputText value="班级数" />
+				<h:link value="#{strategy.classNum}" outcome="/page/classes/classesList.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="strategyID" value="#{strategy.strategyID}"/>
+					<f:param name="from" value="strategy"/>
+				</h:link>
+				<h:outputText value="操作" />
+				<h:panelGroup style="display:block;">
+					<p:commandLink value="#{strategy.statusStr}" update="strategyList :info" actionListener="#{strategyReqAction.changeStatus(strategy.strategyID,strategy.strategyType,strategy.majorID,strategy.courseRegex,strategy.status)}" rendered="#{strategyAction.optAuth}"/>
+					<h:outputText value="#{strategy.statusStr}" rendered="#{!strategyAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="修改" oncomplete="updateDialog.show();" actionListener="#{strategyReqAction.update(strategy.strategyID)}" update=":updateForm:updateDialog" rendered="#{strategyReqAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="删除" update=":info" oncomplete="optResultAlert(args,2);" onstart="return confirmDel();" 
+						actionListener="#{strategyReqAction.delete(strategy.strategyID)}" rendered="#{strategyReqAction.optAuth}"/>
+				</h:panelGroup>
+				<h:outputText value="修改课程排序" />
+				<p:commandLink value="排序" oncomplete="seqDialog.show();" actionListener="#{strategyOrderReqAction.changeSeq(strategy.strategyID,strategy.courseSet)}" update=":seqForm:seqDialog" rendered="#{strategyReqAction.optAuth}"/>
+			</p:panelGrid>
+			</p:rowExpansion>
+			<p:column headerText="编号" width="5%">
+				<h:outputText value="#{strategy.strategyID}" />
+			</p:column>
+			<p:column headerText="所属辅导" width="15%">
+				<h:outputText value="#{strategy.majorName}"/>
+			</p:column>
+			<p:column headerText="主库辅导" width="15%">
+				<h:outputText value="#{strategy.mainMajorName}"/>
+			</p:column>
+			<p:column headerText="策略类别" width="8%">
+				<h:outputText value="#{strategy.strategyTypeStr}" />
+			</p:column>
+			<p:column headerText="策略描述" width="25%">
+				<h:outputText value="#{strategy.setDesc}"/>
+			</p:column>
+			<p:column headerText="班级人数" width="6%">
+				<h:outputText value="#{strategy.limitNum}"/>
+			</p:column>
+			<p:column headerText="优先级别" width="6%">
+				<h:outputText value="#{strategy.priorityLevel}"/>
+			</p:column>
+			<p:column headerText="创建者" width="7%">
+				<h:outputText value="#{strategy.creatorName}"/>
+			</p:column>
+			<p:column headerText="创建时间" width="8%">
+				<h:outputText value="#{strategy.createTimeStr}"/>
+			</p:column>			
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="strategyList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 添加页面 -->
+	<h:form id="addForm" >
+		<ui:include src="load/strategyAdd.xhtml"/>
+	</h:form>
+	<!-- 修改页面 -->
+	<h:form id="updateForm" >
+		<ui:include src="load/strategyUpdate.xhtml"/>
+	</h:form>
+	<!-- 排序页面 -->
+	<h:form id="seqForm" >
+		<p:dialog id="seqDialog" header="排序" widgetVar="seqDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/strategySeq.xhtml"/>
+		</p:dialog>
+	</h:form>
+
+</h:body>
+</html>

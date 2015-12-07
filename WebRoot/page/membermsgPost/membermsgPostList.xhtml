@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>过期消息查询</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sTeacherCode" value="教师代码" />
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sTeacherCode" value="#{membermsgPostAction.filterMembermsg.teacherCode}" completeMethod="#{comRequestMethod.completeTeacherName2}" var="teacherCode" itemLabel="#{teacherCode}" itemValue="#{teacherCode}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sStartDate" value="开始时间" />
+			<p:calendar id="sStartDate" value="#{membermsgPostAction.filterMembermsg.startTime}" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			
+			<h:outputLabel for="sEndDate" value="结束时间" />
+			<p:calendar id="sEndDate" value="#{membermsgPostAction.filterMembermsg.endTime}" pattern="yyyy-MM-dd HH:mm:ss" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			
+			<p:outputLabel/>
+			<p:outputLabel/>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" update="membermsgTable" actionListener="#{membermsgPostAction.search}" />
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{membermsgPostAction.heighti}" 
+			widgetVar="membermsgTable"
+			id="membermsgTable"
+			binding="#{membermsgPostAction.pageTable}"
+			lazy="true"
+			value="#{membermsgPostAction.page}" 
+			rows="20"
+			var="membermsg" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rowKey="#{membermsg.noteID}"
+			>
+			<p:column headerText="教师名称" width="12%">
+				<h:outputText value="#{membermsg.teacherName}(#{membermsg.teacherCode})" />
+			</p:column>
+			<p:column headerText="班级名称" width="15%" >
+				<h:outputText value="#{membermsg.className}" title="#{membermsg.className}"/>
+			</p:column>
+			<p:column headerText="消息主题" width="25%" >
+				<h:outputText value="#{membermsg.msgTitle}" title="#{membermsg.msgTitle}"/>
+			</p:column>
+			<p:column headerText="发送时间" width="11%" >
+				<h:outputText value="#{membermsg.sentTimeStr}"/>
+			</p:column>
+			<p:column headerText="回复时间" width="11%" >
+				<h:outputText value="#{membermsg.replyTimeStr}"/>
+			</p:column>
+			<p:column headerText="过期时间(小时)" width="10%" >
+				<h:outputText value="#{membermsg.postHours}"/>
+			</p:column>
+			
+			<p:column headerText="回复" width="8%" >
+				<h:outputText styleClass="answerStatus-#{membermsg.replayFlag}" value="#{membermsg.replayFlagStr}"/>
+			</p:column>
+			<p:column headerText="查看 " width="7%" >
+				<p:commandLink value="查看"  
+					oncomplete="showDialog.show()" 
+					update=":showForm:showDialog" 
+					actionListener="#{membermsgReqAction.updateShow(membermsg.msgID,'post')}" />
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="membermsgTable" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+		
+	<!-- 查看 消息页面 -->
+	<ui:include src="load/msgShow.xhtml"/>
+</h:body>
+</html>

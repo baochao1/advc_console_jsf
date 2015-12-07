@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="course">
+   
+    <sql id="pageSql_body">
+	    SELECT c.*, m.majorName, w.siteName, at.teacherName,pc.courseName previewCourseName, 
+             ROW_NUMBER() Over(ORDER BY c.courseID DESC) AS rowNum 
+        FROM ADVC_COURSE c WITH (NOLOCK) LEFT JOIN 
+        	 ADVC_MAJOR m WITH (NOLOCK) ON c.majorID=m.majorID LEFT JOIN 
+        	 ADVC_WEBSITE w WITH (NOLOCK) ON m.siteID=w.siteID
+        	 left join ADVC_BUSINESS ab WITH (NOLOCK) on ab.businessID = m.businessID
+             left join ADVC_TEACHER at WITH (NOLOCK) on at.teacherID = c.creator 
+             left join ADVC_COURSE pc WITH (NOLOCK) on c.previewCourse = pc.courseID and pc.isPre=1
+        	WHERE m.status= 1 and w.status =1 and ab.status = 1
+        <if test="courseID !=null"> and c.courseID=#{courseID} </if>
+        <if test="majorID !=null"> and c.majorID=#{majorID} </if>
+        <if test="courseName !=null and courseName !=''"> and c.courseName=#{courseName} </if>
+        <if test="courseType !=null"> and c.courseType=#{courseType} </if>
+        <if test="courseCode !=null and courseCode !=''"> and c.courseCode=#{courseCode} </if>
+        <if test="courseYear !=null"> and c.courseYear=#{courseYear} </if>
+        <if test="previewCourse !=null"> and c.previewCourse=#{previewCourse} </if>
+        <if test="status !=null"> and c.status=#{status} </if>
+        <if test="creator !=null"> and c.creator=#{creator} </if>
+        <if test="createTime !=null"> and c.createTime=#{createTime} </if>
+        <if test="siteID !=null"> and m.siteID=#{siteID} </if>
+    </sql>
+    
+    <select id="findPageCourse" resultType="Course" parameterType="Course">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countCourse" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+    <select id="getCourse" parameterType="int" resultType="Course">
+    	SELECT * FROM ADVC_COURSE WHERE courseID = #{courseID}
+    </select>
+    
+    <select id="getCourseByCourseName" parameterType="String" resultType="Course">
+    	SELECT top 20 * FROM ADVC_COURSE WHERE courseName like '%'+#{courseName}+'%' escape '#' 
+    	order by courseName 
+    </select>
+    
+    <insert id="insertCourse" parameterType="Course">
+        INSERT INTO ADVC_COURSE(
+	        majorID, courseName, courseType, courseCode, courseYear, isPre, courseSmsName, 
+	        status, previewCourse, creator, createTime, faceType 
+	        <if test="isMemberMsgOpen != null">,isMemberMsgOpen</if>
+	        <if test="memberMsgTitle != null and memberMsgTitle != ''">,memberMsgTitle</if>
+	        <if test="memberMsgContent != null and memberMsgContent != ''">,memberMsgContent</if>
+	        <if test="listID != null">,listID</if>
+        ) VALUES (
+        	#{majorID}, #{courseName}, #{courseType}, #{courseCode}, #{courseYear},  #{isPre}, #{courseSmsName}, 
+        	#{status}, #{previewCourse}, #{creator}, #{createTime}, #{faceType} 
+        	<if test="isMemberMsgOpen != null">,#{isMemberMsgOpen}</if>
+	        <if test="memberMsgTitle != null and memberMsgTitle != ''">,#{memberMsgTitle}</if>
+	        <if test="memberMsgContent != null and memberMsgContent != ''">,#{memberMsgContent}</if>
+	        <if test="listID != null">,#{listID}</if>
+        )
+    </insert>
+    
+	<select id="getCourseListByMajor" parameterType="Course" resultType="Course">
+		SELECT * FROM ADVC_COURSE WITH (NOLOCK) 
+		<where>
+            <if test="majorID != null"> and majorID=#{majorID} </if>
+            <if test="status != null"> and status=#{status} </if>
+            <if test="isPre != null"> and isPre=#{isPre} </if>
+            <if test="courseType != null"> and courseType=#{courseType} </if>
+    	</where>
+		order by courseYear desc,courseType
+	</select>
+	
+	<select id="getCourseListByComboID" parameterType="Course" resultType="Course">
+		SELECT 
+    		cast(c.courseID as varchar(max)) as  courseID, c.courseName, c.courseType, 
+    		c.courseCode, c.faceType, m.majorName, m.majorID ,c.status
+    	FROM 
+    		ADVC_COURSE c LEFT JOIN ADVC_MAJOR m WITH (NOLOCK) ON c.majorID=m.majorID
+		<where>
+            <if test="majorID != null"> and c.majorID=#{majorID} </if>
+            <if test="courseSet != null"> and c.courseID  IN (${courseSet})</if>
+    	</where>
+		order by c.courseYear desc,c.courseType
+	</select>
+    
+    <select id="checkCourseCode" parameterType="Course" resultType="Course">
+		SELECT 
+			C.courseID, C.courseCode, C.courseType, C.faceType, M.majorName, M.majorID 
+		FROM 
+			ADVC_COURSE C WITH (NOLOCK) 
+			LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON C.majorID=M.majorID  
+			LEFT JOIN ADVC_WEBSITE W WITH (NOLOCK) ON W.siteID=M.siteID
+		<where>
+			<if test="courseID != null"> and C.courseID!=#{courseID} </if>
+			<if test="courseCode != null and courseCode != ''"> and C.courseCode=#{courseCode} </if>
+			<if test="courseCodes != null and courseCodes != ''"> and C.courseCode in (${courseCodes}) </if>
+			<if test="courseTypes != null and courseTypes != ''"> and C.courseType in (${courseTypes}) </if>
+			<if test="status != null"> and C.status=#{status} </if>
+			<if test="siteID != null"> and W.siteID=#{siteID} </if>
+		</where>
+    </select>
+    
+    <!-- 动态更新课程sql -->
+    <update id="updateCourse" parameterType="Course">
+        UPDATE 
+        	ADVC_COURSE 
+        <set>
+        	<if test="majorID != null">majorID = #{majorID},</if>
+        	<if test="courseName != null and courseName != ''">courseName = #{courseName},</if>
+        	<if test="courseType != null">courseType = #{courseType},</if>
+        	<if test="courseCode != null and courseName != ''">courseCode = #{courseCode},</if>
+        	<if test="courseYear != null">courseYear = #{courseYear},</if>
+        	<if test="status != null">status = #{status},</if>
+        	<if test="creator != null">creator = #{creator},</if>
+        	<if test="createTime != null">createTime = #{createTime},</if>
+        	<if test="courseSmsName != null">courseSmsName = #{courseSmsName},</if>
+        	<if test="isMemberMsgOpen != null">isMemberMsgOpen = #{isMemberMsgOpen},</if>
+        	<if test="memberMsgTitle != null">memberMsgTitle = #{memberMsgTitle},</if>
+        	<if test="memberMsgContent != null">memberMsgContent = #{memberMsgContent},</if>
+        	<if test="listID != null">listID = #{listID},</if>
+        	<if test="previewCourse != null">previewCourse = #{previewCourse},</if>
+        	<if test="isPre != null">isPre = #{isPre},</if>
+        	<if test="faceType != null">faceType = #{faceType}</if>
+        </set>
+        WHERE
+        	courseID = #{courseID}
+    </update>
+    
+    <select id="getCourseByCourseID" parameterType="int" resultType="Course">
+    	SELECT c.*, m.majorName, w.siteName, at.teacherName
+        FROM ADVC_COURSE c WITH (NOLOCK) LEFT JOIN ADVC_MAJOR m WITH (NOLOCK) ON c.majorID=m.majorID 
+        LEFT JOIN ADVC_WEBSITE w WITH (NOLOCK) ON m.siteID=w.siteID 
+		left join ADVC_BUSINESS ab WITH (NOLOCK) on ab.businessID = m.businessID
+		left join ADVC_TEACHER at WITH (NOLOCK) on at.teacherID = c.creator 
+		WHERE c.courseID = #{courseID}
+    </select>
+
+    <select id="findCoursesByIDs" resultType="Course">
+    	SELECT 
+    		c.courseID, c.courseName, c.courseType, c.courseCode, c.faceType, m.majorName, m.majorID 
+    	FROM 
+    		ADVC_COURSE c LEFT JOIN ADVC_MAJOR m WITH (NOLOCK) ON c.majorID=m.majorID 
+    	WHERE  c.status=1 and 
+    		c.courseID IN 
+    		<foreach collection="array" index="index" item="id" open="(" close=")" separator=", ">   
+				#{id} 
+			</foreach> 
+    </select>
+    
+    <select id="getCourseList4I" parameterType="int" resultType="Course">
+		SELECT courseID,courseName FROM ADVC_COURSE WITH (NOLOCK) WHERE majorID=#{majorID} and status=1
+	</select>
+	
+	<select id="getAdvcAdvanceCourse" parameterType="int" resultType="String">
+		select courseCode from advc_course WITH (NOLOCK)  where courseType = #{courseType} and status = 1
+	</select>
+	
+	<select id="getStudyCourse" resultType="Course">
+		<if test="studyCourse != null and studyCourse != ''">
+			select courseID,courseCode,courseName from advc_course WITH (NOLOCK) where status = 1 and courseID in (${studyCourse}) 
+		</if>
+	</select>
+	<select id="getStudyCourse2" resultType="String">
+		select courseName from advc_course WITH (NOLOCK) where courseCode in (${courseIDs}) 
+		<if test="status != -1">
+			and status = #{status}
+		</if>
+	</select>
+
+	<select id="getCourseByCourseIDs" parameterType="Map" resultType="Course">
+		SELECT courseID,courseName
+		From advc_course WITH (NOLOCK) WHERE courseID in 
+		<foreach collection="array" item="id" separator="," close=")" open="(">
+			#{id}
+		</foreach> and status = 1
+		order by courseID
+	</select>
+	
+	<select id="getAdvanceCourse" parameterType="Map" resultType="Course">
+		SELECT majorID,courseCode
+		From advc_course WITH (NOLOCK) WHERE courseCode in 
+		<foreach collection="courses" item="item" separator="," close=")" open="(">
+			#{item}
+		</foreach>
+		order by majorID
+	</select>
+	
+    <select id="getPreCoursesByCourseIDs" parameterType="Map" resultType="Course">
+		SELECT PC.courseID, PC.courseName From ADVC_COURSE PC WITH (NOLOCK) 
+		LEFT JOIN ADVC_COURSE C WITH (NOLOCK) ON C.previewCourse = PC.courseID 
+		WHERE C.courseID in 
+		<foreach collection="array" item="id" separator="," close=")" open="(">
+			#{id}
+		</foreach> AND C.status = 1 AND PC.status = 1
+		ORDER BY courseID
+	</select>
+	
+	<select id="getMajorIDByCourseID" parameterType="Integer" resultType="Integer">
+        SELECT majorID 
+        FROM ADVC_COURSE WITH (NOLOCK)
+        WHERE courseID = #{courseID}
+    </select>
+
+</mapper>

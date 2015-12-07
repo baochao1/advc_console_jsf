@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="reservecallhistory">
+	<sql id="getMembercallReserveHistory_body">
+        SELECT a.callID, a.userID, b.userName, a.classID, c.classCode, a.studyStatus, a.personalAsk, a.reservedTime,a.feedback, 
+            a.callStatus, a.caller, a.callTime, a.reservedDate, a.reserveRemark, t.teacherName, c.className,
+		    ROW_NUMBER() Over(ORDER BY a.callTime DESC) AS rowNum 
+        FROM 
+        	ADVC_MEMBER_CALL a WITH (NOLOCK) 
+        LEFT JOIN 
+        	ADVC_MEMBER b WITH (NOLOCK) on a.userID=b.userID
+        LEFT JOIN 
+        	ADVC_CLASS c WITH (NOLOCK) on a.classID=c.classID
+        LEFT JOIN 
+        	ADVC_TEACHER t WITH (NOLOCK) on a.caller = t.teacherID
+        WHERE 
+        	a.reservedDate IS NOT NULL AND a.callTime IS NOT NULL
+	     <if test="className!=null and className!=''"> AND c.className LIKE '%'+#{className}+'%' </if>
+	     <if test="userName!=null and userName!=''"> AND b.userName=#{userName} </if>
+	     <if test="teacherName!=null and teacherName!=''"> AND (t.teacherCode LIKE '%'+#{manager}+'%' OR t.teacherName LIKE '%'+#{manager}+'%') </if>
+         <if test="callStatus!=null"> AND a.callStatus = #{callStatus} </if>
+    </sql>
+    
+ 	<select id="countReserveCallHistory" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getMembercallReserveHistory_body" />
+        ) AS myTable 
+    </select>
+    
+    <select id="findPageReserveCallHistory" resultType="ReserveCallHistory" parameterType="ReserveCallHistory">
+        SELECT * FROM (
+            <include refid="getMembercallReserveHistory_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+
+</mapper>

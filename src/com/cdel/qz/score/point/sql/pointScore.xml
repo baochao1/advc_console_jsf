@@ -1,0 +1,54 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pointscore">
+	
+	<select id="getRptPointStatList" parameterType="java.util.Map" resultType="PointScore">
+		with tmp as (
+			select mps.userID,q.questionID,case when mps.userAnswer=q.answer then 1 else 0 end as isRight,pt.pointID 
+			from QZ_MEMBER_POINT_SCORE mps WITH (NOLOCK),QZ_QUESTION q WITH (NOLOCK),QZ_POINTTEST pt WITH (NOLOCK) 
+			where pt.pointTestID=mps.pointTestID and q.questionID=mps.questionID 
+			and mps.userID=#{userID} and quesTypeID in (1,2,3) 
+			<if test="startDate != null"> AND mps.createTime &gt;= #{startDate} </if>
+			<if test="endDate != null"> AND mps.createTime &lt;= #{endDate} </if>
+			<foreach collection="siteCourseIDList" item="item" separator="OR" close=")" open=" and (">
+				mps.siteCourseID = #{item}
+			</foreach>
+		)
+		select userID,courseID,courseName,chapterName,pointNum,totleNum,correctCount,
+		round(cast(correctCount as float)/cast(totleNum as float),2) as correctScale 
+		from 
+		(
+			select tmp.userID,c.courseID,c.courseName,chapterName,qc.chapterID,
+			count(distinct tmp.pointID) as pointNum, 
+			count(tmp.questionID) as totleNum,
+			count(case when tmp.isRight=1 then isRight end ) as correctCount 
+			from tmp,QZ_POINT p WITH (NOLOCK),QZ_COURSE c WITH (NOLOCK),QZ_CHAPTER qc with (nolock) 
+			where tmp.pointID=p.pointID and c.courseID=p.courseID and qc.chapterID=p.chapterID 
+			group by tmp.userID,c.courseID,c.courseName,qc.chapterID,qc.chapterName 
+		)myTable 
+		order by myTable.courseID,myTable.chapterID 
+	</select>
+	
+	<select id="getRptPointList" parameterType="java.util.Map" resultType="PointScore">
+		with tmp as (
+			select mps.pointTestID,q.questionID, mps.createTime, p.chapterID, p.pointID, p.pointName,
+			case when mps.userAnswer=q.answer then 1 else 0 end as isRight,mps.siteCourseID 
+			from QZ_MEMBER_POINT_SCORE mps WITH (NOLOCK),QZ_QUESTION q WITH (NOLOCK),QZ_POINTTEST pt WITH (NOLOCK), 
+			QZ_POINT p WITH (NOLOCK),QZ_COURSE c WITH (NOLOCK) 
+			where q.questionID=mps.questionID and pt.pointTestID=mps.pointTestID and p.pointID=pt.pointID and c.courseID=p.courseID  
+			and mps.pointTestID is not null and mps.userID=#{userID}
+			<if test="startDate != null"> AND mps.createTime &gt;= #{startDate} </if>
+			<if test="endDate != null"> AND mps.createTime &lt;= #{endDate} </if>
+			<foreach collection="siteCourseIDList" item="item" separator="OR" close=")" open=" and (">
+				mps.siteCourseID = #{item}
+			</foreach>
+		)
+		select siteCourseID,max(qc.chapterName) chapterName, pointTestID, pointID,
+		max(pointName) as pointName, count(tmp.questionID) as totleNum,
+		count(case when isRight=1 then isRight end ) as correctCount,
+		count(case when isRight=0 then isRight end ) as errorNum,max(tmp.createTime) as lastPlayTime
+		from tmp,QZ_CHAPTER qc with (nolock) 
+		where tmp.chapterID=qc.chapterID 
+		group by siteCourseID,tmp.chapterID, pointTestID, pointID
+    </select>
+
+</mapper>

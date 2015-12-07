@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="reservecallall">
+	<sql id="getMembercallReserveAll_body">
+    	SELECT DISTINCT 
+    		MC.classID,
+    		MC.userID,
+    		MC.reservedDate,
+    		MC.reservedTime,
+    		MC.callType,
+    		M.userName,
+    		C.className,
+    		C.displayAdviser,
+    		T.teacherName,
+    		T.teacherID,
+			DATEDIFF(DAY, MCR.lastCallTime, GETDATE()) callDay,
+			DATEDIFF(DAY, MCR.successCallTime, GETDATE()) callSuccessDay 
+    	FROM
+    		ADVC_MEMBER_CALL MC WITH (NOLOCK) 
+    	LEFT JOIN
+    		ADVC_MEMBER_CALL_RECORD MCR WITH (NOLOCK) ON MC.classID = MCR.classID AND MC.userID = MCR.userID
+    	LEFT JOIN
+			ADVC_CLASS C WITH (NOLOCK) ON MC.classID = C.classID
+		LEFT JOIN 
+			ADVC_MEMBER M WITH (NOLOCK) ON MC.userID = M.userID
+		LEFT JOIN
+			ADVC_CLASS_TEACHER CT WITH (NOLOCK) ON MC.classID = CT.classID AND CT.teacherType = 1
+		LEFT JOIN
+			ADVC_TEACHER T WITH (NOLOCK) ON CT.teacherID = T.teacherID 
+		LEFT JOIN 
+			ADVC_CLASS_TEACHER CT2 WITH (NOLOCK) ON MC.classID = CT2.classID 
+		LEFT JOIN
+			ADVC_TEACHER T2 WITH (NOLOCK) ON CT2.teacherID = T2.teacherID 
+		WHERE 
+			MC.callStatus =2 AND C.status = 1
+		<if test="orgID !=null"> AND T2.orgID = #{orgID} </if>
+		<if test="className !=null and className !=''"> AND C.className LIKE '%'+#{className}+'%'</if>
+		<if test="displayAdviser !=null and displayAdviser !=''"> 
+			AND (C.displayAdviser LIKE #{displayAdviser}+'%' OR T2.teacherCode like #{displayAdviser}+'%' OR T2.teacherName LIKE #{displayAdviser}+'%')
+		</if>
+		<if test="callType !=null">AND MC.callType=#{callType} </if>
+		<if test="userName !=null and userName !=''">AND M.userName=#{userName}</if>
+    </sql>
+    
+ 	<select id="countReserveCallAll" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getMembercallReserveAll_body" />
+        ) AS myTable 
+    </select>
+    
+    <select id="findPageReserveCallAll" resultType="ReserveCallAll" parameterType="ReserveCallAll">
+        SELECT * FROM (
+			SELECT t.*, ROW_NUMBER() Over(ORDER BY t.reservedDate DESC, t.classID DESC) AS rowNum 
+			FROM
+			(
+				<include refid="getMembercallReserveAll_body" />
+			)t
+		) AS myTable WHERE rowNum BETWEEN #{rowNumStart} AND #{rowNumEnd}
+    </select>
+
+</mapper>

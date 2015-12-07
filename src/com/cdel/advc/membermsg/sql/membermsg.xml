@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membermsg">
+
+	<!-- 根据ID 查询 学员间消息相关内容 "我的沟通消息模块" -->
+	<select id="getMembermsg" parameterType="int" resultType="Membermsg">
+		SELECT m.* ,m.replyContent AS replyContentOld,
+		c.className ,
+		c.classCode ,
+		c.displayAdviser ,
+		me.userName ,
+		t.teacherName
+		FROM ADVC_MEMBER_MSG m WITH ( NOLOCK )
+		LEFT JOIN ADVC_CLASS c WITH ( NOLOCK ) ON m.classID = c.classID
+		LEFT JOIN ADVC_MEMBER me WITH ( NOLOCK ) ON m.userID = me.userID
+		LEFT JOIN ADVC_TEACHER t WITH ( NOLOCK ) ON t.teacherID = m.teacherID
+		WHERE m.msgID = #{msgID}
+	</select>
+
+	<update id="updateMembermsg">
+		UPDATE ADVC_MEMBER_MSG
+		<set>
+			<if test="teacherID != null"> teacherID=#{teacherID}, </if>
+			<if test="status != null"> status=#{status}, </if>
+			<if test="msgType != null"> msgType=#{msgType}, </if>
+			<if test="replyContent != null and replyContent != ''"> replyContent=#{replyContent}, </if>
+			<if test="replyTime != null"> replyTime=#{replyTime}, </if>
+		</set>
+		where msgID=#{msgID}
+	</update>
+	
+	<sql id="pageSql_body">
+        SELECT m.msgID, m.classID, m.userID, m.teacherID, m.msgType, m.replyTime, m.readFlag, m.msgTitle, 
+        m.sentTime, m.status, c.className, c.classCode, c.displayAdviser, me.userName, tt.teacherName,
+        ROW_NUMBER() Over(ORDER BY m.replyTime DESC , m.sentTime ASC) AS rowNum 
+        FROM ADVC_MEMBER_MSG m WITH (NOLOCK) 
+        left join ADVC_CLASS c WITH (NOLOCK) on m.classID = c.classID
+        left join ADVC_CLASS_STRATEGY cs WITH (NOLOCK) ON c.strategyID = cs.strategyID 
+        left join ADVC_MEMBER me WITH (NOLOCK) on m.userID = me.userID
+        LEFT JOIN ADVC_CLASS_TEACHER ct WITH (NOLOCK) ON c.classID = ct.classID and ct.teacherType =1 
+        LEFT JOIN ADVC_TEACHER tt WITH (NOLOCK) ON tt.teacherID = ct.teacherID
+		 where   msgType != 4
+	        <if test="majorID !=null"> and cs.majorID=#{majorID} </if>
+	        <if test="classID !=null"> and m.classID=#{classID} </if>
+	        <if test="teacherID != null"> and 
+				<if test="teachUser">
+				(
+					<foreach collection="sameOrgTeachers" index="index" item="sameOrgTeacher" open="(" close=")" separator=" or ">   
+						ct.teacherID = #{sameOrgTeacher} 
+					</foreach>
+				)
+				</if>
+				<if test="!teachUser"> ct.teacherID=#{teacherID} </if>
+			</if>
+			
+	        <if test="userName !=null and userName !=''"> and me.userName=#{userName} </if>
+	        <if test="reply==0 "> and replyTime IS NULL and msgType != 3 </if>
+	        <if test="reply==1 "> and replyTime IS NOT NULL </if>
+	        <if test="status != null "> and m.status=#{status} </if>
+	        <if test="manager !=null and manager !='' "> 
+			and (c.displayAdviser like #{manager}+'%' OR tt.teacherCode like #{manager}+'%' OR tt.teacherName like #{manager}+'%')
+			</if>
+		 
+    </sql>
+    
+    <select id="findPageMembermsg" resultType="Membermsg" parameterType="Membermsg">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countMembermsg" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+    <insert id="insertMembermsg" parameterType="Membermsg">
+        INSERT INTO ADVC_MEMBER_MSG(
+	        <if test="userID != null">userID,</if>
+	        <if test="classID != null">classID,</if>
+	        <if test="teacherID != null">teacherID,</if>
+	        <if test="msgType != null ">msgType,</if>
+	        <if test="msgTitle != null and msgTitle!='' ">msgTitle,</if>
+	        <if test="msgContent != null and msgContent!='' ">msgContent,</if>
+	        <if test="sentTime != null">sentTime,</if>
+	        <if test="replyContent != null and replyContent!='' ">replyContent,</if>
+	        <if test="replyTime != null">replyTime,</if>
+	        <if test="readFlag != null">readFlag,</if>
+	        <if test="status != null">status</if>
+        ) VALUES (
+        	<if test="userID != null">#{userID},</if>
+	        <if test="classID != null">#{classID},</if>
+	        <if test="teacherID != null">#{teacherID},</if>
+	        <if test="msgType != null">#{msgType},</if>
+	        <if test="msgTitle != null">#{msgTitle},</if>
+	        <if test="msgContent != null">#{msgContent},</if>
+	        <if test="sentTime != null">#{sentTime},</if>
+	        <if test="replyContent != null">#{replyContent},</if>
+	        <if test="replyTime != null">#{replyTime},</if>
+	        <if test="readFlag != null">#{readFlag},</if>
+	        <if test="status != null">#{status}</if>
+        )
+        <selectKey keyProperty="msgID" resultType="int">
+			SELECT @@IDENTITY AS msgID
+		</selectKey>
+    </insert>
+    
+    <insert id="insertMembermsgList" >
+        INSERT INTO ADVC_MEMBER_MSG(userID, classID, teacherID, msgType, msgTitle, msgContent, sentTime, 
+        readFlag, status ) 
+   		<foreach collection="list" item="ms" open="(" close=")" separator=" union all ">
+        	SELECT #{ms.userID}, #{ms.classID}, #{ms.teacherID}, #{ms.msgType}, #{ms.msgTitle}, #{ms.msgContent}, #{ms.sentTime}, 
+        	#{ms.readFlag}, #{ms.status} 
+        </foreach>
+    </insert>
+    
+    <update id="updateContent">
+		UPDATE ADVC_MEMBER_MSG set msgContent=#{msgContentNew} 
+		where msgContent=#{msgContent} AND msgTitle=#{msgTitle} AND teacherID=#{teacherID}  
+	</update>
+	
+    <update id="updateMembermsgToNewClass">
+		UPDATE ADVC_MEMBER_MSG set classID=#{newClassID} WHERE classID=#{classID} AND userID=#{userID}
+	</update>
+	
+	<select id="getMembermsgList" resultType="Membermsg">
+        SELECT mm.*,t.teacherName FROM ADVC_MEMBER_MSG  mm WITH (NOLOCK) 
+        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = mm.teacherID 
+        <where>
+        	<if test="userID != null"> and mm.userID=#{userID} </if>
+        	<if test="classID != null"> and mm.classID=#{classID} </if>
+        </where>
+        ORDER BY mm.msgID DESC
+    </select>
+    
+	<select id="getMembermsgList2" resultType="Membermsg">
+        SELECT mm.*,t.teacherName,c.className FROM ADVC_MEMBER_MSG  mm WITH (NOLOCK) 
+        LEFT JOIN ADVC_MEMBER_CLASS mc WITH (NOLOCK) ON mm.classID = mc.classID and mm.userID=mc.userID
+        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = mm.teacherID
+        LEFT JOIN ADVC_CLASS c WITH (NOLOCK) ON mm.classID = c.classID
+        <where>
+			<if test="userID != null"> and mm.userID=#{userID} </if>
+        	<if test="classID != null"> and mm.classID=#{classID} </if>
+            <if test="status != null"> and mc.status=#{status} </if>
+        </where>
+        ORDER BY mm.msgID DESC
+    </select>
+	
+</mapper>

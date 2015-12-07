@@ -1,0 +1,36 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	<h:outputLabel value="工作状态" />
+	<p:inputTextarea cols="60" rows="2" autoResize="false" value="#{memberCallRecordReqAction.jobStatusStr}"/>
+
+	<h:outputLabel value="记忆能力" />
+	<p:inputTextarea cols="60" rows="2" autoResize="false" value="#{memberCallRecordReqAction.memoryStr}" />
+
+	<h:outputLabel value="考试经历" />
+	<p:inputTextarea cols="60" rows="2" autoResize="false" value="#{memberCallRecordReqAction.examKillStr}" />
+	
+	<h:outputLabel value="学习方式" />
+	<p:inputTextarea cols="60" rows="2" autoResize="false" value="#{memberCallRecordReqAction.studyHabitStr}" />
+	
+	<h:outputLabel value="学习方法" />
+	<p:inputTextarea cols="60" rows="2" autoResize="false" value="#{memberCallRecordReqAction.studyWayStr}" />
+
+	<h:outputLabel value="修改日志" />
+	<p:dataTable scrollable="true" scrollHeight="100"
+		value="#{memberCallRecordReqAction.logList}" 
+		var="mcr" 
+		emptyMessage="对不起，没有查询到数据！">
+		<p:column headerText="修改人" width="15%">
+			<h:outputText value="#{mcr.teacherName}"/>
+		</p:column>
+		<p:column headerText="修改时间" width="30%">
+			<h:outputText value="#{mcr.createTimeStr}"/>
+		</p:column>
+		<p:column headerText="操作类型" width="*">
+			<h:outputText value="#{mcr.logTypeStr}" />
+		</p:column>
+	</p:dataTable>
+</p:panelGrid>

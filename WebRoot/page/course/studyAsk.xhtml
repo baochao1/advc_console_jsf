@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学习要求</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+		<p:dataTable 
+			id="studyAskList"
+			value="#{studyAskAction.studyAskList}" 
+			var="studyAsk" 
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{studyAskAction.viewAuth}"
+			>
+			<p:column headerText="课程组合门数">
+				<h:outputText value="#{studyAsk.typeStr}"/>
+			</p:column>
+			<p:column headerText="建议学习时间（小时）">
+				<h:outputText value="#{studyAsk.suggestStyTime4HourList}" />
+			</p:column>
+			<p:column headerText="操作">
+				<p:commandLink value="修改" oncomplete="loadDialog.show();" actionListener="#{studyAskAction.update(studyAsk.askID)}" update=":loadForm:loadDialog" rendered="#{studyAskAction.optAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="删除" update=":addForm:copyRadio" oncomplete="optResultAlert(args,2);" onstart="return confirmDel();" actionListener="#{studyAskAction.delete(studyAsk.askID)}" rendered="#{studyAskAction.optAuth}" />
+			</p:column>
+		</p:dataTable>
+	</h:form>
+	<p:separator />
+	<h:form id="addForm">
+		<p:panelGrid columns="4" columnClasses="addObjectMinClass, addContentClass, addObjectClass, addContentClass" styleClass="panelGridCenter" rendered="#{studyAskAction.optAuth}" >
+			<h:outputLabel value="章节名" />
+			<h:outputText value="#{studyAskAction.chapterName}" />
+			<h:outputLabel value="课程组合门数" >
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:selectOneMenu value="#{studyAskAction.addStudyAsk.type}" >
+				<p:ajax event="change" update="suggestStyTime studyAsk1 studyAsk2 studyAsk3 studyAsk4" listener="#{studyAskAction.changeType}" />
+				<f:selectItems value="#{studyAskAction.typeMap.entrySet()}" var="type" itemLabel="#{type.value}" itemValue="#{type.key}"/>
+			</p:selectOneMenu>
+			<p:commandLink update=":info copyRadio suggestStyTime studyAsk1 studyAsk2 studyAsk3 studyAsk4" oncomplete="optResultAlert(args,4);" actionListener="#{studyAskAction.copy(studyAskAction.addStudyAsk.askID,studyAskAction.addStudyAsk.type)}" value="复制"/>
+			<p:selectOneRadio id="copyRadio" value="#{studyAskAction.targetType}" >
+				<f:selectItems value="#{studyAskAction.hasTypeMap.entrySet()}" var="type" itemLabel="#{type.value}" itemValue="#{type.key}"/>
+			</p:selectOneRadio>
+			<h:outputLabel value="建议学习时间（小时）" >
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:inputText value="#{studyAskAction.addStudyAsk.suggestStyTime4Hour}" id="suggestStyTime"/>
+			<h:outputLabel value="学习提示" />
+			<p:editor value="#{studyAskAction.addStudyAsk.studyAsk1}" id="studyAsk1" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+			<h:outputLabel value="学习建议" />
+			<p:editor value="#{studyAskAction.addStudyAsk.studyAsk2}" id="studyAsk2" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+			<h:outputLabel value="完成标准" />
+			<p:editor value="#{studyAskAction.addStudyAsk.studyAsk3}" id="studyAsk3" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+			<h:outputLabel value="备注" />
+			<p:editor value="#{studyAskAction.addStudyAsk.studyAsk4}" id="studyAsk4" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:messages id="msg"/>
+					<p:commandButton value="提交" oncomplete="optResultAlert(args,1);" actionListener="#{studyAskAction.addSubmit}" update="msg copyRadio :info"/>
+				</h:panelGroup>
+			</f:facet>
+		</p:panelGrid>
+	</h:form>
+	<h:form id="loadForm" >
+		<p:dialog id="loadDialog" header="#{(studyAskAction.flag==0)?'添加':'修改'}" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="#{studyAskAction.url}"/>
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

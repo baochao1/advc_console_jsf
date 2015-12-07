@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="classno">
+	<select id="getClassNoByMajor" resultType="ClassNo" parameterType="Integer">
+		SELECT classType,currClassNo FROM ADVC_CLASS_NO WITH (NOLOCK) WHERE majorID=#{majorID}
+	</select>
+	
+	<insert id="updateClassNo" parameterType="ClassNo">
+  		IF NOT EXISTS(SELECT 1 FROM ADVC_CLASS_NO WHERE majorID=#{majorID} AND classType=#{classType})
+  			insert into ADVC_CLASS_NO ( majorID,classType,currClassNo )
+     		values ( #{majorID},#{classType},#{currClassNo} )
+     	else
+     		update ADVC_CLASS_NO set currClassNo=#{currClassNo} where majorID=#{majorID} AND classType=#{classType}
+  	</insert>
+  	
+  	<insert id="insertClassNo">
+        insert into ADVC_CLASS_NO( majorID,classType,currClassNo ) 
+        values( #{majorID},#{classType},#{currClassNo} )
+    </insert>
+
+</mapper>

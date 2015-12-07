@@ -1,0 +1,43 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:p="http://primefaces.org/ui" id="addDialog" header="添加" widgetVar="addDialog" resizable="false" showEffect="fade" hideEffect="fade" height="350">
+	<p:panelGrid id="showPanelGrid" columns="2" columnClasses="addObjectClass, maxLength">
+		
+		<h:outputLabel value="阶段名" rendered="#{smsTemplateReqAction.flag == 0 }">
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:selectOneMenu value="#{smsTemplateReqAction.updateSmsTemplate.stageID}" style="width:200px;" panelStyleClass="minLength" rendered="#{smsTemplateReqAction.flag == 0 }" >
+			<f:selectItem itemLabel="--请选择--" itemValue="" />
+			<f:selectItems value="#{majorStageOther.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+		</p:selectOneMenu>
+		
+		<h:outputLabel value="模板名称" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:inputText value="#{smsTemplateReqAction.updateSmsTemplate.title}" styleClass="addContentClass"/>
+		
+		<h:outputLabel value="模板内容" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:inputTextarea cols="50" rows="5" autoResize="false" value="#{smsTemplateReqAction.updateSmsTemplate.sendContent}" />
+		
+		<h:outputLabel value="发送类别" rendered="#{smsTemplateReqAction.flag == 0 }" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:selectOneMenu value="#{smsTemplateReqAction.updateSmsTemplate.sendType}" style="width:200px;" panelStyleClass="minLength" rendered="#{smsTemplateReqAction.flag == 0 }" >
+			<f:selectItems value="#{smsTemplateReqAction.sendType.entrySet()}" var="st" itemLabel="#{st.value}" itemValue="#{st.key}"/>
+		</p:selectOneMenu>
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{smsTemplateReqAction.majorID}"/>
+			<h:inputHidden value="#{smsTemplateReqAction.flag}"/>
+			<h:inputHidden value="#{smsTemplateReqAction.updateSmsTemplate.templateID}"/>
+			<p:commandButton value="提交" actionListener="#{smsTemplateReqAction.updateSubmit}" update="msg" oncomplete="optResult('addDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="addDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

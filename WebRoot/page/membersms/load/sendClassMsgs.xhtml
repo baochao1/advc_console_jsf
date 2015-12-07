@@ -1,0 +1,19 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+
+	<h:outputLabel for="sMsgContent" value="短信内容">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputTextarea id="sMsgContent" cols="50" rows="2" autoResize="false" value="#{memberSmsReqAction.memberSms.content}" />
+
+	<f:facet name="footer">
+		<h:panelGroup style="text-align:center;display:block;">
+			<p:messages id="msg" />
+			<h:inputHidden value="#{memberSmsReqAction.memberSms.classID}"/>
+			<p:commandButton value="发送" actionListener="#{memberSmsReqAction.updateSubmits}" update="msg" oncomplete="optResult('smsClassDialog',args,5);" />
+			<p:commandButton type="button" value="关闭" onclick="smsClassDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

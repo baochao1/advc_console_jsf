@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<script>
+	function goToPage(args){
+		var result=args.result;
+		if(result==1){
+			jQuery("#gotof\\:gotoa").click();
+		}
+	}
+	</script>
+	<f:metadata>
+		<f:viewParam name="siteID" value="#{divideApiAction.siteID }"/>
+		<f:viewParam name="userName" value="#{divideApiAction.userName }"/>
+		<f:viewParam name="operator" value="#{divideApiAction.operator }"/>
+		<f:viewParam name="userID" value="#{divideApiAction.userID }"/>
+	</f:metadata>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="gotof">
+		<p:remoteCommand actionListener="#{divideApiAction.autoLogin}" autoRun="true" update=":info" oncomplete="goToPage(args);"/>
+		<h:commandLink id="gotoa"  action="/page/divide/divideList.xhtml">
+			<f:param name="siteID" value="#{divideApiAction.siteID }"/>
+			<f:param name="userName" value="#{divideApiAction.userName }"/>
+			<f:param name="userID" value="#{divideApiAction.userID }"/>
+			<f:param name="height" value="600"/>
+			<f:param name="isInterface" value="1"/>
+		</h:commandLink>
+	</h:form>
+</h:body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="advancemember">
+	<select id="getAdvanceMemberList" parameterType="AdvanceMember" resultType="AdvanceMember">
+		SELECT aam.id,aam.userID,aam.majorID,aam.studycourse,aam.teacherID,am.userName 
+		From GDB_ADVANCE_MEMBER aam WITH (NOLOCK) 
+		LEFT JOIN advc_member am WITH (NOLOCK) on aam.userID = am.userID 
+		WHERE aam.status = 1 
+		<if test="majorID != null"> and aam.majorID=#{majorID} </if>
+		<if test="teacherID != null"> and (aam.teacherID=#{teacherID} or aam.teacherID is null ) </if> 
+		order by am.userName 
+	</select>
+	
+	<update id="deleteTeacherMember" parameterType="Integer">
+	    UPDATE GDB_ADVANCE_MEMBER SET teacherID = null where teacherID = #{teacherID}
+    </update>
+    
+    <update id="updateAdvanceMember" parameterType="AdvanceMember">
+	    UPDATE GDB_ADVANCE_MEMBER 
+	    <set>
+	    	<if test="teacherID != null"> teacherID = #{teacherID},  </if>
+	    	<if test="telPhone != null and telPhone != ''"> telPhone = #{telPhone},  </if>
+	    </set>
+	    where id = #{id}
+    </update>
+    
+    <sql id="pageSql_body">
+		SELECT *,ROW_NUMBER() Over(ORDER BY userID) AS rowNum FROM (
+	        SELECT distinct a.uid, a.uid as userID,m.memberid as userName ,'${courseIDs2}' courseID 
+			From SelectCourse a  WITH (NOLOCK) 
+			LEFT JOIN member m  WITH (NOLOCK) on m.uid = a.uid 
+			WHERE  a.Payed='Y' AND a.DateEnd &gt; getdate() and a.CourseID IN (${courseIDs}) 
+			<if test="userName !=null and userName != ''"> and m.memberid = #{userName} </if>
+		) AS t 
+    </sql>
+    
+    <select id="findPageAdvanceMember" resultMap="advanceMemberList" parameterType="Map">
+    	SELECT * FROM (
+            <include refid="pageSql_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countAdvanceMember" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+    
+    <resultMap type="AdvanceMember" id="advanceMemberList">
+    	<id property="userID" column="uid" jdbcType="NUMERIC" javaType="java.lang.Integer" />
+		<id property="courseIDs" column="courseID" jdbcType="VARCHAR" javaType="java.lang.String" />
+		<association property="courseList" column="{userID=uid,courseIDs=courseID}" javaType="java.util.List" select="selectAdvanceCourse" />
+	</resultMap>
+	
+	<select id="selectAdvanceCourse" resultType="java.lang.String" parameterType="Map">
+		SELECT distinct a.courseID
+		From SelectCourse a WITH (NOLOCK) 
+		WHERE a.uid = #{userID} and a.courseID in (${courseIDs}) AND a.Payed='Y' AND a.DateEnd &gt; getdate()
+	</select>
+    
+    <select id="getAllAdvanceMember" resultType="AdvanceMember" parameterType="Map">
+		SELECT a.uid as userID,m.memberid as userName
+		From SelectCourse a WITH (NOLOCK) 
+		LEFT JOIN member m WITH (NOLOCK) on m.uid = a.uid 
+		WHERE  a.Payed='Y' AND a.DateEnd &gt; getdate() and a.CourseID IN (${courseIDs}) 
+		group by a.uid,m.memberid 
+		order by max(a.datepay) desc
+    </select>
+    
+    <delete id="deleteAdvanceMemberMap" parameterType="Map">
+		UPDATE GDB_ADVANCE_MEMBER SET status = 0 where userID not in (${allUserIDs})
+    </delete>
+    
+    <insert id="insertAdvanceMember">
+    	IF NOT EXISTS (SELECT 1 FROM GDB_ADVANCE_MEMBER WITH (NOLOCK) WHERE userID=#{userID} AND majorID=#{majorID})
+	        INSERT INTO GDB_ADVANCE_MEMBER ( 
+	            userID
+	            <if test="majorID!=null"> ,majorID </if>
+	            <if test="studyCourse != null and studyCourse != ''"> ,studyCourse </if>
+	            <if test="siteCourseIds != null and siteCourseIds != ''"> ,siteCourseIds </if>
+	            <if test="teacherID!=null"> ,teacherID </if>
+	            <if test="status!=null"> ,status </if>
+			)
+	        VALUES (
+	            #{userID}
+	            <if test="majorID != null"> ,#{majorID} </if>
+	            <if test="studyCourse != null and studyCourse != ''"> ,#{studyCourse} </if>
+	            <if test="siteCourseIds != null and siteCourseIds != ''"> ,#{siteCourseIds} </if>
+	            <if test="teacherID != null"> ,#{teacherID} </if>
+	            <if test="status != null"> ,#{status} </if>
+	       )
+        ELSE
+	        UPDATE GDB_ADVANCE_MEMBER SET studyCourse = #{studyCourse},status=1 
+	        <if test="siteCourseIds != null and siteCourseIds != ''"> ,siteCourseIds = #{siteCourseIds} </if>
+        WHERE userID=#{userID} AND majorID=#{majorID}
+	</insert>
+	
+    <select id="getAdvanceMemberCount"  resultType="int" parameterType="AdvanceMember">
+    	SELECT count(*) as count
+		From GDB_ADVANCE_MEMBER WITH (NOLOCK) 
+		WHERE status = 1 and userID=#{userID} AND majorID=#{majorID} and studyCourse = #{studyCourse}
+    </select>
+    
+	<update id="updateAdvanceMemberStatus" parameterType="MyAdvanceMember">
+	    UPDATE GDB_ADVANCE_MEMBER SET status = #{status} where userID = #{userID} and majorID = #{majorID}
+    </update>
+
+</mapper>

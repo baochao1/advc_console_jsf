@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>网站公告</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel value="网站选择" />
+			<p:selectOneMenu value="#{sitenoticeAction.searchSitenotice.siteID}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{sitenoticeAction.websiteList}" var="website" itemLabel="#{website.siteName}" itemValue="#{website.siteID}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel value="公告标题" />
+			<p:inputText value="#{sitenoticeAction.searchSitenotice.subject}" styleClass="minLength"/>
+			
+			<h:outputLabel value="公告类别" />				   
+			<p:selectOneMenu value="#{sitenoticeAction.searchSitenotice.type}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{sitenoticeReqAction.type.entrySet()}" var="t" itemLabel="#{t.value}" itemValue="#{t.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel value="状态" />				   
+			<p:selectOneMenu value="#{sitenoticeAction.searchSitenotice.status}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{sitenoticeReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel />	
+			<h:outputLabel />	
+			<h:outputLabel />	
+			<h:outputLabel />	
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{sitenoticeAction.search}" rendered="#{sitenoticeAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="loadDialog.show();" 
+				actionListener="#{sitenoticeReqAction.add}" rendered="#{sitenoticeReqAction.optAuth}" update=":loadForm:loadDialog" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{sitenoticeAction.heighti2}" 
+			widgetVar="sitenoticeTable"
+			id="sitenoticeList"
+			binding="#{sitenoticeAction.pageTable}"
+			lazy="true"
+			value="#{sitenoticeAction.sitenoticePage}" 
+			rows="20"
+			var="sitenotice" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} / {totalPages}"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="网站" width="10%">
+				<h:outputText value="#{sitenotice.siteName}" />
+			</p:column>
+			<p:column headerText="公告标题" width="24%">
+				<h:outputText value="#{sitenotice.subject}" title="#{sitenotice.subject}"/>
+			</p:column>
+			<p:column headerText="公告类别" width="10%">
+				<h:outputText value="#{sitenotice.typeStr}" />
+			</p:column>
+			<p:column headerText="创建人" width="10%">
+				<h:outputText value="#{sitenotice.creatorName}"/>
+			</p:column>
+			<p:column headerText="创建时间 " width="12%">
+				<h:outputText value="#{sitenotice.createTimeStr}"/>
+			</p:column>
+			<p:column headerText="开始时间" width="12%">
+				<h:outputText value="#{sitenotice.startTimeStr}"/>
+			</p:column>
+			<p:column headerText="结束时间" width="12%">
+				<h:outputText value="#{sitenotice.endTimeStr}"/>
+			</p:column>
+			<p:column headerText="操作" width="10%">
+				<p:commandLink value="#{sitenotice.statusStr}" update=":searchForm:sitenoticeList :info" actionListener="#{sitenoticeReqAction.changeStatus(sitenotice.siteNoticeID,sitenotice.status)}" rendered="#{sitenoticeReqAction.optAuth}"/>
+				<h:outputText value="#{sitenotice.statusStr}" rendered="#{!sitenoticeAction.optAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="修改" oncomplete="loadDialog.show()" update=":loadForm:loadDialog" actionListener="#{sitenoticeReqAction.update(sitenotice.siteNoticeID)}" rendered="#{sitenoticeReqAction.optAuth}"/>
+			</p:column>			
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="sitenoticeList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+		
+	<!-- 修改页面 -->
+	<h:form id="loadForm" >
+		<ui:include src="load/sitenoticeUpdate.xhtml"/>
+	</h:form>
+</h:body>
+</html>

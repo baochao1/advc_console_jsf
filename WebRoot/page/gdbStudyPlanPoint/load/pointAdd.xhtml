@@ -1,0 +1,77 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="addDialog" header="添加" widgetVar="addDialog" resizable="false" showEffect="fade" hideEffect="fade" position="top" height="450">
+
+	<p:panelGrid columns="6" style="width:100%; text-align:left;">
+		<h:outputLabel value="知识点分类" />
+		<p:selectOneMenu id="sPointListID" value="#{addPointAction.filterPoint.pointListID}" style="width:200px;" panelStyleClass="minLength">
+			<f:selectItem itemLabel="--请选择--" itemValue="" />
+			<f:selectItems value="#{pointListOther.pointListList}" var="pointList" itemLabel="#{pointList.pointListName}" itemValue="#{pointList.pointListID}"/>
+		</p:selectOneMenu>
+		
+		<h:outputLabel value="章节" />
+		<p:selectOneMenu id="sChapterID" value="#{addPointAction.filterPoint.chapterID}" style="width:100px;" panelStyleClass="tinyLength">
+			<f:selectItem itemLabel="--请选择--" itemValue="" />
+			<f:selectItems value="#{chapterOther.qzChapterList}" var="qzChapter" itemLabel="#{qzChapter.chapterName}" itemValue="#{qzChapter.chapterID}"/>
+		</p:selectOneMenu>
+		
+		<h:outputLabel value="名称" />
+		<p:inputText value="#{addPointAction.filterPoint.pointName}" styleClass="minLength" />
+		
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:commandButton id="searchBtn" value="查询" actionListener="#{addPointAction.search}" />
+				<p:spacer width="10px"/>
+				<p:commandButton type="reset" value="重置" />
+			</h:panelGroup>
+		</f:facet>	
+	</p:panelGrid>
+	
+	<p:dataTable widgetVar="addPointTable"
+		id="addPointTable"
+		binding="#{addPointAction.pageTable}"
+		lazy="true"
+		value="#{addPointAction.page}" 
+		rows="20"
+		var="point" 
+		paginator="true" 
+		paginatorPosition="bottom"
+		currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+		paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+		rowsPerPageTemplate="20,50"
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！"
+		selection="#{gdbStudyPlanPointReqAction.selPointList}"
+		rowKey="#{point.pointID}"
+		>
+		<p:column width="5%" selectionMode="multiple" />
+		<p:column headerText="知识点ID" width="12%" sortBy="#{point.pointID}">
+			<h:outputText value="#{point.pointID}"/>
+		</p:column>
+		<p:column headerText="知识点名称" width="30%" sortBy="#{point.pointName}">
+			<h:outputText value="#{point.pointName}" title="#{point.pointName}"/>
+		</p:column>
+		<p:column headerText="章节名称" width="15%">
+			<h:outputText value="#{point.chapterName}" title="#{point.chapterName}"/>
+		</p:column>
+		<p:column headerText="操作" width="10%">
+			<a href="#{addPointAction.qzConsoleUrl}?pointID=#{point.pointID}&amp;paperType=3&amp;courseID=#{point.courseID}&amp;pointName=#{point.pointName}&amp;from=advc" target="_blank">查看题目</a>
+		</p:column>
+		<p:column headerText="创建人" width="12%">
+			<h:outputText value="#{point.realName}"/>
+		</p:column>
+		<p:column headerText="创建时间" width="16%">
+			<h:outputText value="#{point.createTimeStr}"/>
+		</p:column>
+	</p:dataTable>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton value="添加" oncomplete="optResult('addDialog',args,0);" actionListener="#{gdbStudyPlanPointReqAction.addPoint(addPointAction.courseID,addPointAction.userID,addPointAction.studyPlanID,addPointAction.siteCourseID)}" />
+			<p:spacer width="10px"/>
+			<p:commandButton type="button" value="关闭" onclick="addDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>	
+</p:dialog>

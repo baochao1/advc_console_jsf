@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberprofile">
+
+    <select id="getMemberProfile" parameterType="Integer" resultType="MemberProfile">
+		SELECT top 1 userID, userName, nickName, iconUrl, currentStatus,createTime, helpIndex, loginTimes,lastModifyTime
+        FROM ADVC_MEMBER_PROFILE WITH (NOLOCK) where userID=#{userID}
+    </select>
+    
+	<update id="updateMemberProfile">
+		UPDATE ADVC_MEMBER_PROFILE 
+		<set>
+			<if test="iconUrl == null or iconUrl == ''"> iconUrl=NULL </if>
+		</set>
+        WHERE userID=#{userID}   
+   </update>
+   
+</mapper>

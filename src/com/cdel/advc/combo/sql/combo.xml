@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="combo">
+
+    <sql id="getComboList_body">
+        SELECT CC.*, M.majorName, ROW_NUMBER() Over(ORDER BY CC.comboID DESC) AS rowNum 
+        FROM ADVC_COURSE_COMBO CC WITH (NOLOCK) 
+        LEFT JOIN ADVC_MAJOR M  WITH (NOLOCK) ON CC.majorID = M.majorID 
+        WHERE M.status=1 
+        <if test="siteID !=null"> and M.siteID=#{siteID}</if>
+        <if test="majorID !=null"> and CC.majorID=#{majorID}</if>
+        <if test="comboName !=null and comboName != ''"> and CC.comboName=#{comboName}</if>
+        <if test="comboCode !=null and comboCode != ''"> and CC.comboCode=#{comboCode}</if>
+        <if test="status !=null"> and CC.status=#{status}</if>
+    </sql>
+
+    <select id="countCombo" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getComboList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageCombo" parameterType="Combo" resultType="Combo">
+        SELECT * FROM (
+            <include refid="getComboList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+
+	<update id="updateCombo">
+		UPDATE ADVC_COURSE_COMBO
+		<set>
+			<if test="comboName !=null"> comboName=#{comboName},</if>
+			<if test="comboCode !=null"> comboCode =#{comboCode},</if>
+			<if test="courseSet !=null"> courseSet =#{courseSet},</if>
+			<if test="status !=null"> status =#{status}</if>
+		</set>
+		WHERE comboID=#{comboID}
+	</update>
+	
+	<select id="getComboByComboName" parameterType="String" resultType="String">
+        SELECT top 20 comboName from ADVC_COURSE_COMBO
+        WHERE comboName like '%'+#{comboName}+'%' escape'#'
+	</select>
+	
+	<select id="getComboByComboName2" parameterType="String" resultType="String">
+        SELECT top 20 comboCode from ADVC_COURSE_COMBO
+        WHERE comboCode like '%'+#{comboCode}+'%'
+	</select>
+    
+    <insert id="insertCombo" parameterType="Combo">
+        INSERT INTO ADVC_COURSE_COMBO ( majorID,comboName,comboCode,courseSet,creator,createTime,status )
+        VALUES ( #{majorID}, #{comboName}, #{comboCode}, #{courseSet}, #{creator}, #{createTime}, #{status} )
+        <selectKey keyProperty="comboID" resultType="int">
+        	SELECT @@IDENTITY AS comboID 
+        </selectKey>
+    </insert>
+    
+    <select id="judgeComboCodeInUpdate" parameterType="Combo" resultType="Integer">
+        SELECT count(*)
+ 		FROM ADVC_COURSE_COMBO CC WITH (NOLOCK) 
+ 		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CC.majorID = M.majorID 
+		WHERE M.siteID=#{siteID} and CC.comboCode = #{comboCode} and CC.status = 1 
+		<if test="comboID"> and CC.comboID != #{comboID}</if>
+    </select>
+    
+    <select id="getCombo" parameterType="Combo" resultType="Combo">
+		SELECT CC.*, M.majorName
+		FROM ADVC_COURSE_COMBO CC WITH (NOLOCK) 
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CC.majorID = M.majorID 
+		where CC.comboID=#{comboID}
+    </select>
+    
+    <select id="getComboList" parameterType="Combo" resultType="Combo">
+		SELECT CC.*, M.majorName, M.majorID 
+		FROM ADVC_COURSE_COMBO CC WITH (NOLOCK) 
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CC.majorID = M.majorID 
+		<where>
+			<if test="siteID !=null"> and M.siteID=#{siteID}</if>
+			<if test="status !=null"> and CC.status=#{status}</if>
+			<if test="comboCodes != null and comboCodes != ''"> and CC.comboCode in (${comboCodes}) </if>
+		</where>
+    </select>
+    
+    <select id="getCourseCodesByCombo" parameterType="java.lang.String" resultType="java.lang.String">
+        select aco.courseCode 
+		from ADVC_COURSE_COMBO amc with (nolock) 
+		left join advc_course aco with (nolock) on CHARINDEX(','+cast(aco.courseID as varchar(max))+',', ','+cast(amc.courseSet as varchar(max))+',')>0
+		where amc.comboCode in (${value})
+    </select>
+
+</mapper>

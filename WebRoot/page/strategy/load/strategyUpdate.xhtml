@@ -1,0 +1,160 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updateDialog" modal="true" header="修改" widgetVar="updateDialog" resizable="true" showEffect="fade" hideEffect="fade" height="350" width="960" position="top">
+	<p:panelGrid id="updatePanelGrid" >
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="辅导名称"/>
+			</p:column>
+			<p:column styleClass="minLength">
+				<h:outputText value="#{strategyReqAction.updateStrategy.majorName}"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="策略类别"/>
+			</p:column>
+			<p:column styleClass="minLength">
+				<h:outputText value="#{strategyReqAction.updateStrategy.strategyTypeStr}"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="是否分班">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column styleClass="minLength">
+				<p:selectOneRadio value="#{strategyReqAction.updateStrategy.isAuto}">
+					<f:selectItems value="#{strategyReqAction.isAutos.entrySet()}" var="isAuto" itemLabel="#{isAuto.value}" itemValue="#{isAuto.key}"/>
+				</p:selectOneRadio>
+			</p:column>
+		</p:row>
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="主库辅导">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="5" styleClass="maxLength">
+				<p:selectOneMenu value="#{strategyReqAction.updateStrategy.mainMajorID}" filter="true" filterMatchMode="contains" style="width:200px;" panelStyleClass="minLength">
+					<f:selectItem itemLabel="--请选择--" itemValue="" />
+					<f:selectItems value="#{mainMajorAction.mainMajors}" var="m" itemLabel="#{m.majorName}(#{m.majorID})" itemValue="#{m.majorID}"/>
+				</p:selectOneMenu>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="考期选择">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column>
+				<p:selectOneMenu id="aTermID" value="#{strategyReqAction.updateStrategy.termID}" filter="true" filterMatchMode="contains" style="width:200px;" panelStyleClass="minLength">
+					<f:selectItems value="#{strategyAction.termList}" var="term" itemLabel="#{term.termName}" itemValue="#{term.termID}"/>
+				</p:selectOneMenu>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="班级人数">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column>
+				<p:spinner value="#{strategyReqAction.updateStrategy.limitNum}" min="1" />
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="优先级别">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column>
+				<p:spinner value="#{strategyReqAction.updateStrategy.priorityLevel}" min="1" />
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="添加规则">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="5">
+				<p:commandLink value="添加新规则" actionListener="#{strategyReqAction.addReg}" update="repeatPanel msg aRegSeq"/>
+				<p:spacer width="5"/>
+				<p:outputLabel style="color:red;" value="如修改，请重新设置执行顺序！"/>
+			</p:column>
+		</p:row>
+
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="规则设置">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="5">
+				<h:panelGroup id="repeatPanel" style="display:block; text-align:left">
+					<c:forEach items="#{strategyAction.courseRegs}" var="courseRegDomain" varStatus="ind">
+						<p:selectOneMenu value="#{courseRegDomain.andOr}" style="width:200px;" panelStyleClass="minLength" rendered="#{ind.index!=0 }">
+							<f:selectItems value="#{strategyReqAction.andOrs.entrySet()}" var="andOr" itemLabel="#{andOr.value}" itemValue="#{andOr.key}"/>
+						</p:selectOneMenu>
+						<p:spacer width="5"/>
+						<p:selectOneMenu value="#{courseRegDomain.piPei}" style="width:200px;" panelStyleClass="minLength">
+							<f:selectItems value="#{strategyReqAction.piPeis.entrySet()}" var="piPei" itemLabel="#{piPei.value}" itemValue="#{piPei.key}"/>
+						</p:selectOneMenu>
+						<p:spacer width="5"/>
+						<p:commandLink value="删除规则" actionListener="#{strategyReqAction.delReg(ind.index)}" update=":updateForm:repeatPanel :updateForm:aRegSeq" rendered="#{ind.index!=0 }"/>
+						<p:spacer width="5"/>
+						<p:outputLabel style="color:red;" value="如修改，请重新设置执行顺序！" rendered="#{ind.index!=0 }"/>
+						<br/>
+					
+						<h:outputText value="任意匹配的课程中，任选" />
+							<p:spinner value="#{courseRegDomain.courseNum}" min="1" max="10"/>
+						<h:outputText value="门组合" />
+						
+						<p:pickList value="#{courseRegDomain.courseReg}" converter="courseConverter" showSourceFilter="true" filterMatchMode="contains" 
+							var="course" itemValue="#{course}" itemLabel="#{course.courseName}(#{course.courseID})" >
+							<f:facet name="sourceCaption">课程列表</f:facet>
+							<f:facet name="targetCaption">所选课程</f:facet>
+						</p:pickList>
+						
+						<p:separator/>
+					</c:forEach>
+				</h:panelGroup>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="策略描述">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="5">
+				<p:inputText id="aSetDesc" value="#{strategyReqAction.updateStrategy.setDesc}" styleClass="largeLength"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="执行顺序">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="5">
+				<p:inputText id="aRegSeq" value="#{strategyReqAction.updateStrategy.regSeq}" styleClass="maxLength"/>
+				<p:outputLabel style="color:red;" value="当只有一个规则时，无需修改！"/>
+			</p:column>
+		</p:row>
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{strategyReqAction.flag}"/>
+			<h:inputHidden value="#{strategyReqAction.updateStrategy.majorID}"/>
+			<h:inputHidden value="#{strategyReqAction.updateStrategy.strategyID}"/>
+			<h:inputHidden value="#{strategyReqAction.updateStrategy.strategyType}"/>
+			<p:commandButton value="提交" actionListener="#{strategyReqAction.updateSubmit}" update="msg" oncomplete="optResult('updateDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="updateDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

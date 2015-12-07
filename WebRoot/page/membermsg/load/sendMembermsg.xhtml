@@ -1,0 +1,84 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:p="http://primefaces.org/ui" id="msgDialog" header="学员消息" widgetVar="msgDialog" resizable="true" showEffect="fade" hideEffect="fade" height="370" >
+	<p:panelGrid id="updatePanelGrid" columns="2" styleClass="largeLength2" columnClasses="addObjectClass, addContentClass" >
+		
+		<h:outputLabel value="消息标题"/>
+		<p:inputText value="#{membermsgReqAction.membermsg.msgTitle}" styleClass="maxLength"/>
+		<h:outputLabel value="消息内容"/>
+		<p:editor value="#{membermsgReqAction.membermsg.msgContent}" width="500" height="130" />
+		<h:outputLabel value="抄送本班学员"/>
+		<p:selectCheckboxMenu value="#{membermsgReqAction.members}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+			<f:selectItems value="#{memberClassOther.memberList}" var="member" itemLabel="#{member.userName}" itemValue="#{member.userID}"/>
+		</p:selectCheckboxMenu>
+	</p:panelGrid>
+
+	<p:dataTable scrollable="true" scrollHeight="150"
+		value="#{membermsgReqAction.membermsgList}" 
+		var="membermsg" styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！">
+		<f:facet name="header">
+			以往班内消息
+		</f:facet>
+		<p:column headerText="消息主题" width="10%" >
+			<h:outputText value="#{membermsg.msgTitle}"/>
+		</p:column>
+		<p:column headerText="消息内容" width="40%" >
+			<h:outputText value="#{membermsg.msgContent}" escape="false"/>
+		</p:column>
+		<p:column headerText="回复" width="20%" >
+			<h:outputText value="#{membermsg.replyContent}" escape="false"/>
+		</p:column>
+		<p:column headerText="发送时间" width="10%" >
+			<h:outputText value="#{membermsg.sentTimeStr}"/>
+		</p:column>
+		<p:column headerText="回复时间" width="10%" >
+			<h:outputText value="#{membermsg.replyTimeStr}"/>
+		</p:column>
+		<p:column headerText="回复教师" width="10%" >
+			<h:outputText value="#{membermsg.teacherName}"/>
+		</p:column>
+	</p:dataTable>
+
+	<p:dataTable scrollable="true" scrollHeight="150"
+		value="#{membermsgReqAction.membermsgList2}" 
+		var="membermsg" styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！">
+		<f:facet name="header">
+			以往全部消息
+		</f:facet>
+		<p:column headerText="消息主题" width="10%" >
+			<h:outputText value="#{membermsg.msgTitle}"/>
+		</p:column>
+		<p:column headerText="班级" width="10%" >
+			<h:outputText value="#{membermsg.className}"/>
+		</p:column>
+		<p:column headerText="消息内容" width="34%" >
+			<h:outputText value="#{membermsg.msgContent}" escape="false"/>
+		</p:column>
+		<p:column headerText="回复" width="20%" >
+			<h:outputText value="#{membermsg.replyContent}" escape="false"/>
+		</p:column>
+		<p:column headerText="发送时间" width="10%" >
+			<h:outputText value="#{membermsg.sentTimeStr}"/>
+		</p:column>
+		<p:column headerText="回复时间" width="10%" >
+			<h:outputText value="#{membermsg.replyTimeStr}"/>
+		</p:column>
+		<p:column headerText="回复教师" width="6%" >
+			<h:outputText value="#{membermsg.teacherName}"/>
+		</p:column>
+	</p:dataTable>
+
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg2"/>
+			<h:inputHidden value="#{membermsgReqAction.classID}"/>
+			<h:inputHidden value="#{membermsgReqAction.callID}"/>
+			<h:inputHidden value="#{membermsgReqAction.userID}"/>
+			<p:commandButton value="发送" actionListener="#{membermsgReqAction.sendMessage}" update="msg2" oncomplete="optResult('msgDialog',args,5);" />
+			<p:commandButton type="button" value="关闭" onclick="msgDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

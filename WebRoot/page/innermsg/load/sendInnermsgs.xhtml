@@ -1,0 +1,39 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	<h:outputLabel for="sReferUser" value="相关学员" />
+	<p:selectOneMenu value="#{innerMsgReqAction.detailInnerMsg.referUser}" style="width:200px;" panelStyle="width:200px;" filter="true" filterMatchMode="contains">
+		<f:selectItems value="#{memberClassOther.memberList}" var="m" itemLabel="#{m.userName}" itemValue="#{m.userName}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel value="管理员">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectManyCheckbox value="#{innerMsgReqAction.innerMsgManagers}" layout="pageDirection">
+		<f:selectItems value="#{classteacherOther.managers}" var="m" itemLabel="#{m.teacherName}" itemValue="#{m.teacherID}"/>
+	</p:selectManyCheckbox>
+
+	<h:outputLabel for="sInnerMsgContent" value="内容">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputTextarea id="sInnerMsgContent" cols="50" rows="2" autoResize="false" value="#{innerMsgReqAction.detailInnerMsg.innerMsgContent}" />  
+	
+	<h:link value="【收件箱】" outcome="/page/innermsg/innermsgList.xhtml" includeViewParams="true" target="_blank">
+		<f:param name="flag" value="1"/>
+	</h:link>
+	<h:link value="【发件箱】" outcome="/page/innermsg/innermsgList.xhtml" includeViewParams="true" target="_blank">
+		<f:param name="flag" value="2"/>
+	</h:link>
+	
+  	<f:facet name="footer">
+  		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{innerMsgReqAction.detailInnerMsg.referClass}"/>
+			<p:commandButton value="发送" update="msg" actionListener="#{innerMsgReqAction.addInnerMsg(1)}"
+				 oncomplete="optResult('sendInnermsgsDialog',args,5);" rendered="#{innerMsgReqAction.optAuth}"/>
+			<p:commandButton type="button" value="关闭" onclick="sendInnermsgsDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+		
+</p:panelGrid>

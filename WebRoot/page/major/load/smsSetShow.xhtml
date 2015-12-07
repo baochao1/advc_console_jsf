@@ -1,0 +1,35 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:p="http://primefaces.org/ui" id="showDialog" header="查看" widgetVar="showDialog" resizable="false" showEffect="fade" hideEffect="fade" height="350">
+	
+	<p:panelGrid id="showPanelGrid" columns="2" columnClasses="addObjectClass, maxLength">
+		
+		<h:outputLabel value="阶段名" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{smsTemplateReqAction.updateSmsTemplate.stageName}" styleClass="addContentClass"/>
+		
+		<h:outputLabel value="模板名称" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{smsTemplateReqAction.updateSmsTemplate.title}" styleClass="addContentClass"/>
+		
+		<h:outputLabel value="模板内容" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{smsTemplateReqAction.updateSmsTemplate.sendContent}" styleClass="addContentClass"/>
+		
+		<h:outputLabel value="发送类别" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{smsTemplateReqAction.updateSmsTemplate.sendTypeStr}" styleClass="addContentClass"/>
+		
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="showDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

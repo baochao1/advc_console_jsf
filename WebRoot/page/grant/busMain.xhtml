@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统</title>
+	<h:outputStylesheet library="css" name="main.css" />
+	<style>
+	BODY {
+		MARGIN: 0px;
+		padding: 0px;
+		FONT-SIZE: 12px;
+		FONT-FAMILY: verdana, Geneva, Arial, Helvetica, sans-serif;
+	}
+	.ui-widget {
+		font-size: 100%;
+	}
+	.navPoint {
+		COLOR: black;
+		CURSOR: hand;
+		FONT-FAMILY: Webdings;
+		FONT-SIZE: 9pt;
+	}
+	.ui-layout-unit .ui-layout-unit-content {
+		overflow: hidden;
+	}
+	</style>
+	<script>
+	//获取所有可关闭的选项卡
+	   function  closeTab(){
+		    $(window.frames["iframeTab"].document).find("#tabs").find("ul li").find("a").each(function(i){
+				 	   var  href = $(this).attr("href");
+				 	   var  action = href.split("-")[2];
+				 	   if(action != 0){
+				 		  window.iframeTab.closeMe(action);
+				 	   }
+				 	});
+	   }
+		function reload(){ 
+			closeTab();
+		    window.frames["iframeTab"].document.location.reload();
+		}
+	function loadTabPage(){
+		var currentNodeType=jQuery("#formHidden\\:currentNodeType").val();
+		if(currentNodeType=="leaf"){
+			window.iframeTab.addTab(jQuery("#formHidden\\:currentNodeUrl").val(),jQuery("#formHidden\\:currentNodeName").val(),jQuery("#formHidden\\:siteID").val());
+		}
+	}
+	function loadTabPage2(currentNodeUrl,currentNodeName){
+		jQuery("#formHidden\\:currentNodeUrl").val(currentNodeUrl);
+		jQuery("#formHidden\\:currentNodeName").val(currentNodeName);
+		window.iframeTab.addTab(currentNodeUrl,currentNodeName,jQuery("#formHidden\\:siteID").val());
+	}
+	function menuBtnClick(){
+		$("#formHidden\\:menuBtn").click();
+	}
+	function initChange(){
+		setWeb();
+	}
+	function optResult2(dialogName, args, callBackFunction) {
+		var show = 0;
+		if (args == null || args == "undefined") {
+			show = 0;
+		} else {
+			show = args.result;
+		}
+		var str;
+		if (show == 1) {
+			alert("提交成功！");
+			str = dialogName + ".hide()";
+		} else {
+			if (show == -1) {
+				alert("数据有误，操作失败！");
+			}
+			str = dialogName + ".show()";
+		}
+		if (show == 1) {
+			window.location.reload();
+		}
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	
+	<h:form id="remoteForm">
+		<p:remoteCommand name="setInnermsg" actionListener="#{innerMsgReqOther.initInnerMsgCount}" update=":formLogout:sInnermsgCount" autoRun="true"/>
+		<p:remoteCommand name="setMembermsg" actionListener="#{membermsgReqOther.initMembermsgCount}" update=":formLogout:sMembermsgCount" autoRun="true"/>
+		<p:remoteCommand name="setReservecallAll" actionListener="#{reserveCallReqOther.initReservecallAllCount}" update=":formLogout:sReservecallAllCount" autoRun="true"/>
+		<p:remoteCommand name="setMemberCallNoCall" actionListener="#{memberCallNoCallReqOther.initMemberCallNoCallCount}" update=":formLogout:sMemberCallNoCallCount" autoRun="true"/>
+		<p:poll listener="#{innerMsgReqOther.initInnerMsgCount}" update=":formLogout:sInnermsgCount" interval="300" autoStart="true"/>
+		<p:poll listener="#{membermsgReqOther.initMembermsgCount}" update=":formLogout:sMembermsgCount" interval="300" autoStart="true"/>
+		<p:poll listener="#{reserveCallReqOther.initReservecallAllCount}" update=":formLogout:sReservecallAllCount" interval="300" autoStart="true"/>
+		<p:poll listener="#{memberCallNoCallReqOther.initMemberCallNoCallCount}" update=":formLogout:sMemberCallNoCallCount" interval="300" autoStart="true"/>
+		<p:remoteCommand name="setWeb" actionListener="#{websiteOther.setWebsiteList}" update=":formLogout:mainSiteID" />
+	</h:form>
+	 
+	<p:layout fullPage="true">
+		<p:layoutUnit position="north" size="35" style="padding:0px; margin:0px; " >
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#1B93E7">
+				<tr>
+			        <td>
+						<h:form id="formHidden">
+							<p:commandButton id="menuBtn" value="显示菜单" type="button"/>
+							<h:inputHidden id="currentNodeType" value="#{leftTreeAction.currentNodeType }" />
+							<h:inputHidden id="currentNodeName" value="#{leftTreeAction.currentNodeName }" />
+							<h:inputHidden id="currentNodeUrl" value="#{leftTreeAction.currentNodeUrl }" />
+							<h:inputHidden id="tabMax" value="#{leftTreeAction.tabMax }" />
+							<h:inputHidden id="siteID" value="#{loginAction.siteID }" />
+							<p:tieredMenu model="#{leftTreeAction.model}" overlay="true" trigger="menuBtn" my="left top" at="left bottom"/>
+							<p:spacer width="20"/>
+			        		<h:graphicImage url="/resources/images/index_09.gif" height="16" width="15"/>
+				           	<strong style="color:#ffffff; "><b style="color:#ffffff; ">&nbsp;您好，</b><a onclick="addTab('${_currConText}/adminUser/view.action','个人中心');" style="cursor:pointer; "><b style="color:#ffffff; ">${com_chnedu_plat_grant_admin_real_name}</b></a>！</strong>
+						</h:form>
+			        </td>
+			        <td align="left">
+						<h:form id="formLogout">
+				            <p:commandLink action="#{loginAction.logout }" value="[退出]" style="color:#ffffff; "/>
+				            <p:spacer width="10"/>
+				            <p:commandLink value="[个人中心]" update=":formHidden:currentNodeType :formHidden:currentNodeName :formHidden:currentNodeUrl :formHidden:tabMax" 
+				            	actionListener="#{leftTreeAction.openPage('adminUser','个人中心')}" oncomplete="loadTabPage();" style="color:#ffffff; "/>
+				            <p:spacer width="10"/>
+				            <p:commandLink id="sInnermsgCount" value="[沟通消息(#{innerMsgReqOther.innermsgCount})]" update=":formHidden:currentNodeType :formHidden:currentNodeName :formHidden:currentNodeUrl :formHidden:tabMax" 
+				            	actionListener="#{leftTreeAction.openPage('innermsg','我的沟通消息')}" oncomplete="loadTabPage();" style="color:#ffffff; "/>
+				            <p:spacer width="10"/>
+				            <p:commandLink id="sMembermsgCount" value="[学员消息(#{membermsgReqOther.membermsgCount})]" update=":formHidden:currentNodeType :formHidden:currentNodeName :formHidden:currentNodeUrl :formHidden:tabMax" 
+				            	actionListener="#{leftTreeAction.openPage('membermsg','学员消息')}" oncomplete="loadTabPage();" style="color:#ffffff; "/>
+				            <p:spacer width="10"/>
+				            <p:commandLink id="sReservecallAllCount" value="[预约回访(#{reserveCallReqOther.reservecallCount})]" update=":formHidden:currentNodeType :formHidden:currentNodeName :formHidden:currentNodeUrl :formHidden:tabMax" 
+				            	actionListener="#{leftTreeAction.openPage('reservecall','预约回访')}" oncomplete="loadTabPage();" style="color:#ffffff; "/>
+				            <p:spacer width="10"/>
+				            <p:commandLink id="sMemberCallNoCallCount" value="[回访提醒(#{memberCallNoCallReqOther.memberCallNoCallCount})]" update=":formHidden:currentNodeType :formHidden:currentNodeName :formHidden:currentNodeUrl :formHidden:tabMax" 
+				            	actionListener="#{leftTreeAction.openPage('memberCallNoCall','回访提醒')}" oncomplete="loadTabPage();" style="color:#ffffff; "/>
+				            <p:spacer width="10"/>
+							<p:themeSwitcher value="#{sessionManager.theme}" style="width:250px; text-align:left;" var="t">
+								<f:selectItems value="#{sessionManager.themes}" var="theme" itemLabel="Theme: #{theme.displayName}" itemValue="#{theme}"/>
+                                <p:column>
+                                    <p:graphicImage value="#{t.image}"/>
+                                </p:column>
+                                <p:column>
+                                    #{t.displayName}
+                                </p:column>
+                                <p:ajax listener="#{sessionManager.saveTheme}" update=":info"/>
+							</p:themeSwitcher>
+							<p:spacer width="10"/>
+						    <p:selectOneMenu id="mainSiteID" value="#{websiteOther.selectSiteID}" style="width:100px;" panelStyleClass="minLength"    onstart="initChange();"     >
+								<f:selectItems value="#{websiteOther.websiteList}" var="w" itemLabel="#{w.siteName}" itemValue="#{w.siteID}"   />
+								 <p:ajax listener="#{leftTreeAction.changeSiteSubmit}" update=":info :remoteForm :formHidden "   oncomplete="closeTab();"/>
+							</p:selectOneMenu>
+							
+						</h:form>
+					</td>
+				</tr>
+			</table>
+		</p:layoutUnit>
+		<p:layoutUnit position="center" style="padding:0px; margin:0px; ">
+			<f:verbatim>
+				<iframe frameborder="0" id="iframeTab" name="iframeTab" src="page/grant/iframeTab.xhtml" width="100%" height="100%" scrolling="no" />
+			</f:verbatim>
+		</p:layoutUnit>
+	</p:layout>
+	<f:verbatim>
+		<iframe src="page/grant/keepSession.xhtml" style="display:none; "/>
+	</f:verbatim>
+</h:body>
+</html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>我的高端班学员</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(myAdvanceMemberAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="所属辅导" />
+			<p:selectOneMenu id="sMajorID" value="#{myAdvanceMemberAction.filterGdbMember.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择辅导--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sUserName" value="学员名称" />
+			<p:inputText id="sUserName" value="#{myAdvanceMemberAction.filterGdbMember.userName}"/>
+
+			<h:outputLabel value="课程状态" />
+			<p:selectOneMenu value="#{myAdvanceMemberAction.filterGdbMember.courseStatus}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="请选择状态" itemValue="-1"/>
+				<f:selectItems value="#{myAdvanceMemberReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sTeacherName" value="负责教师代码"/>
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sTeacherName" value="#{myAdvanceMemberAction.filterGdbMember.teacherCode}" completeMethod="#{comRequestMethod.completeTeacherName2}" var="teacherCode" itemLabel="#{teacherCode}" itemValue="#{teacherCode}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{myAdvanceMemberAction.search}" rendered="#{myAdvanceMemberAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{myAdvanceMemberAction.heighti}" 
+			widgetVar="advanceMember"
+			id="advanceMemberList"
+			binding="#{myAdvanceMemberAction.pageTable}"
+			lazy="true"
+			value="#{myAdvanceMemberAction.page}" 
+			rows="20"
+			var="advanceMember" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} / {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="学员名" width="12%">
+				<p:commandLink value="#{advanceMember.userName}" update=":changeTForm:changeTDialog" 
+					oncomplete="changeTDialog.show();" actionListener="#{myAdvanceMemberReqAction.changeTeacher(advanceMember.id,advanceMember.userName,advanceMember.teacherID)}"/>
+			</p:column>	
+			<p:column headerText="手机号" width="12%">
+				<h:outputText value="#{advanceMember.formerTelPhone}" />
+				<p:commandLink value="[更新]" actionListener="#{myAdvanceMemberReqAction.updateMemberPhone(advanceMember.userName,advanceMember.id,myAdvanceMemberAction.siteID)}" update=":info"/>
+			</p:column>	
+			<p:column headerText="手机短信" width="8%">
+				<p:commandLink value="发送" update=":smsForm:smsDialog" 
+					oncomplete="smsDialog.show();" actionListener="#{memberSmsReqAction.showSms(0,advanceMember.userID)}"/>
+			</p:column>	
+			<p:column headerText="高端班课程" width="20%">
+				<h:outputText value="#{advanceMember.courseNames}" />
+			</p:column>	
+			<p:column headerText="负责教师" width="10%">
+				<h:outputText value="#{advanceMember.teacherCode}(#{advanceMember.teacherName})" />
+			</p:column>	
+			<p:column headerText="电话回访" width="12%">
+				<h:link value="【#{advanceMember.callSuccessDayStr}|#{advanceMember.callDayStr}】" title="成功回访天数|回访天数" 
+					outcome="/page/gdbmembercall/memberCallRecord.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="userID" value="#{advanceMember.userID}"/>
+					<f:param name="userName" value="#{advanceMember.userName}"/>
+					<f:param name="siteID" value="#{myAdvanceMemberAction.siteID}"/>
+				</h:link>
+			</p:column>	
+			<p:column headerText="学习计划" width="8%">
+				<h:link value="查看" 
+					outcome="/page/gdbstudyplan/studyPlan.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="userID" value="#{advanceMember.userID}"/>
+					<f:param name="userName" value="#{advanceMember.userName}"/>
+					<f:param name="siteCourseIds" value="#{advanceMember.siteCourseIds}"/>
+				</h:link>
+			</p:column>	
+			<p:column headerText="反馈表" width="10%">
+				<h:link value="#{advanceMember.updateDateStr}" outcome="/page/memberdefine/feedbackUpdate.xhtml" includeViewParams="true" target="_blank" title="学员填写反馈表的日期">
+					<f:param name="siteID" value="#{myAdvanceMemberAction.siteID}"/>
+					<f:param name="userID" value="#{advanceMember.userID}"/>
+					<f:param name="userName" value="#{advanceMember.userName}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="退班" width="5%">
+				<p:commandLink value="退班" actionListener="#{myAdvanceMemberReqAction.updateAdvanceMemberStatus(advanceMember.userID,advanceMember.majorID)}" update=":info" onstart="return confirmDia('您确定此学员所报课程已关闭并将此学员退班吗？');" />
+			</p:column>	
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="advanceMemberList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 学员换教师页面 -->
+	<h:form id="changeTForm" >
+		<p:dialog id="changeTDialog" header="选择负责教师" widgetVar="changeTDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/changeTeacher.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 发短信页面 -->
+	<h:form id="smsForm" >
+		<p:dialog id="smsDialog" header="向学员发送短信" widgetVar="smsDialog" resizable="false" showEffect="fade" hideEffect="fade" position="top">
+			<ui:include src="/page/membersms/load/memberSmsSend.xhtml"/>
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

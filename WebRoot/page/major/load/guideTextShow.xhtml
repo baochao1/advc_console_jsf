@@ -1,0 +1,40 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:p="http://primefaces.org/ui" id="showDialog" header="查看" widgetVar="showDialog" resizable="false" showEffect="fade" hideEffect="fade" height="350">
+	
+	<p:panelGrid id="showPanelGrid" columns="2" columnClasses="addObjectClass, maxLength">
+		
+		<h:outputLabel value="阶段名" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{guideTextReqAction.updateGuideText.stageName}" styleClass="addContentClass"/>
+		
+		<h:outputLabel value="辅导名称" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{guideTextReqAction.updateGuideText.majorName}" styleClass="addContentClass"/>
+		
+		<h:outputLabel value="内容" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{guideTextReqAction.updateGuideText.content}" styleClass="addContentClass" escape="false"/>
+		
+		<h:outputLabel value="剩余日期" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{guideTextReqAction.updateGuideText.leftDays}" styleClass="addContentClass"/>
+		
+		<h:outputLabel value="状态" >
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:outputLabel value="#{guideTextReqAction.updateGuideText.statusStr}" styleClass="addContentClass"/>
+		
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="showDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

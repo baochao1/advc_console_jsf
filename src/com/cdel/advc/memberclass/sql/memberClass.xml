@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberclass">
+
+    <sql id="getMemberClassList_body">
+		SELECT C.createTime, C.userID, am.reportDateSpace, am.isNewService, C.classID,
+      		M.userName, M.telPhone, amd.updateDate, memberCall.reservedDate, At.termID,
+      		DATEDIFF(DAY, am.examDate, GETDATE()) examDay, 
+      		DATEDIFF(DAY, ms.smsSendTime, GETDATE()) smsSendDay, 
+      		DATEDIFF(DAY, R.createTime, GETDATE()) rptCreateDay, 
+      		DATEDIFF(DAY, C.createTime, GETDATE()) createDay, 
+      		DATEDIFF (day,CR.lastCallTime,getDate()) callDay,DATEDIFF (day,CR.successCallTime,getDate()) callSuccessDay,
+            ast.planID,ast2.planID as prePlanID,ast.planStatus,ast2.planStatus as prePlanStatus,C.remarks,
+            ROW_NUMBER() Over(ORDER BY C.createTime,C.classID DESC) AS rowNum 
+        FROM 
+        	ADVC_MEMBER_CLASS C WITH (NOLOCK)
+        LEFT JOIN 
+        	ADVC_MEMBER M WITH (NOLOCK) ON C.userID = M.userID 
+        LEFT JOIN 
+ 			ADVC_MEMBER_CALL_RECORD CR WITH (NOLOCK) on CR.classID=C.classID and CR.userID=C.userID 
+        LEFT JOIN 
+        	(SELECT 
+       			classID,userID,max(createTime) createTime 
+   			FROM 
+   				ADVC_REPORT WITH (NOLOCK)
+   			group by classID,userID) R ON C.classID = R.classID AND C.userID = R.userID 
+   		LEFT JOIN 
+        	ADVC_CLASS f WITH (NOLOCK) ON C.classID = f.classID 
+        LEFT JOIN 
+        	ADVC_TESTTERM AT WITH (NOLOCK) on AT.termID = f.termID 
+   		LEFT JOIN 
+        	ADVC_MAJOR am WITH (NOLOCK) on am.majorID =AT.majorID 
+        LEFT JOIN (SELECT 
+        		userID,classID,max(sendTime) smsSendTime 
+        	FROM 
+        		ADVC_MEMBER_SMS WITH (NOLOCK) 
+        	GROUP BY classID,userID) ms 
+        	ON C.userID = ms.userID AND C.classID = ms.classID 
+        LEFT JOIN advc_member_define amd WITH (NOLOCK) on amd.userID = C.userID 
+        LEFT JOIN (SELECT 
+				top 1 userID,reservedDate 
+			FROM 
+				ADVC_MEMBER_CALL  WITH (NOLOCK) 
+				WHERE callStatus = 2 order by callID desc) memberCall ON memberCall.userID = M.userID 
+		LEFT JOIN ADVC_STUDYPLAN ast WITH (NOLOCK) ON ast.classID = C.classID AND ast.userID = C.userID AND ast.planType=0
+        LEFT JOIN ADVC_STUDYPLAN ast2 WITH (NOLOCK) ON ast2.classID = C.classID AND ast2.userID = C.userID AND ast2.planType=1       
+   		<where>
+			<if test="classID != null">AND C.classID=#{classID} </if>
+			<if test="userID != null">AND C.userID=#{userID} </if>
+			<if test="status != null">AND C.status=#{status} </if>
+			<if test="userName != null and userName != ''">AND M.userName=#{userName} </if>
+	   		<if test="courseIDsStr != null and courseIDsStr != ''"> 
+	   		      <foreach collection="courseIDs" index="index" item="courseID" open="AND" close="" separator=" AND ">   
+						C.studyCourse  like '%'+  convert(varchar(20),#{courseID})  + '%'
+				  </foreach>
+		     </if>
+   		</where>
+    </sql>
+    
+    <select id="countMemberClass" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getMemberClassList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageMemberClass" parameterType="MemberClass" resultType="MemberClass">
+        SELECT * FROM (
+            <include refid="getMemberClassList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+    <select id="getMemberClass" parameterType="MemberClass" resultType="MemberClass">
+        SELECT C.classID,C.userID,C.studentNO,C.studyCourse,C.status,C.createTime enterTime,
+        M.userName,AC.className, AC.termID, AC.displayAdviser,M.email 
+        FROM ADVC_MEMBER_CLASS C WITH (NOLOCK) 
+		LEFT JOIN ADVC_MEMBER M WITH (NOLOCK) ON C.userID = M.userID
+		LEFT JOIN ADVC_CLASS AC WITH (NOLOCK) ON C.classID = AC.classID 
+		<if test="majorID != null">
+			LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON AC.strategyID = CS.strategyID 
+		</if>
+       	<where>
+       		<if test="classID !=null">AND C.classID = #{classID}</if>
+       		<if test="userID !=null">AND C.userID = #{userID}</if>
+       		<if test="studentNo !=null">AND C.studentNo = #{studentNo}</if>
+       		<if test="studyCourse !=null">AND C.studyCourse = #{studyCourse}</if>
+       		<if test="status !=null">AND C.status = #{status}</if>
+       		<if test="majorID !=null">AND CS.majorID = #{majorID}</if>
+       		<if test="majorID !=null">AND CS.majorID = #{majorID}</if>
+       		<if test="classStatus !=null">AND AC.status = #{classStatus}</if>
+       	</where>
+    </select>
+    
+    <select id="getMemberClassAndCourse" parameterType="MemberClass" resultMap="memberClassCourseList">
+        SELECT C.classID,C.userID,C.studentNO,C.studyCourse,C.status,C.createTime enterTime,C.studyCourse courseID  
+        FROM ADVC_MEMBER_CLASS C WITH (NOLOCK) 
+       	<where>
+       		<if test="classID !=null">AND C.classID = #{classID}</if>
+       		<if test="userID !=null">AND C.userID = #{userID}</if>
+       		<if test="status !=null">AND C.status = #{status}</if>
+       	</where>
+    </select>
+    
+    <insert id="insertMemberClass">
+        INSERT INTO ADVC_MEMBER_CLASS ( 
+         updateTime,
+            <trim prefix="" prefixOverrides=",">
+                <if test="classID !=null"> classID ,</if>
+            	<if test="userID !=null"> userID ,</if>
+            	<if test="studentNo !=null"> studentNo ,</if>
+            	<if test="studyCourse !=null"> studyCourse ,</if>
+            	<if test="createTime !=null"> createTime ,</if>
+            	<if test="status !=null"> status ,</if>
+            	<if test="firstTime !=null"> firstTime ,</if>
+            	<if test="sequence !=null"> sequence</if>
+            </trim>
+              
+        )
+        VALUES (
+         getdate(),
+	        <trim prefix="" prefixOverrides=",">
+            	<if test="classID !=null"> #{classID} ,</if>
+            	<if test="userID !=null"> #{userID} ,</if>
+            	<if test="studentNo !=null"> #{studentNo} ,</if>
+            	<if test="studyCourse !=null"> #{studyCourse} ,</if>
+            	<if test="createTime !=null"> #{createTime} ,</if>
+            	<if test="status !=null"> #{status} ,</if>
+            	<if test="firstTime !=null"> #{firstTime} ,</if>
+            	<if test="sequence !=null"> #{sequence}</if>
+            </trim>
+            
+        )
+    </insert>
+    
+    <update id="updateMemberClass">
+        UPDATE ADVC_MEMBER_CLASS
+		<set>
+		    updateTime=getdate(),
+			<if test="newClassID !=null"> classID = #{newClassID},</if>
+			<if test="studentNo !=null and studentNo != ''"> studentNo = #{studentNo},</if>
+			<if test="studyCourse !=null and studyCourse != ''"> studyCourse = #{studyCourse},</if>
+			<if test="createTime !=null"> createTime = #{createTime},</if>
+			<if test="status !=null"> status = #{status},</if>
+			<if test="sequence !=null"> sequence = #{sequence},</if>
+			<if test="remarks !=null"> remarks = #{remarks},</if>
+		</set>
+		where classID=#{classID} and userID=#{userID}
+    </update>
+    
+    <delete id="deleteMemberClassByObject">
+    	DELETE FROM ADVC_MEMBER_CLASS WHERE classID = #{classID} AND userID = #{userID} 
+    	<if test="status !=null"> and status = #{status} </if>
+    </delete>
+    
+    <resultMap type="MemberClass" id="memberClassCourseList">
+		<id property="studyCourse" column="courseID" jdbcType="VARCHAR" javaType="java.lang.String" />
+		<association property="studyCourseList" column="{studyCourse=courseID}" javaType="java.util.List" select="course.getStudyCourse" />
+	</resultMap>
+    
+	<select id="getMemberClassesInfo" parameterType="MemberClass" resultMap="memberClassCourseList">
+		SELECT MC.*, C.className, C.displayAdviser, T.termID, T.termName, T.termType, C.areaID, MC.studyCourse courseID, 
+		isnull(CS.majorID,T.majorID) majorID, CS.strategyID, CS.courseSet,CS.courseRegex,am.smsStatus,am.telPhone,am.userName,CS.strategyType  
+		FROM ADVC_MEMBER_CLASS MC WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON MC.classID = C.classID
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID = CS.strategyID
+		LEFT JOIN ADVC_TESTTERM T WITH (NOLOCK) ON C.termID = T.termID
+		LEFT JOIN ADVC_MEMBER am WITH (NOLOCK) ON MC.userID = am.userID
+		WHERE C.status = 1 
+		<if test="userID !=null"> and MC.userID = #{userID} </if>
+		<if test="status !=null"> and MC.status = #{status} </if>
+		<if test="classID !=null"> and MC.classID = #{classID} </if>
+    </select>
+    
+    <select id="getMemberClassesInfoShort" parameterType="MemberClass" resultType="MemberClass">
+		SELECT MC.*, C.className, C.displayAdviser, CS.majorID, CS.strategyID, CS.courseSet,CS.courseRegex 
+		FROM ADVC_MEMBER_CLASS MC WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON MC.classID = C.classID
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON C.strategyID = CS.strategyID
+		WHERE C.status = 1 
+		<if test="strategyType != null"> 
+			<if test="strategyType == 4"> and CS.strategyType = 4 </if>
+			<if test="strategyType lt 4"> and CS.strategyType &lt; 4 </if>
+		</if>
+		<if test="userID !=null"> and MC.userID = #{userID} </if>
+		<if test="status !=null"> and MC.status = #{status} </if>
+		<if test="classID !=null"> and MC.classID = #{classID} </if>
+		<if test="majorID !=null"> and CS.majorID = #{majorID} </if>
+		<if test="termID !=null"> and C.termID = #{termID} </if>
+    </select>
+    
+    <select id="getMemberClassList" parameterType="MemberClass" resultType="MemberClass">
+        SELECT C.*, M.email 
+        FROM ADVC_MEMBER_CLASS C WITH (NOLOCK) 
+        left join ADVC_MEMBER M WITH (NOLOCK) on C.userID=M.userID 
+       	<where>
+       		<if test="classID !=null">AND C.classID = #{classID}</if>
+       		<if test="userID !=null">AND C.userID = #{userID}</if>
+       		<if test="studentNo !=null">AND C.studentNo = #{studentNo}</if>
+       		<if test="studyCourse !=null">AND C.studyCourse = #{studyCourse}</if>
+       		<if test="createTime !=null">AND C.createTime = #{createTime}</if>
+       		<if test="status !=null">AND C.status = #{status}</if>
+       	</where>
+    </select>
+    
+    <select id="getMemberClassCodes" parameterType="MemberClass" resultType="java.lang.String">
+        select aco.courseCode
+		from advc_member_class amc with (nolock)
+		left join advc_class ac with (nolock) on  amc.classID = ac.classID
+		left join advc_course aco with (nolock) on  CHARINDEX(','+cast(aco.courseID as varchar(max))+',', ','+cast(amc.studyCourse as varchar(max))+',')>0
+		where amc.userID = #{userID} and ac.classID = #{classID} 
+		<if test="status !=null"> and amc.status = #{status} </if>
+		<if test="classStatus !=null"> and ac.status = #{classStatus} </if>
+    </select>
+ 
+</mapper>

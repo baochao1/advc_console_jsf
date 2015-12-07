@@ -1,0 +1,17 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	
+	<h:outputLabel value="新闻标题" />
+	<p:editor value="#{classnewsReqAction.classnews.newsTitle}" height="100"
+		controls="bold italic underline strikethrough font size style color highlight">
+	</p:editor>
+
+	<h:outputLabel value="新闻类别" />
+	<p:selectOneMenu value="#{classnewsReqAction.classnews.newsType}" style="width:200px;" panelStyleClass="minLength">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{classnewsReqAction.types.entrySet()}" var="t" itemLabel="#{t.value}" itemValue="#{t.key}" />
+	</p:selectOneMenu>
+	
+</p:panelGrid>

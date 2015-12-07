@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>全部班级留言</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(membernoteAllAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+
+			<h:outputLabel for="sMajorID" value="所属辅导" rendered="#{membernoteAllAction.from == ''}" />
+			<p:selectOneMenu id="sMajorID" value="#{membernoteAllAction.filterNote.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" rendered="#{membernoteAllAction.from == ''}" >
+				<p:ajax event="change" update=":searchForm:sClassesID" listener="#{classesOther.changeMajorID}" />
+				<f:selectItem itemLabel="--请选择辅导--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="m" itemLabel="#{m.majorName}" itemValue="#{m.majorID}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel for="sClassesID" value="所属班级" rendered="#{membernoteAllAction.from == ''}" />
+			<p:selectOneMenu id="sClassesID" value="#{membernoteAllAction.filterNote.classID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" rendered="#{membernoteAllAction.from == ''}" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{classesOther.classList}" var="c" itemLabel="#{c.className}" itemValue="#{c.classID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sMsgType" value="消息类别" />
+			<p:selectOneMenu id="sMsgType" value="#{membernoteAllAction.filterNote.msgType}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{membernoteAllReqAction.types.entrySet()}" var="t" itemLabel="#{t.value}" itemValue="#{t.key}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel for="sMsgTitle" value="班级消息标题" />
+			<p:inputText id="sMsgTitle" value="#{membernoteAllAction.filterNote.msgTitle}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sStatus" value="状态" />				   
+			<p:selectOneMenu id="sStatus" value="#{membernoteAllAction.filterNote.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{membernoteAllReqAction.statuss.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sIsSolveStr" value="是否解决" />
+			<p:selectOneMenu id="sIsSolveStr" value="#{membernoteAllAction.filterNote.isSolve}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{membernoteAllReqAction.isSolves.entrySet()}" var="s" itemLabel="#{s.value}" itemValue="#{s.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel value="开始时间" />
+			<p:calendar value="#{membernoteAllAction.filterNote.startDate}" pattern="yyyy-MM-dd HH:mm" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+			
+			<h:outputLabel value="结束时间" />
+			<p:calendar value="#{membernoteAllAction.filterNote.endDate}" pattern="yyyy-MM-dd HH:mm" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{membernoteAllAction.search}" rendered="#{membernoteAllAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="导出Excel" id="exportBtn" icon="ui-icon-newwin" oncomplete="exportXls(args);" 
+				actionListener="#{membernoteAllAction.exportXls}" rendered="#{membernoteAllAction.from == ''}" update=":info" />
+		</p:menubar>
+		<p:commandButton id="exportXlsBtn" ajax="false" value="Excel" style="display:none;" rendered="#{membernoteAllAction.from == ''}" >
+			<p:dataExporter type="xls" target="membernoteTable" fileName="membernote" />
+		</p:commandButton>
+		<p:dataTable scrollable="true" scrollHeight="#{membernoteAllAction.heighti2}" 
+			widgetVar="membernoteTable"
+			id="membernoteTable"
+			binding="#{membernoteAllAction.pageTable}"
+			lazy="true"
+			value="#{membernoteAllAction.page}" 
+			rows="30"
+			var="membernote" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="30,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rowKey="#{membernote.noteID}"
+			>
+			<p:column headerText="操作" width="5%" exportable="false">
+				<p:rowToggler />
+			</p:column>
+			<p:rowExpansion>
+			<p:panelGrid columns="2" columnClasses="addObjectMinClass, addContentClass" style="width:450px; text-align:left;">
+				<h:outputText value="是否解决" />
+				<p:inplace styleClass="solveStatus-#{membernote.isSolve}" label="#{membernote.isSolveStr}(单击修改)" editor="true" rendered="#{membernoteAllAction.optAuth}">
+					<p:ajax event="save" listener="#{membernoteAllReqAction.updateSolveSubmit}" update=":info" />
+					<p:inputTextarea cols="30" rows="5" autoResize="false" value="#{membernote.marks}" />
+				</p:inplace>
+				<h:outputText styleClass="solveStatus-#{membernote.isSolve}" value="#{membernote.isSolveStr}" rendered="#{!membernoteAllAction.optAuth}"/>
+				<h:outputText value="是否置顶" />
+				<p:commandLink styleClass="solveStatus-#{membernote.isTop}" value="#{membernote.isTopStr}" update=":searchForm:membernoteTable :info" actionListener="#{membernoteAllReqAction.changeTop(membernote.noteID,membernote.isTop)}" rendered="#{membernoteAllAction.optAuth}"/>
+				<h:outputText styleClass="solveStatus-#{membernote.isTop}" value="#{membernote.isTopStr}" rendered="#{!membernoteAllAction.optAuth}"/>
+				<h:outputText value="操作" />
+				<h:panelGroup style="display:block;">
+					<p:commandLink value="#{membernote.statusStr}" update=":searchForm:membernoteTable :info" actionListener="#{membernoteAllReqAction.changeStatus(membernote.noteID,membernote.status)}" rendered="#{membernoteAllAction.optAuth}"/>
+					<h:outputText value="#{membernote.statusStr}" rendered="#{!membernoteAllAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="查看" oncomplete="showDialog.show()" actionListener="#{membernoteAllReqAction.showNote(membernote.noteID)}" update=":showForm:showDialog" rendered="#{membernoteAllAction.viewAuth}"/>
+				</h:panelGroup>
+			</p:panelGrid>
+			</p:rowExpansion>
+			<p:column width="12%">
+				<f:facet name="header">
+					<h:outputText value="辅导" />
+				</f:facet>
+				<h:outputText value="#{membernote.majorName}" />
+			</p:column>
+			<p:column width="14%">
+				<f:facet name="header">
+					<h:outputText value="班级名称" />
+				</f:facet>
+				<h:outputText value="#{membernote.className}" />
+			</p:column>
+			<p:column width="20%">
+				<f:facet name="header">
+					<h:outputText value="消息标题" />
+				</f:facet>
+				<h:outputText value="#{membernote.msgTitle}" title="#{membernote.msgTitle}"/>
+			</p:column>
+			<p:column width="9%">
+				<f:facet name="header">
+					<h:outputText value="消息类别" />
+				</f:facet>
+				<h:outputText value="#{membernote.msgTypeStr}"/>
+			</p:column>
+			<p:column width="8%">
+				<f:facet name="header">
+					<h:outputText value="可见范围" />
+				</f:facet>
+				<h:outputText value="#{membernote.viewTypeStr}"/>
+			</p:column>
+			<p:column width="9%" sortBy="#{membernote.hit}">
+				<f:facet name="header">
+					<h:outputText value="点击数" />
+				</f:facet>
+				<h:outputText value="#{membernote.hit}"/>
+			</p:column>
+			<p:column width="10%">
+				<f:facet name="header">
+					<h:outputText value="创建人" />
+				</f:facet>
+				<h:outputText value="#{membernote.userName}"/>
+			</p:column>
+			<p:column width="12%" sortBy="#{membernote.createTimeStr}">
+				<f:facet name="header">
+					<h:outputText value="创建时间" />
+				</f:facet>
+				<h:outputText value="#{membernote.createTimeStr}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="membernoteTable" />
+		</ui:include>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="exportBtn" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+		
+	<!-- 查看留言页面 -->
+	<h:form id="showForm" >
+		<ui:include src="load/noteShow.xhtml"/>
+	</h:form>
+
+</h:body>
+</html>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="queserror">
+
+	<select id="getRptErrorList" parameterType="java.util.Map" resultType="QuesError">
+		select
+		userID,courseID,columnID,courseName,testType,errorCount,lastPlayTime,testName
+		from
+		(
+		select userID,courseID,pointTestID as columnID,max(courseName) as
+		courseName,max(pointTestName) as testName,count(*) as
+		errorCount,max(createTime) as lastPlayTime,'知识点测试' as testType
+		from
+		(
+		select mqe.* ,c.courseID,c.courseName,pt.pointTestName
+		from
+		QZ_MEMBER_QUESTION_ERROR mqe WITH (NOLOCK)
+		left join QZ_SITE_COURSE sc
+		WITH (NOLOCK) on
+		sc.siteCourseID=mqe.siteCourseID
+		left join QZ_COURSE c
+		WITH (NOLOCK) on c.courseID=sc.courseID
+		left join QZ_POINTTEST pt WITH
+		(NOLOCK) on pt.pointTestID=mqe.pointTestID
+		where mqe.pointTestID is not
+		null and userID=#{userID}
+		<if test="startDate != null">AND mqe.createTime &gt;= #{startDate}  </if>
+		<if test="endDate != null">AND mqe.createTime &lt;= #{endDate}  </if>
+		AND
+		<foreach collection="siteCourseIDList" item="item" separator="OR"
+			close=")" open="(">
+			mqe.siteCourseID = #{item}
+		</foreach>
+		)mqe1
+		group by userID,courseID,pointTestID
+		union all
+		select
+		userID,courseID,unitTestID as columnID,max(courseName) as
+		courseName,max(unitTestName) as testName,count(*) as
+		errorCount,max(createTime) as lastPlayTime,'单元测试' as testType
+		from
+		(
+		select mqe.* ,c.courseID,c.courseName,ut.unitTestName
+		from
+		QZ_MEMBER_QUESTION_ERROR mqe WITH (NOLOCK)
+		left join QZ_SITE_COURSE sc
+		WITH (NOLOCK) on
+		sc.siteCourseID=mqe.siteCourseID
+		left join QZ_COURSE c
+		WITH (NOLOCK) on c.courseID=sc.courseID
+		left join QZ_UNITTEST ut WITH
+		(NOLOCK) on ut.unitTestID=mqe.unitTestID
+		where mqe.unitTestID is not
+		null and userID=#{userID}
+		<if test="startDate != null">AND mqe.createTime &gt;= #{startDate}  </if>
+		<if test="endDate != null">AND mqe.createTime &lt;= #{endDate}  </if>
+		AND
+		<foreach collection="siteCourseIDList" item="item" separator="OR"
+			close=")" open="(">
+			mqe.siteCourseID = #{item}
+		</foreach>
+		)mqe1
+		group by userID,courseID,unitTestID
+		union all
+		select
+		userID,courseID,paperViewID as columnID,max(courseName) as
+		courseName,max(paperViewName) as testName,count(*) as
+		errorCount,max(createTime) as lastPlayTime,'试卷' as testType
+		from
+		(
+		select mqe.* ,c.courseID,c.courseName,pv.paperViewName
+		from
+		QZ_MEMBER_QUESTION_ERROR mqe WITH (NOLOCK)
+		left join QZ_SITE_COURSE sc
+		WITH (NOLOCK) on
+		sc.siteCourseID=mqe.siteCourseID
+		left join QZ_COURSE c
+		WITH (NOLOCK) on c.courseID=sc.courseID
+		left join QZ_PAPER_VIEW pv WITH
+		(NOLOCK) on pv.paperViewID=mqe.paperViewID
+		where mqe.paperViewID is not
+		null and userID=#{userID}
+		<if test="startDate != null">AND mqe.createTime &gt;= #{startDate}  </if>
+		<if test="endDate != null">AND mqe.createTime &lt;= #{endDate}  </if>
+		AND
+		<foreach collection="siteCourseIDList" item="item" separator="OR"
+			close=")" open="(">
+			mqe.siteCourseID = #{item}
+		</foreach>
+		)mqe1
+		group by userID,courseID,paperViewID
+		)myTable
+		order by courseID
+	</select>
+
+</mapper>

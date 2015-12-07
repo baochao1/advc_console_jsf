@@ -1,0 +1,42 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" styleClass="largeLength" columns="2" columnClasses="addObjectClass, addContentClass" >
+	
+	<h:outputLabel value="网站名称:">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<h:outputText value="#{websiteReqAction.updateWebsite.siteName}"/>
+	
+	<h:outputLabel value="域名:">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<h:outputText value="#{websiteReqAction.updateWebsite.domain}"/>
+	
+	<h:outputLabel value="课程每日平均学习时长URL"/>
+	<p:inputText value="#{websiteReqAction.updateWebsite.courseAvgTimeUrl}" styleClass="maxLength"/>
+	
+	<h:outputLabel value="学员每日学习时长Url"/>
+	<p:inputText value="#{websiteReqAction.updateWebsite.userTimeUrl}" styleClass="maxLength"/>
+	
+	<h:outputLabel value="选课数据URL"/>
+	<p:inputText value="#{websiteReqAction.updateWebsite.selCourseUrl}" styleClass="maxLength"/>
+	
+	<h:outputLabel value="课程章节学习时长URL"/>
+	<p:inputText value="#{websiteReqAction.updateWebsite.chapterTimeUrl}" styleClass="maxLength"/>
+	
+	<h:outputLabel value="学员手机更新URL"/>
+	<p:inputText value="#{websiteReqAction.updateWebsite.phoneUrl}" styleClass="maxLength"/>
+	
+	<h:outputLabel value="密钥"/>
+	<p:inputText value="#{websiteReqAction.updateWebsite.siteAttr}" styleClass="maxLength"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<h:inputHidden value="#{websiteReqAction.updateWebsite.siteID}"/>
+			<h:inputHidden value="#{websiteReqAction.updateWebsite.domain}"/>
+			<p:commandButton value="更新" actionListener="#{websiteReqAction.updateSubmit}" oncomplete="optResult('loadDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+ 
+<mapper namespace="api.callCenter.memberCall">
+ 
+    <!-- 将同步的数据插入到回访记录表中-->
+	 <insert id="insertMemberCall"   
+	 		parameterType ="com.cdel.api.callCenter.memberCall.MemberCall" >
+         	insert into ADVC_MEMBER_CALL (userID,classID,studyStatus,callStatus,caller,callTime) 
+         	values (#{userID},#{classID},#{studyStatus},#{callStatus},#{caller},#{callTime})
+         	<selectKey keyProperty="callID" resultType="int">
+			SELECT @@IDENTITY AS callID
+		    </selectKey>
+	</insert>
+	
+	
+	<!-- 保存对应的关联关系-->
+	 <insert id="insertCallID"   
+	 		parameterType ="com.cdel.api.callCenter.memberCall.MemberCall" >
+         	insert into ADVC_MEMBER_MEMBERCALL (callID,outboundID,type) 
+         	values (#{callID},#{outboundID},#{type})
+	</insert>
+    
+    <!-- 查询回访人ID  就是班主任-->
+    <select id="getTeacherByClassID" resultType="Integer"  parameterType="Integer">
+           SELECT  rau.adminID
+		   FROM   ADVC_CLASS  ac  WITH (NOLOCK)      
+		   LEFT join rad_admin_user  rau  WITH (NOLOCK)  ON rau.adminName =  ac.adviserTeacherCode
+		   WHERE   AC.classID = #{classID}
+		   ORDER BY ac.createTime  DESC
+    </select>  
+    
+    <!--  查询 回访记录表中是否存在 记录-->
+    <select id="getCallID" resultType="Integer"  parameterType="com.cdel.api.callCenter.memberCall.MemberCall">
+              SELECT  callID  FROM  ADVC_MEMBER_MEMBERCALL  amm WHERE  amm.outboundID = #{outboundID} 
+              and amm.type = #{type}
+    </select>  
+    
+    <!--  更新操作  -->
+     <update id="updateMemberCall"  parameterType ="com.cdel.api.callCenter.memberCall.MemberCall" >
+        UPDATE ADVC_MEMBER_CALL 
+        <set>
+        	<if test="userID != null"> userID=#{userID}, </if>
+        	<if test="classID != null"> classID=#{classID}, </if>
+        	<if test="studyStatus != null and studyStatus != ''"> studyStatus=#{studyStatus}, </if>
+        	<if test="callStatus != null"> callStatus=#{callStatus}, </if>
+        	<if test="caller != null"> caller=#{caller}, </if>
+        	<if test="callTime != null"> callTime=#{callTime}, </if>
+        </set>
+		where callID=#{callID}
+    </update>
+    
+</mapper>

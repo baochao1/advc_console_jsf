@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="faq">
+	<resultMap type="Faq" id="faqList">
+		<id property="faqID" column="faqID" jdbcType="NUMERIC" javaType="java.lang.Integer" />
+		<association property="replyNum" column="faqID" javaType="java.lang.Integer" select="getFaqContinuesCount" />
+	</resultMap>
+	
+	<sql id="getFaqList_body">
+		SELECT f.faqID, f.faqType, f.parentID, f.faqTitle, f.userID, f.createTime, f.status, f.courseID,
+		m.userName, c.className, f.hit, f.classID, course.courseName, f.chapterNum, f.faqContent,
+		ROW_NUMBER() Over(ORDER BY
+			<if test="sortField == null or sortField == ''"> f.faqID DESC </if>
+			<if test="sortField == 'hit'"> f.hit 
+				<if test="sortOrder == 'DESCENDING'"> desc  </if>
+				<if test="sortOrder == 'ASCENDING'"> asc  </if>
+			</if>
+			<if test="sortField == 'createTimeStr'"> f.faqID  
+				<if test="sortOrder == 'DESCENDING'"> desc  </if>
+				<if test="sortOrder == 'ASCENDING'"> asc  </if>
+			</if>
+			<if test="sortField == 'courseName'"> f.courseID  
+				<if test="sortOrder == 'DESCENDING'"> desc  </if>
+				<if test="sortOrder == 'ASCENDING'"> asc  </if>
+			</if>
+		) AS rowNum
+		FROM ADVC_FAQ f WITH (NOLOCK)<!-- 原帖 -->
+		LEFT JOIN ADVC_MEMBER m WITH (NOLOCK) ON m.userID = f.userID 	<!-- 提问学员 (创建人) -->
+		LEFT JOIN ADVC_CLASS c WITH (NOLOCK) ON c.classID = f.classID 	<!-- 班级 -->
+		LEFT JOIN ADVC_MAJOR MM WITH (NOLOCK) ON f.majorID = MM.majorID  <!-- 辅导 -->
+		LEFT JOIN ADVC_COURSE course WITH (NOLOCK) ON course.courseID = f.courseID	<!-- 课程 -->
+		WHERE f.parentID = 0 AND c.classID IS NOT NULL
+		<if test="faqTitle !=null and faqTitle !=''"> AND f.faqTitle like '%'+#{faqTitle}+'%' </if>
+		<if test="createTime !=null"> AND f.createTime=#{createTime}</if>
+		<if test="status !=null"> AND f.status=#{status} </if>
+		<if test="majorID !=null"> AND MM.majorID=#{majorID} </if>
+		<if test="classID !=null"> AND f.classID=#{classID} </if>
+		<if test="courseID !=null"> AND f.courseID=#{courseID} </if>
+		<if test="startDate !=null"> AND f.createTime &gt;= #{startDate} </if>
+		<if test="endDate !=null"> AND f.createTime &lt;= #{endDate} </if>
+    </sql>
+
+    <select id="countFaq" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getFaqList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageFaq" parameterType="Faq" resultMap="faqList">
+        SELECT * FROM (
+            <include refid="getFaqList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+	<select id="getFaqContinuesCount" resultType="Integer">
+		SELECT count(faqID) 
+		FROM ADVC_FAQ WITH (NOLOCK)
+		where solveStatus is not null AND solveStatus != 1 AND parentID=#{faqID} 
+    </select>
+    
+    <update id="updateFaq">
+        UPDATE ADVC_FAQ
+        <set>
+            <if test="replyNum != null"> replyNum=#{replyNum}, </if>
+            <if test="status != null"> status=#{status}, </if>
+            <if test="faqContent != null"> faqContent=#{faqContent} </if>       
+        </set>
+		WHERE faqID=#{faqID}  
+    </update>
+    
+	<select id="getFaq" resultType="Faq">
+		SELECT faqID, faqType, parentID, faqTitle, faqContent, f.userID,f.createTime, f.status, f.majorID,f.replyNum,
+		m1.userName,score,scoreTimes,f.hit,f.solveTime,f.solveStatus,course.courseName,f.classID,m.majorName,f.chapterNum
+		FROM ADVC_FAQ f WITH (NOLOCK) 
+		LEFT JOIN ADVC_MEMBER m1 WITH (NOLOCK) ON m1.userID = f.userID
+		LEFT JOIN ADVC_COURSE course WITH (NOLOCK) ON course.courseID = f.courseID
+		LEFT JOIN ADVC_MAJOR m WITH (NOLOCK) ON m.majorID = f.majorID
+		where faqID=#{faqID}
+    </select>
+    
+	<select id="getFaqMini" resultType="Faq">
+		SELECT faqID, faqContent 
+		FROM ADVC_FAQ WITH (NOLOCK)
+		where faqID=#{faqID}
+    </select>
+    
+    <!-- 最佳回复 -->
+    <select id="findBestFaq" resultType="Faq">
+		SELECT top 1 faqID, faqType, parentID, faqTitle, faqContent, f.userID, f.createTime, f.status,
+		m1.userName,score,scoreTimes,f.hit,f.teacherID,t.teacherCode,f.chapterNum 
+		FROM ADVC_FAQ f WITH (NOLOCK)
+		LEFT JOIN ADVC_MEMBER m1 WITH (NOLOCK) ON m1.userID = f.userID
+		LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = f.teacherID
+		WHERE f.solveStatus=1 AND f.parentID=#{faqID}
+    </select>
+
+	<!-- 回复帖子列表 -->
+    <sql id="getFaqContinuesList_body">
+		SELECT faqID, faqType, parentID, faqTitle, faqContent, f.userID,f.createTime, f.status,
+		m1.userName, score, scoreTimes, f.teacherID, t.teacherCode, t.teacherName,f.chapterNum,
+		ROW_NUMBER() Over(ORDER BY faqID DESC) AS rowNum
+		FROM ADVC_FAQ f WITH (NOLOCK)
+		LEFT JOIN ADVC_MEMBER m1 WITH (NOLOCK) ON m1.userID = f.userID
+		LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = f.teacherID
+		WHERE f.parentID=#{faqID} AND f.solveStatus is not null AND f.solveStatus != 1
+    </sql>
+    
+	<!-- 回复帖子列表 -->
+    <select id="countReplyFaqs" resultType="int">
+		SELECT COUNT(*) FROM ADVC_FAQ f WITH (NOLOCK)
+		WHERE f.parentID=#{faqID} AND f.solveStatus is not null AND f.solveStatus != 1
+    </select>
+
+	<!-- 回复帖子列表分页查询 -->
+    <select id="findReplyFaqs" parameterType="Faq" resultType="Faq">
+        SELECT * FROM (
+            <include refid="getFaqContinuesList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <insert id="insertFaq">
+        INSERT INTO ADVC_FAQ ( 
+         <trim prefix="" suffixOverrides=",">
+        	<if test="userID !=null "> userID, </if>
+            <if test="faqType !=null "> faqType, </if>
+            <if test="parentID !=null "> parentID, </if>
+            <if test="faqTitle !=null and faqTitle !=''"> faqTitle, </if>
+            <if test="faqContent !=null "> faqContent, </if>
+            <if test="classID !=null "> classID, </if>
+            <if test="courseID !=null "> courseID, </if>
+            <if test="score !=null "> score, </if>
+            <if test="scoreTimes !=null "> scoreTimes, </if>
+            <if test="hit !=null "> hit, </if>
+            <if test="solveTime !=null "> solveTime, </if>
+            <if test="solveStatus !=null "> solveStatus, </if>
+            <if test="teacherID !=null "> teacherID, </if>
+            <if test="createTime !=null "> createTime, </if>
+            <if test="status !=null "> status, </if>
+            <if test="majorID !=null "> majorID </if>
+         </trim>
+        )
+        VALUES (
+          <trim prefix="" suffixOverrides=",">
+            <if test="userID !=null "> #{userID}, </if>
+            <if test="faqType !=null "> #{faqType}, </if>
+            <if test="parentID !=null "> #{parentID}, </if>
+            <if test="faqTitle !=null and faqTitle !=''"> #{faqTitle}, </if>
+            <if test="faqContent !=null "> #{faqContent}, </if>
+            <if test="classID !=null "> #{classID}, </if>
+            <if test="courseID !=null "> #{courseID}, </if>
+            <if test="score !=null "> #{score}, </if>
+            <if test="scoreTimes !=null "> #{scoreTimes}, </if>
+            <if test="hit !=null "> #{hit}, </if>
+            <if test="solveTime !=null "> #{solveTime}, </if>
+            <if test="solveStatus !=null "> #{solveStatus}, </if>
+            <if test="teacherID !=null "> #{teacherID}, </if>
+            <if test="createTime !=null "> #{createTime}, </if>
+            <if test="status !=null "> #{status}, </if>
+            <if test="majorID !=null "> #{majorID} </if>
+       	</trim>
+        )
+        <selectKey keyProperty="faqID" resultType="int">
+        	SELECT @@IDENTITY AS faqID
+        </selectKey>
+    </insert>
+
+</mapper>

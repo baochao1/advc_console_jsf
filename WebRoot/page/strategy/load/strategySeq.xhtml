@@ -1,0 +1,16 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="1" styleClass="maxLength">
+
+	<p:orderList value="#{strategyOrderReqAction.soList}" var="so" converter="strategyOrderConverter" 
+		itemLabel="#{so.courseName}(#{so.courseID})" itemValue="#{so}" styleClass="myOrderList" />
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<p:commandButton value="提交" update="msg" actionListener="#{strategyOrderReqAction.updateSubmit}" oncomplete="optResult('seqDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="seqDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

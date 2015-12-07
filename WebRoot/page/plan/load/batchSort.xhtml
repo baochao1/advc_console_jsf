@@ -1,0 +1,49 @@
+<h:form xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"  
+	id="updateBatchSortForm">
+<style>
+	.ui-orderlist .ui-orderlist-item {cursor: move;font-weight: inherit;
+		font-size: 12px;border: 1px solid #DDDDDD;color: #362B36;}
+	.ui-orderlist .ui-orderlist-list li { padding: 5px;}
+</style>
+
+<p:dialog header="计划项批量排序" widgetVar="updateBatchSortDialog" id="updateBatchSortDialog"
+	resizable="false" showEffect="fade" hideEffect="fade" height="500" width="900">
+	<p:orderList id="orderList" converter="planChapterSequenceSetConverter"
+		 value="#{planChapterSequenceSetReqAction.sortChapters}" 
+		 var="c" itemValue="#{c}" >
+	    <f:facet name="caption">
+			<h:outputLabel value="课程/学习内容"/>
+	    </f:facet>  
+		<p:column style="width:10%;">
+			<h:outputText value="排序#{c.sequence}"/>
+		</p:column>	
+		<p:column style="width:50%;">
+			<h:outputText  value="#{c.courseName}"/>
+		</p:column>	
+		<p:column style="width:40%;">
+			#{c.chapterName}
+			<span class="chapterOpenStatus-#{c.openStatus}">(阶段 #{c.phaseNo}, #{c.openStatusStr})</span>				
+		</p:column>	
+	</p:orderList>
+
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<h:inputHidden value="#{planChapterSequenceSetReqAction.planID}"/>
+			<p:commandButton value="保存" type="button" onclick="cd3.show()"/>
+			<p:commandButton value="关闭" type="button" onclick="updateBatchSortDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>
+
+<p:confirmDialog widgetVar="cd3" severity="alert" message="确定要重新排序，同时重新生成学习计划?" header="信息提示">
+	<p:commandButton value="确定" 
+		onstart="cd3.hide()" update=":info"
+		oncomplete="optResultAlert(args,9,'myReload');"
+		actionListener="#{planChapterSequenceSetReqAction.updateChapterSequences(planChapterSequenceSetReqAction.planID)}" />
+	<p:commandButton value="取消" onclick="cd3.hide();" type="button" />
+</p:confirmDialog>
+</h:form>

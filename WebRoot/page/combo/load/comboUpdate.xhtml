@@ -1,0 +1,37 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	
+	<h:outputLabel value="辅导选择">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<h:outputText value="#{comboReqAction.updateCombo.majorName}"/>
+	
+	<h:outputLabel value="课程选择">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectCheckboxMenu id="uCourseID" value="#{comboReqAction.updateCombo.courseIDs}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+		<f:selectItems value="#{comboAction.courseList}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseID}"/>
+	</p:selectCheckboxMenu>
+	
+	<h:outputLabel value="套餐名称">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText value="#{comboReqAction.updateCombo.comboName}" styleClass="minLength"/>
+	
+	<h:outputLabel value="套餐代码">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText value="#{comboReqAction.updateCombo.comboCode}" styleClass="minLength"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{comboReqAction.updateCombo.comboID}"/>
+			<h:inputHidden value="#{comboReqAction.flag}"/>
+			<p:commandButton value="提交" actionListener="#{comboReqAction.updateSubmit}" update="msg" oncomplete="optResult('loadDialog',args,'#{comboReqAction.flag}');"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

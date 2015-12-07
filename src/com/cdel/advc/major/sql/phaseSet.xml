@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phaseset">
+	<select id="getPhaseSetList" parameterType="PhaseSet" resultType="PhaseSet">
+        SELECT majorID,classType,phaseNo,sequence FROM ADVC_MAJOR_PHASE_SET WITH (NOLOCK) 
+        WHERE majorID=#{majorID} and classType=#{classType} order by classType,phaseNo,sequence
+    </select>
+    
+    <insert id="insertPhaseSetList">
+        INSERT INTO ADVC_MAJOR_PHASE_SET ( majorID,classType,phaseNo,sequence )
+        <foreach collection="list" item="ps" open="(" close=")" separator=" union all ">
+        	select #{ps.majorID},#{ps.classType},#{ps.phaseNo},#{ps.sequence}
+        </foreach>
+    </insert>
+    
+    <delete id="deletePhaseSetByObject">
+		delete from ADVC_MAJOR_PHASE_SET where majorID=#{majorID} and classType=#{classType}   
+    </delete>
+
+</mapper>

@@ -1,0 +1,36 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	
+	<h:outputLabel value="开始时间" >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:calendar value="#{gdbStudyPlanReqAction.uGdbStudyPlan.startDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+	
+	<h:outputLabel value="建议时长" >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<h:panelGroup>
+		<p:inputText value="#{gdbStudyPlanReqAction.uGdbStudyPlan.studyHours}" styleClass="minLength"/>小时
+	</h:panelGroup>
+	
+	<h:outputLabel value="学习要求">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:editor value="#{gdbStudyPlanReqAction.uGdbStudyPlan.studyContent}" height="100" controls="bold italic underline strikethrough bullets numbering"/>
+	
+	<h:outputLabel value="学习方法">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:editor value="#{gdbStudyPlanReqAction.uGdbStudyPlan.studyMethods}" height="150" controls="bold italic underline strikethrough bullets numbering"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{gdbStudyPlanReqAction.uGdbStudyPlan.studyPlanID}"/>
+			<p:commandButton value="更新" actionListener="#{gdbStudyPlanReqAction.updateSubmit(1)}" update="msg" oncomplete="optResult('loadDialog',args,'1');"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

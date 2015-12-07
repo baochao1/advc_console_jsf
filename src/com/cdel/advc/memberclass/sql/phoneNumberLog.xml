@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="phonenumberlog">
+
+	<!--  根据userID 得到 旧的手机号    -->
+    <select id="getOldPhonenumberByUserID" parameterType="Integer" resultType="String">
+       select telPhone  from  dbo.ADVC_MEMBER WITH (NOLOCK)   where userID=#{memberID}
+    </select>
+    
+    <!-- 更新教务库中学员的手机号    -->
+	<update id="updateJiaoWuCellPhoneNumber">
+		update ADVC_MEMBER set telPhone=#{newphonenumber}  WHERE userID=#{memberID}  
+    </update>
+    
+    <!--  更新学员班级时间 -->
+    <update id="updateMemeberClasssUpdateTime">
+     update ADVC_MEMBER_CLASS set updateTime = getdate()  WHERE userID=#{memberID} 
+    </update>        
+     
+      <!-- 更新主库中学员的手机号    -->
+	<update id="updateMainCellPhoneNumber">
+	   update Member set mobilePhone= #{newphonenumber},Phone=#{newphonenumber},RegUpdateTime=getdate()   WHERE  uID=#{memberID}  
+    </update>
+    
+    <!-- 新增更新手机号日志记录信息   -->
+     <insert id="saveCellPhoneNumberLog">
+        INSERT INTO advc_updateCellphoneNumber_log (memberID,oldphonenumber,newphonenumber,updaterID,updateTime)
+                             VALUES (#{memberID}, #{oldphonenumber},#{newphonenumber},#{updaterID},getdate())
+    </insert>
+    
+   
+</mapper>

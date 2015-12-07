@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="planlog">
+    <sql id="getPlanLogList_body">
+        SELECT planLogID, planID, planLogDesc, creator, createTime,
+             ROW_NUMBER() Over(ORDER BY planLogID DESC) AS rowNum 
+        FROM ADVC_STUDYPLAN_LOG WITH (NOLOCK) 
+        WHERE planID=#{planID}
+    </sql>
+
+    <select id="countPlanLog" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getPlanLogList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPagePlanLog" parameterType="PlanLog" resultType="PlanLog">
+        SELECT * FROM (
+            <include refid="getPlanLogList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="findLogsByPlanID" parameterType="PlanLog" resultType="PlanLog">
+        SELECT planLogID, planID, planLogDesc, creator, createTime 
+        FROM ADVC_STUDYPLAN_LOG WITH (NOLOCK) WHERE planID=#{planID} ORDER BY createTime DESC 
+    </select>
+
+    <insert id="insertPlanLog">
+        INSERT INTO ADVC_STUDYPLAN_LOG ( 
+       	<trim prefix="" suffixOverrides=",">
+       	    <if test="planID != null"> planID, </if>
+            <if test="planLogDesc !=null and planLogDesc !=''"> planLogDesc, </if>
+            <if test="creator != null"> creator, </if>
+            <if test="createTime != null"> createTime</if>
+		</trim>
+        )
+        VALUES (
+        <trim prefix="" suffixOverrides=",">
+       	    <if test="planID != null"> #{planID}, </if>
+            <if test="planLogDesc !=null and planLogDesc !=''"> #{planLogDesc}, </if>
+            <if test="creator != null"> #{creator}, </if>
+            <if test="createTime != null"> #{createTime}</if>
+		</trim>
+        )
+        <selectKey keyProperty="planLogID" resultType="int">
+        	SELECT @@IDENTITY AS planLogID 
+        </selectKey>
+    </insert>
+
+    <update id="updatePlanLog" parameterType="Integer">
+        UPDATE ADVC_STUDYPLAN_LOG
+        <set>
+            <if test="planID != null"> planID=#{planID}, </if>
+            <if test="planLogDesc !=null and planLogDesc !=''"> planLogDesc=#{planLogDesc:VARCHAR}, </if>
+            <if test="creator != null"> creator=#{creator}, </if>
+            <if test="createTime != null"> createTime=#{createTime} </if>
+        </set>
+			WHERE planLogID=#{planLogID}
+    </update>
+
+</mapper>
+
+

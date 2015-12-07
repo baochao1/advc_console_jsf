@@ -1,0 +1,25 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	<h:outputLabel value="班级名称"/>
+	<h:outputText value="#{sendEmailReqAction.emailDetail.className}"/>
+	
+	<h:outputLabel value="发送人"/>
+	<h:outputText value="#{sendEmailReqAction.emailDetail.sender}"/>
+
+	<h:outputLabel value="发送时间"/>
+	<h:outputText value="#{sendEmailReqAction.emailDetail.sendTimeStr}"/>
+	
+	<h:outputLabel value="邮件标题"/>
+	<h:outputText value="#{sendEmailReqAction.emailDetail.title}"/>
+
+	<h:outputLabel value="邮件内容"/>
+	<h:outputText value="#{sendEmailReqAction.emailDetail.content}" escape="false"/>
+
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+				<p:commandButton type="button" value="关闭" onclick="mailDeailDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

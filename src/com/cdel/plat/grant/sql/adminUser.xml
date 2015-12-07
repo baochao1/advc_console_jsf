@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="adminuser">
+	<resultMap id="result" type="AdminUser">
+		<result property="adminName" column="adminName" />
+		<result property="realName" column="realName" />
+		<result property="adminID" column="adminID" />
+		<result property="passWd" column="passWd" />
+		<result property="displayName" column="displayName" />
+		<result property="cellPhone" column="cellphone" />
+		<result property="lastLogin" column="lastLogin" />
+		<result property="loginIP" column="loginIP" />
+		<result property="status" column="status" />
+		<result property="creator" column="creator" />
+		<result property="createTime" column="createTime" />
+		<result property="pwdModifyTime" column="pwdModifyTime" />
+	</resultMap>
+		
+	<resultMap id="result1" type="AdminUser">
+        <result property="adminName" column="adminName" />
+        <result property="realName" column="realName" />
+        <result property="adminID" column="adminID" />
+        <result property="passWd" column="passWd" />
+        <result property="displayName" column="displayName" />
+        <result property="cellPhone" column="cellphone" />
+        <result property="lastLogin" column="lastLogin" />
+        <result property="loginIP" column="loginIP" />
+        <result property="status" column="status" />
+        <result property="creator" column="creator" />
+        <result property="creatorName" column="creatorName" />
+        <result property="createTime" column="createTime" />
+        <result property="pwdModifyTime" column="pwdModifyTime" />
+    </resultMap>
+    
+	<select id="getUserInfo" parameterType="AdminUser" resultMap="result">
+		SELECT top 1 * FROM RAD_ADMIN_USER 
+		WHERE adminName = #{adminName} AND passwd = #{passWd} AND status = 1 and adminID &gt; 0 
+	</select>
+	
+	<select id="getUserByUserName" resultType="AdminUser" parameterType="String">
+		SELECT top 1 * FROM RAD_ADMIN_USER 
+		WHERE adminName = #{value} and status=1 and adminID &gt; 0 
+	</select>
+	
+	<update id="updateUserLoginMsgByID" parameterType="AdminUser">
+        UPDATE RAD_ADMIN_USER SET lastLogin=#{lastLogin}, loginIP=#{loginIP} WHERE adminID=#{adminID}
+    </update>
+    
+    <select id="getUserRoleID" parameterType="Integer" resultType="Integer">
+		SELECT roleID FROM RAD_ADMIN_USER_ROLE WHERE adminID=#{value}
+	</select>
+	
+    <select id="getAdminUser" parameterType="Integer" resultType="AdminUser">
+		SELECT * FROM RAD_ADMIN_USER WHERE adminID=#{value}
+	</select>
+	
+	<update id="updateAdminUser" parameterType="AdminUser">
+		UPDATE RAD_ADMIN_USER 
+		<set>
+			<if test="realName !=null">realName=#{realName},</if>
+			<if test="displayName !=null">displayName=#{displayName},</if>
+			<if test="cellPhone !=null">cellPhone=#{cellPhone},</if>
+			<if test="passWd !=null">passWd=#{passWd},</if>
+			<if test="pwdModifyTime !=null">pwdModifyTime=#{pwdModifyTime},</if>
+		</set>
+		where adminID=#{adminID}
+	</update>
+	
+</mapper>

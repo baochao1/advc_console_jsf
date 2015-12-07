@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="planspecialgeneral">
+	<sql id="getSpecialGeneralList_body">
+        SELECT special.specialID, special.planID, special.specialDate, special.specialHours, 
+        special.creator, special.createTime,special.logDesc,special.status,member.userName,at.teacherName,
+             ROW_NUMBER() Over(ORDER BY specialID DESC) AS rowNum 
+        FROM ADVC_STUDYPLAN_SPECIAL special WITH (NOLOCK) 
+        LEFT JOIN ADVC_STUDYPLAN sp WITH (NOLOCK) ON special.planID = sp.planID
+        LEFT JOIN ADVC_MEMBER member WITH (NOLOCK) ON member.userID = sp.userID
+        left join ADVC_TEACHER at WITH (NOLOCK) on at.teacherID = special.creator 
+        where special.planID=#{planID}
+    </sql>
+
+    <select id="countPlanSpecialGeneral" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getSpecialGeneralList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPagePlanSpecialGeneral" parameterType="PlanSpecialGeneral" resultType="PlanSpecialGeneral">
+        SELECT * FROM (
+            <include refid="getSpecialGeneralList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="getSpecialGeneralByPlan" parameterType="PlanSpecialGeneral" resultType="PlanSpecialGeneral">
+        select * from ADVC_STUDYPLAN_SPECIAL where planID=#{planID} and specialDate=#{specialDate}
+    </select>
+    
+    <insert id="insertPlanSpecialGeneralList">
+        INSERT INTO ADVC_STUDYPLAN_SPECIAL ( planID,specialDate,specialHours,logDesc,createTime,creator,status ) 
+        <foreach collection="list" item="sg" open="(" close=")" separator=" union all ">
+        	select #{sg.planID},#{sg.specialDate},#{sg.specialHours},#{sg.logDesc},#{sg.createTime},#{sg.creator},#{sg.status}
+        </foreach>
+    </insert>
+    
+    <delete id="deletePlanSpecialGeneral">
+    	delete from ADVC_STUDYPLAN_SPECIAL where specialID=#{specialID}
+    </delete>
+    
+    <update id="updatePlanSpecialGeneral" parameterType="PlanSpecialGeneral">
+    	update ADVC_STUDYPLAN_SPECIAL set specialHours=#{specialHours}, logDesc=#{logDesc} 
+    	where specialID=#{specialID}
+    </update>
+
+</mapper>

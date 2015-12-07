@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统--班级成员</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function isShowPro(args){
+		var show = args.result;
+		if(show==0){
+			alert("没有个性化信息!");
+		}else{
+			proDialog.show();
+		}
+	}
+
+	function reload(){
+        window.location.reload();
+	}
+	 
+ 	</script>
+	<style>
+		.ui-selectmanycheckbox td {border: none;padding:2px;}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000"/>
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:panelGrid style="width:100%; text-align:left;">
+			<p:row>
+				<p:column>
+					<h:outputLabel value="班级名称"/>
+				</p:column>
+				<p:column>
+					<h:outputText value="#{memberClassAction.classes.className}"/>
+					<p:spacer width="10px"/>
+					<h:outputLabel value="班主任："/>
+					<h:outputText value="#{memberClassAction.classes.displayAdviser}"/>
+					<p:spacer width="10px"/>
+					<h:outputLabel value="管理员："/>
+					<h:outputText value="#{memberClassAction.classes.teacherNames}"/>
+				</p:column>
+			</p:row>
+			<p:row>
+				<p:column>
+					<h:outputLabel value="学习课程"/>
+				</p:column>
+				<p:column>
+					<h:outputText value="#{memberClassAction.classes.courseNames}"/>
+				</p:column>
+			</p:row>
+			<p:row>
+				<p:column>
+					<h:outputLabel value="基本操作"/>
+				</p:column>
+				<p:column>
+				    <p:commandLink value="[给本班级学员群发手机短信]" 
+				    	oncomplete="smsClassDialog.show()" update=":smsClassForm:smsClassDialog" rendered="#{memberClassAction.optAuth}" 
+				    	actionListener="#{memberSmsReqAction.showClassSms(memberClassAction.classID)}" />
+				    <p:spacer width="5"/>
+				    <p:commandLink value="[更新本班级学员手机]" id="searchBtn" 
+						actionListener="#{memberClassReqAction.updateMemberInClassPhone(memberClassAction.classID,memberClassAction.siteID)}"
+						rendered="#{memberClassAction.optAuth}" oncomplete="optResultAlert(args,1);" />
+				    <p:spacer width="5"/>
+				    <p:commandLink value="[沟通消息]" 
+						oncomplete="sendInnermsgsDialog.show()" update=":sendInnermsgsForm:sendInnermsgsDialog" 
+				    	actionListener="#{innerMsgReqAction.showSendInnermsg(memberClassAction.classID)}" />
+				    <p:spacer width="5"/>
+				    <h:link value="[批量生成学习计划]" outcome="/page/plan/memberList" includeViewParams="true" target="_blank">
+						<f:param name="classID" value="#{memberClassAction.classID}"/>
+					</h:link>
+				    <p:spacer width="5"/>
+				    <p:commandLink value="[面授班管理]" update=":msconfForm:msconfDialog" oncomplete="msconfDialog.show();" 
+				    	actionListener="#{msconfReqAction.update(memberClassAction.classID)}" rendered="#{memberClassAction.optAuth and !empty msconfOtherInit.isMs}"/>
+					<p:spacer width="5"/>
+				    <p:commandLink value="[给本班级学员群发邮件]" 
+						oncomplete="sendEmailDialog.show()" 
+			    		actionListener="#{sendEmailReqAction.showSendEmail(memberClassAction.classID)}" 
+			    		update=":sendEmailForm:sendEmailDialog"/>
+				    <p:spacer width="5"/>
+				    <h:link value="[班级群发邮件记录]" outcome="/page/sendEmail/sendEmailList" includeViewParams="true" target="_blank">
+						<f:param name="classID" value="#{memberClassAction.classID}"/>
+					</h:link>
+		</p:column>
+		</p:row>
+		<p:row>
+				<p:column>
+					<h:outputLabel value="查询操作"/>
+				</p:column>
+				<p:column>			
+				    <p:spacer width="5"/>
+				    <p:outputLabel value="[学员代码]" styleClass="requiredFlag"/>
+				    <p:spacer width="5"/>
+				    <p:inputText value="#{memberClassAction.searchMemberClass.userName}"/>
+				    <p:spacer width="5"/>
+				    <p:outputLabel value="[课程选择]"  styleClass="requiredFlag" />   
+				     <p:spacer width="5"/>
+					<p:selectCheckboxMenu id="uCourseID" value="#{memberClassAction.searchMemberClass.courseIDs}" style="position:absolute;width:260px;" panelStyleClass="width:260px;" filter="true" filterMatchMode="contains">
+						<f:selectItems value="#{memberClassAction.coursesList}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseID}"/>
+					</p:selectCheckboxMenu>
+					<p:spacer width="15"/>
+				    <p:commandButton value="查询" id="searchUserName" actionListener="#{memberClassAction.search}" style="margin-left:260px" />
+				</p:column>
+			</p:row>
+		</p:panelGrid>
+		<p:separator />
+		<p:dataTable scrollable="true" scrollHeight="#{memberClassAction.heighti2}" 
+			widgetVar="memberClassTable"
+			id="memberClassTable"
+			binding="#{memberClassAction.pageTable}"
+			lazy="true"
+			value="#{memberClassAction.page}" 
+			rows="50"
+			var="memberClass" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="50,100"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rowKey="#{memberClass.memberClassID}"
+			editable="true"
+			editMode="cell"
+			>
+			<p:ajax event="cellEdit" listener="#{memberClassReqAction.changeEnterTime}" update=":info"  oncomplete="reload();"/>
+			<p:column width="3%">
+				<h:outputText value="#{row+1}" />
+			</p:column>
+			<p:column headerText="学员代码" width="7%">
+				<h:outputText value="#{memberClass.userName}" />
+			</p:column>
+			
+			<p:column id="phone" headerText="手机号" width="8%"  >
+				<p:cellEditor >
+					<f:facet name="output">
+						 <h:outputText value="#{memberClass.formerTelPhone}"    name="formerTelPhone" />
+					</f:facet>
+					<f:facet name="input">
+						 <p:inputTextarea value="#{memberClass.newphonenumber}"  name="newphonenumber"  />
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+					
+			<p:column headerText="加入时间" width="6%">
+				<p:cellEditor >
+					<f:facet name="output">
+						<h:outputText value="#{memberClass.createTimeStr}" />
+					</f:facet>
+					<f:facet name="input">
+						<p:calendar size="13" value="#{memberClass.createTime}" pattern="yyyy-MM-dd"
+							navigator="true" readonlyInput="true" showButtonPanel="true">
+						</p:calendar>
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+			<p:column headerText="个性化" width="4%">
+				<p:commandLink value="查看" oncomplete="isShowPro(args);"
+					actionListener="#{memberClassReqAction.showMemberProfile(memberClass.userID)}"/>
+			</p:column>
+			<p:column headerText="电话回访" width="5%">
+				<h:link value="【#{memberClass.callSuccessDayStr}|#{memberClass.callDayStr}】" title="成功回访天数|回访天数"
+					outcome="/page/membercall/load/memberCallRecord" includeViewParams="true" target="_blank">
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="userName" value="#{memberClass.userName}"/>
+					<f:param name="classID" value="#{memberClassAction.classID}"/>
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+				</h:link><br/>
+				<p:outputLabel styleClass="notifyType-#{memberClass.notifyType}" value="#{memberClass.notifyTypeStr}"/>
+			</p:column>
+			<p:column headerText="学习报告" width="5%">
+				<h:link value="【#{memberClass.rptCreateDayStr}】" 
+					outcome="/page/report/reportList.xhtml"
+					rendered="#{memberClass.reportDateSpace == null 
+							or memberClass.rptCreateDay == null 
+							or memberClass.reportDateSpace gt memberClass.rptCreateDay}" 
+				    title="最后生成的学习报告距今天的天数" target="_blank">
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="classID" value="#{memberClass.classID}"/>
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+				</h:link>
+				<h:link style="color:red; " 
+						value="【#{memberClass.rptCreateDayStr}】" 
+						outcome="/page/report/reportList.xhtml"
+						rendered="#{memberClass.reportDateSpace != null 
+						and memberClass.rptCreateDay != null 
+						and memberClass.reportDateSpace lt memberClass.rptCreateDay}" 
+					title="最后生成的学习报告距今天的天数" target="_blank">
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="classID" value="#{memberClass.classID}"/>
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="学习记录" width="5%">
+				<h:link value="学习记录" outcome="/page/record/recordList.xhtml" includeViewParams="true" target="_blank">
+					<f:param name="userName" value="#{memberClass.userName}"/>
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="classID" value="#{memberClass.classID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="手机短信" width="5%">
+				<p:commandLink value="【#{memberClass.smsSendDayStr}】" title="最近发送短信距今的天数" update=":smsForm:smsDialog" 
+					oncomplete="smsDialog.show();" actionListener="#{memberSmsReqAction.showSms(memberClassAction.classID,memberClass.userID)}"/>
+			</p:column>
+			<p:column headerText="学员消息" width="5%">
+				<p:commandLink value="发送" update=":msgForm:msgDialog" 
+					oncomplete="msgDialog.show();" actionListener="#{membermsgReqAction.showMsg(memberClass.userID,memberClassAction.classID)}"/>
+			</p:column>
+			<p:column headerText="反馈表" width="7%">
+				<h:link value="#{memberClass.updateDateStr}" outcome="/page/memberdefine/feedbackUpdate.xhtml" includeViewParams="true" target="_blank" title="学员填写反馈表的日期">
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="userName" value="#{memberClass.userName}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="学习计划(新)" width="7%">
+				<h:link value="#{memberClass.planStatusStr}" outcome="/page/plan/showPlan" includeViewParams="true" target="_blank" style="color:red" rendered="#{empty memberClass.planStatus or memberClass.planStatus != 1}">
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="userName" value="#{memberClass.userName}"/>
+					<f:param name="classID" value="#{memberClassAction.classID}"/>
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+					<f:param name="termID" value="#{memberClass.termID}"/>
+					<f:param name="planType" value="0"/>
+				</h:link>
+				<h:link value="#{memberClass.planStatusStr}" outcome="/page/plan/showPlan" includeViewParams="true" target="_blank" rendered="#{memberClass.planStatus == 1}">
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="userName" value="#{memberClass.userName}"/>
+					<f:param name="classID" value="#{memberClassAction.classID}"/>
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+					<f:param name="termID" value="#{memberClass.termID}"/>
+					<f:param name="planType" value="0"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="预习计划(新)" width="7%">
+				<h:link value="#{memberClass.prePlanStatusStr}" outcome="/page/plan/showPrePlan" includeViewParams="true" target="_blank" style="color:red" rendered="#{empty memberClass.prePlanStatus or memberClass.prePlanStatus != 1}">
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="userName" value="#{memberClass.userName}"/>
+					<f:param name="classID" value="#{memberClassAction.classID}"/>
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+					<f:param name="termID" value="#{memberClass.termID}"/>
+					<f:param name="planType" value="1"/>
+				</h:link>
+				<h:link value="#{memberClass.prePlanStatusStr}" outcome="/page/plan/showPrePlan" includeViewParams="true" target="_blank" rendered="#{memberClass.prePlanStatus == 1}">
+					<f:param name="userID" value="#{memberClass.userID}"/>
+					<f:param name="userName" value="#{memberClass.userName}"/>
+					<f:param name="classID" value="#{memberClassAction.classID}"/>
+					<f:param name="siteID" value="#{memberClassAction.siteID}"/>
+					<f:param name="termID" value="#{memberClass.termID}"/>
+					<f:param name="planType" value="1"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="沟通消息" width="5%">
+				<p:commandLink value="发送" oncomplete="sendInnermsgDialog.show()" update=":sendInnermsgForm:sendInnermsgDialog" 
+		    		actionListener="#{innerMsgReqAction.showSendInnermsg(memberClass.userName,memberClassAction.classID)}" />
+			</p:column>
+			
+			<p:column id="remarks" headerText="备注" width="9%"    >
+				<p:cellEditor  >
+					<f:facet name="output">
+						 <h:outputText value="#{memberClass.showRemarks}"    maxlength="100" />
+					</f:facet>
+					<f:facet name="input">
+						 <p:inputTextarea value="#{memberClass.remarks}" maxlength="100" 
+						 counterTemplate="还能输入{0} 字符"  counter="display" />
+						 <h:outputText  id="display" />
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+			
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="memberClassTable" />
+		</ui:include>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="searchUserName" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 个性化页面 -->
+	<h:form id="proForm" >
+		<p:dialog id="proDialog" header="个性化信息" widgetVar="proDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/proUpdate.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<!-- 发短信页面 -->
+	<h:form id="smsForm" >
+		<p:dialog id="smsDialog" header="向学员发送短信" widgetVar="smsDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="/page/membersms/load/memberSmsSend.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<!-- 发送消息 -->
+	<h:form id="msgForm" >
+		<ui:include src="/page/membermsg/load/sendMembermsg.xhtml"/>
+	</h:form>
+	
+	<!-- 沟通消息 -->
+	<h:form id="sendInnermsgForm" >
+		<p:dialog id="sendInnermsgDialog" header="发送沟通消息" widgetVar="sendInnermsgDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="/page/innermsg/load/sendInnermsg.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<h:form id="sendInnermsgsForm" >
+		<p:dialog id="sendInnermsgsDialog" header="发送沟通消息" widgetVar="sendInnermsgsDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="/page/innermsg/load/sendInnermsgs.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<!-- 给本班级学员群发手机短信 -->
+	<h:form id="smsClassForm" >
+		<p:dialog id="smsClassDialog" header="给本班级学员群发手机短信" widgetVar="smsClassDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="/page/membersms/load/sendClassMsgs.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<!-- 发送邮件 -->
+	<h:form id="sendEmailForm" >
+		<p:dialog id="sendEmailDialog" header="群发邮件" widgetVar="sendEmailDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="/page/sendEmail/load/sendEmail.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<!-- 面授班管理 -->
+	<h:form id="msconfForm" >
+		<p:dialog id="msconfDialog" header="面授班管理" widgetVar="msconfDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="/page/msconf/load/msconfUpdate.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+	<!-- 自助练习 -->
+	<h:form id="selfForm" >
+		<p:dialog id="selfDialog" header="查看自助练习" widgetVar="selfDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/selfHelpPaperList.xhtml"/>
+		</p:dialog>
+	</h:form>
+	
+</h:body>
+</html>

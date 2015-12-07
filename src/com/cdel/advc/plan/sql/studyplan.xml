@@ -1,0 +1,92 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="studyplan">
+
+    <select id="generateStudyPlan" parameterType="Map" statementType="CALLABLE">
+    	{#{planID,mode=OUT,jdbcType=INTEGER} = 
+          CALL GenNewPlan(#{userID,mode=IN,jdbcType=INTEGER},
+         				  #{classID,mode=IN,jdbcType=INTEGER},
+         				  #{startTime,mode=IN,jdbcType=DATE},
+         				  #{endTime,mode=IN,jdbcType=DATE},
+         				  #{planType,mode=IN,jdbcType=INTEGER},
+         				  #{preCourses,mode=IN,jdbcType=NVARCHAR})}  
+    </select>
+    
+    <sql id="getPlanids_body">
+    	<if test="classID != null">
+    	select planID from advc_studyplan WITH (NOLOCK) where classID=#{classID} 
+	   		<if test="userID != null"> and userID=#{userID} </if>
+	   		<if test="planType != null"> and planType=#{planType} </if>
+   		</if>
+    </sql>
+    
+    <delete id="removeStudyPlan" parameterType="java.util.HashMap">
+    	delete from advc_studyplan_chapter where planID in (<include refid="getPlanids_body" />)
+		delete from ADVC_STUDYPLAN_LOG where planID in (<include refid="getPlanids_body" />)
+		delete from ADVC_STUDYPLAN_SPECIAL where planID in (<include refid="getPlanids_body" />)
+		delete from advc_member_chapter where planID in (<include refid="getPlanids_body" />)
+		delete from advc_studyplan where planID in (<include refid="getPlanids_body" />)
+    </delete>
+    
+    <select id="getMembersForAddPlan" parameterType="StudyPlan" resultType="StudyPlan">
+		SELECT c.*, m.userName, amd.studyTimeLong memberHours, sp.planID planID, presp.planID prePlanID,
+		mth.sunday, mth.monday, mth.tuesday, mth.wednesday, mth.thursday, mth.friday, mth.saturday, mth.totalSum, mth.maxStudyTime,
+		preMth.sunday preSunday, preMth.monday preMonday, preMth.tuesday preTuesday, preMth.wednesday preWednesday, preMth.thursday preThursday, 
+		preMth.friday preFriday, preMth.saturday preSaturday, preMth.totalSum preTotalSum, preMth.maxStudyTime preMaxStudyTime 
+		FROM ADVC_MEMBER_CLASS c WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS cl WITH (NOLOCK) ON c.classID = cl.classID
+		LEFT JOIN ADVC_MEMBER m WITH (NOLOCK) ON c.userID = m.userID
+		LEFT JOIN ADVC_MEMBER_DEFINE amd WITH (NOLOCK) ON amd.userID = c.userID
+		LEFT JOIN ADVC_MEMBER_TERM_HOURS mth WITH (NOLOCK) ON mth.userID = c.userID AND cl.termID = mth.termID AND mth.mthType = 0
+		LEFT JOIN ADVC_MEMBER_TERM_HOURS preMth WITH (NOLOCK) ON preMth.userID = c.userID AND cl.termID = preMth.termID AND preMth.mthType = 1
+		LEFT JOIN ADVC_STUDYPLAN sp WITH (NOLOCK) ON sp.userID = c.userID AND sp.classID = c.classID AND sp.planType = 0
+		LEFT JOIN ADVC_STUDYPLAN presp WITH (NOLOCK) ON presp.userID = c.userID AND presp.classID = c.classID AND presp.planType = 1
+		WHERE c.classID = #{classID} AND c.status = 1
+		<if test="planType == 0">AND sp.planID IS NULL</if>
+		<if test="planType == 1">AND presp.planID IS NULL</if>
+	</select>
+	
+	<select id="getStudyPlanByLogicID" resultType="StudyPlan"  parameterType="StudyPlan">
+        SELECT * FROM ADVC_STUDYPLAN WITH (NOLOCK) WHERE userID = #{userID} AND classID = #{classID} AND planType=#{planType}
+    </select>
+    
+	<update id="updateStudyPlanStatusByChapter">
+        UPDATE ADVC_STUDYPLAN SET planStatus=#{planStatus} 
+        WHERE planID IN(
+            SELECT DISTINCT st.planID 
+            FROM ADVC_STUDYPLAN st WITH (NOLOCK) 
+            LEFT JOIN ADVC_STUDYPLAN_CHAPTER sc WITH (NOLOCK) ON sc.planID = st.planID
+            LEFT JOIN ADVC_TEMP_CHAPTER c WITH (NOLOCK) ON c.chapterID = sc.chapterID
+            WHERE c.chapterID = #{chapterID}
+            <if test="open != null"> and c.openTime > sc.startTime</if>
+        )
+    </update>
+    
+    <update id="updateStudyPlanToNewClass">
+        UPDATE ADVC_STUDYPLAN SET classID=#{newClassID}, planStatus=#{planStatus} WHERE classID=#{classID} AND userID=#{userID}
+    </update>
+	
+	<select id="getStudyPlan" resultType="StudyPlan"  parameterType="Integer">
+        SELECT * FROM ADVC_STUDYPLAN WITH (NOLOCK) WHERE planID = #{planID} 
+    </select>
+    
+    <update id="updateStudyPlan">
+        UPDATE ADVC_STUDYPLAN
+        <set>
+        	<if test="userID !=null"> userID= #{userID},</if>
+        	<if test="classID !=null"> classID= #{classID},</if>
+        	<if test="planName !=null"> planName= #{planName:VARCHAR},</if>
+        	<if test="startDay !=null"> startDay= #{startDay},</if>
+        	<if test="endDay !=null"> endDay= #{endDay},</if>
+        	<if test="planStatus !=null"> planStatus= #{planStatus},</if>
+        	<if test="planType !=null"> planType= #{planType}</if>
+        </set>
+        WHERE planID=#{planID}      
+    </update>
+
+	<select id="getMajorIDByPlanID" resultType="Integer"  parameterType="Integer">
+        SELECT c.majorID 
+        FROM ADVC_STUDYPLAN a WITH (NOLOCK),ADVC_CLASS b WITH (NOLOCK),ADVC_CLASS_STRATEGY c WITH (NOLOCK) 
+        WHERE a.classID=b.classID and b.strategyID=c.strategyID and a.planID = #{planID} 
+    </select>
+ 
+</mapper>

@@ -1,0 +1,58 @@
+<p:panel xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" style="width:800px">
+	<p:panelGrid id="updatePanelGrid" styleClass="panelGridCenter" columns="2" columnClasses="addObjectClass, addContentClass">
+		<h:outputLabel value="学员短信状态"/>
+		<p:commandLink id="aa" value="#{memberSmsReqAction.member.smsStatusStr}" update="updatePanelGrid :info" oncomplete="smsDialog.show();" actionListener="#{memberSmsReqAction.changeSmsStatus}" rendered="#{memberSmsReqAction.optAuth}"/>
+		<h:outputText value="#{memberSmsReqAction.member.smsStatusStr}" rendered="#{!memberSmsReqAction.optAuth}"/>
+					
+		<h:outputLabel value="短信内容"/>
+		<p:inputTextarea cols="50" rows="2" autoResize="false" value="#{memberSmsReqAction.memberSms.content}"/>
+		
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:messages id="msg"/>
+				<h:inputHidden value="#{memberSmsReqAction.member.userID}"/>
+				<h:inputHidden value="#{memberSmsReqAction.member.smsStatus}"/>
+				<h:inputHidden value="#{memberSmsReqAction.member.telPhone}"/>
+				<h:inputHidden value="#{memberSmsAction.classID}"/>
+				<p:commandButton value="提交" actionListener="#{memberSmsReqAction.updateSubmit}" update="msg" oncomplete="optResult('smsDialog',args,3);"/>
+				<p:commandButton type="button" value="关闭" onclick="smsDialog.hide();"/>
+			</h:panelGroup>
+		</f:facet>
+	</p:panelGrid>
+
+	<p:dataTable scrollable="true" scrollHeight="120" 
+		widgetVar="memberSmsSendActionTable"
+		id="memberSmsSendTable" 
+		binding="#{memberSmsAction.pageTable}"
+		lazy="true"
+		value="#{memberSmsAction.page}" 
+		rows="20" 
+		var="memberSmsSend"
+		paginator="true" 
+		paginatorPosition="bottom"
+		currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+		paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+		rowsPerPageTemplate="20,50"
+		styleClass="gridTable"
+		emptyMessage="对不起，没有查询到数据！" 
+		>
+		<p:column headerText="班级" style="width:20%">
+			<h:outputText value="#{memberSmsSend.className}" />
+		</p:column>
+		<p:column headerText="内容" style="width:45%">
+			<h:outputText value="#{memberSmsSend.content}" />
+		</p:column>
+		<p:column headerText="发送时间" style="width:15%">
+			<h:outputText value="#{memberSmsSend.createTimeStr}" />
+		</p:column>
+		<p:column headerText="发送人" style="width:10%">
+			<h:outputText value="#{memberSmsSend.realName}" />
+		</p:column>
+		<p:column headerText="状态" style="width:10%">
+			<h:outputText value="#{memberSmsSend.statusStr}" />
+		</p:column>
+	</p:dataTable>
+</p:panel>

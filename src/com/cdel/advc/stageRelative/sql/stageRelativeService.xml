@@ -1,0 +1,52 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="stagerelativeservice">
+
+	<insert id="insertStageRelativeService">
+    	insert into advc_home_sms_stage_relative_service (smsStageRelID, serviceTime, templateID, status ) 
+    	values ( #{smsStageRelID}, #{serviceTime}, #{templateID}, #{status})
+    </insert>
+
+	<update id="updateStageRelativeService" parameterType="StageRelativeService">
+		update advc_home_sms_stage_relative_service 
+		<set>
+			<if test="status != null"> status = #{status}, </if>
+			<if test="serviceTime != null"> serviceTime = #{serviceTime} </if>
+		</set>
+		where templateID=#{templateID} and smsStageRelID=#{smsStageRelID}
+	</update>
+	
+	<select id="getStageRelativeServiceByObject" parameterType="StageRelativeService" resultType="StageRelativeService">
+		SELECT smsStageRelSerID 
+		FROM advc_home_sms_stage_relative_service WITH (NOLOCK) 
+		where templateID=#{templateID} and smsStageRelID=#{smsStageRelID}
+    </select>
+	
+	<delete id="deleteStageRelativeServiceMap" parameterType="java.util.HashMap" >
+		delete from advc_home_sms_stage_relative_service 
+		where smsStageRelID in(
+			select smsStageRelID from advc_home_sms_stage_relative 
+			where userID=#{userID} and classID=#{classID} 
+			<if test="stageID != null"> and stageID = #{stageID} </if>
+		)
+    </delete>
+    
+	<delete id="deleteStageRelativeService" parameterType="Integer">
+		delete from advc_home_sms_stage_relative_service 
+		where smsStageRelID in (
+			select smsStageRelID from advc_home_sms_stage_relative 
+			where planID=#{planID} 
+		)
+	</delete>
+	
+	<update id="updateService4RemoveClass" parameterType="StageRelativeService">
+		update advc_home_sms_stage_relative_service 
+		<set>
+			<if test="status != null"> status = #{status} </if>
+		</set>
+		where smsStageRelID in(
+			select smsStageRelID from advc_home_sms_stage_relative 
+			where userID=#{userID} and classID=#{classID} 
+		)
+	</update>
+	
+</mapper>

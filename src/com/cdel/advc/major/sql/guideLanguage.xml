@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="guidelanguage">
+	
+	<!-- 分页查询 -->
+	<sql id="getGuideLanguageList_body">
+		SELECT sg.guideLanguageID,sg.majorID,sg.stageID,hs.stageName,sg.serviceID,ahs.serviceName,
+			sg.promptKey,sg.promptContent,sg.status,sg.createTime, 
+			ROW_NUMBER() Over(ORDER BY sg.majorID DESC) AS rowNum
+		FROM advc_home_service_guideLanguage sg WITH (NOLOCK) 
+		LEFT JOIN advc_home_STAGE hs WITH (NOLOCK) ON hs.stageID = sg.stageID
+		LEFT JOIN advc_home_ServiceItem ahs WITH (NOLOCK) ON ahs.serviceID = sg.serviceID 
+		where hs.status = 1 AND ahs.status = 1 and sg.majorID = #{majorID}
+		<if test="stageID != null"> and sg.stageID = #{stageID}</if>
+		<if test="status != null"> and sg.status = #{status}</if>
+    </sql>
+
+    <select id="countGuideLanguage" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getGuideLanguageList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageGuideLanguage" parameterType="GuideLanguage" resultType="GuideLanguage">
+        SELECT * FROM (
+            <include refid="getGuideLanguageList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+	<select id="getGuideLanguageCount" parameterType="GuideLanguage" resultType="Integer">
+		SELECT COUNT(*) FROM advc_home_service_guideLanguage WITH (NOLOCK) 
+		WHERE majorID = #{majorID} AND stageID = #{stageID} AND serviceID = #{serviceID} 
+		AND promptKey = #{promptKey} and status=1 
+		<if test="guideLanguageID != null"> and guideLanguageID != #{guideLanguageID} </if>
+    </select>
+
+    <delete id="deleteGuideLanguageByObject"  >
+    	DELETE FROM advc_home_service_guideLanguage WHERE guideLanguageID = #{guideLanguageID}
+    </delete>
+    
+   	<select id="getGuideLanguage" parameterType="Integer" resultType="GuideLanguage">
+		SELECT sg.guideLanguageID,sg.majorID,sg.stageID,hs.stageName,sg.serviceID,ahs.serviceName,
+			sg.promptKey,sg.promptContent,sg.status,sg.createTime,hp.beginTime,hp.endTime,hp.promptID 
+		FROM advc_home_service_guideLanguage sg WITH (NOLOCK) 
+		LEFT JOIN advc_home_STAGE hs WITH (NOLOCK) ON hs.stageID = sg.stageID
+		LEFT JOIN advc_home_ServiceItem ahs WITH (NOLOCK) ON ahs.serviceID = sg.serviceID
+		LEFT JOIN dbo.advc_home_promptTime hp WITH (NOLOCK) ON hp.guideLanguageID = sg.guideLanguageID
+		WHERE sg.guideLanguageID = #{guideLanguageID}
+    </select>
+    
+    <!--新增一个 服务项 引导语   -->
+    <insert id="insertGuideLanguage">
+		INSERT INTO advc_home_service_guideLanguage 
+		(majorID,stageID,serviceID,promptKey,promptContent,status,createTime,createID)
+		VALUES(#{majorID},#{stageID},#{serviceID},#{promptKey},#{promptContent},#{status},#{createTime},#{createID})
+		<selectKey keyProperty="guideLanguageID" resultType="int">
+			SELECT @@IDENTITY AS guideLanguageID 
+		</selectKey>
+    </insert>
+
+	<update id="updateGuideLanguage" parameterType="GuideLanguage">
+		UPDATE advc_home_service_guideLanguage 
+        <set>
+        	<if test="promptContent != null and promptContent != ''">promptContent = #{promptContent},</if>
+        	<if test="status != null">status = #{status}</if>
+        </set>
+        WHERE 
+			guideLanguageID = #{guideLanguageID}
+    </update>
+    
+</mapper>

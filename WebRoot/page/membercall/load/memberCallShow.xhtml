@@ -1,0 +1,106 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui" id="showDialog" widgetVar="showDialog" resizable="false" showEffect="fade" hideEffect="fade" >
+	<p:panelGrid id="showMemberCall" rendered="#{memberCallReqAction.showDialogShow}">
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="回访状态"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{memberCallReqAction.memberCall.callStatusStr}"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="学员姓名"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{memberCallReqAction.memberCall.userName}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="班级编号"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{memberCallReqAction.memberCall.classCode}"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="记录人"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{memberCallReqAction.memberCall.teacherName}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="回访时间"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{memberCallReqAction.memberCall.callTimeStr}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="学习状态"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{memberCallReqAction.memberCall.studyStatus}"/>
+			</p:column>
+		</p:row>	
+		
+		<c:if test="#{not empty memberCallReqAction.memberCall.reservedDate}">
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="预约时间"/>
+				</p:column>
+				<p:column colspan="3" styleClass="maxLength">
+					<h:outputText value="#{memberCallReqAction.memberCall.reservedDateStr}"/>
+				</p:column>
+			</p:row>
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="预约时间段"/>
+				</p:column>
+				<p:column colspan="3" styleClass="maxLength">
+					<h:outputText value="#{memberCallReqAction.memberCall.reservedTimeStr}"/>
+				</p:column>
+			</p:row>
+			<p:row>
+				<p:column styleClass="addObjectMinClass2">
+					<h:outputLabel value="预约备注"/>
+				</p:column>
+				<p:column colspan="3" styleClass="maxLength">
+					<h:outputText value="#{memberCallReqAction.memberCall.reserveRemark}"/>
+				</p:column>
+			</p:row>
+		</c:if>
+
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="个性要求"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{memberCallReqAction.memberCall.personalAsk}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="意见反馈"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{memberCallReqAction.memberCall.feedback}"/>
+			</p:column>
+		</p:row>	
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="showDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

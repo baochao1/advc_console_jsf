@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学习时长平均值</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel value="课程名称"/>
+			<h:panelGroup style="display:block;">
+				<p:autoComplete value="#{coursetimeLongAction.searchCoursetimeLong.courseName}" completeMethod="#{comRequestMethod.completeCourseName}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseName}" maxResults="30" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sSearachCountDate" value="平均时长日期"/>
+			<p:calendar id="sSearachCountDate" value="#{coursetimeLongAction.searchCoursetimeLong.dCountDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+						
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{coursetimeLongAction.search}" rendered="#{coursetimeLongAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{coursetimeLongAction.heighti}" 
+			widgetVar="coursetimeLongTable"
+			id="coursetimeLongList"
+			binding="#{coursetimeLongAction.pageTable}"
+			lazy="true"
+			value="#{coursetimeLongAction.coursetimeLongPage}" 
+			rows="20"
+			var="coursetimeLong" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} / {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			editable="true" 
+			editMode="cell" 
+			>
+			<p:ajax event="cellEdit" listener="#{coursetimeLongReqAction.update}" update=":info" />
+			<p:column headerText="课程代码" width="12%">
+				<h:outputText value="#{coursetimeLong.courseCode}" />
+			</p:column>		
+			<p:column headerText="课程名称" width="19%">
+				<h:outputText value="#{coursetimeLong.courseName}" />
+			</p:column>
+			<p:column headerText="平均时长日期" width="14%">
+				<h:outputText value="#{coursetimeLong.countDate}" />
+			</p:column>
+			<p:column headerText="平均时长(分钟)" width="15%">
+				<p:cellEditor>
+					<f:facet name="output">
+						<h:outputText value="#{coursetimeLong.timeLong}" title="单击修改"/>
+					</f:facet>
+					<f:facet name="input">
+						<p:inputText value="#{coursetimeLong.timeLong}" style="width:20px;"/>
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+			<p:column headerText="操作" width="15%">
+				<p:commandLink value="重新统计" 
+				actionListener="#{coursetimeLongReqAction.statAgain(coursetimeLong.timeLongID,coursetimeLong.courseID,coursetimeLong.countDate)}">
+				</p:commandLink>&nbsp;
+				<p:commandLink value="删除" onstart="return confirmDel();" actionListener="#{coursetimeLongReqAction.delete(coursetimeLong.timeLongID)}" />
+			</p:column>	
+			
+			<p:column headerText="统计时间" width="17%">
+				<h:outputText value="#{coursetimeLong.createTimeStr}" />
+			</p:column>
+			<p:column headerText="修改人" width="8%">
+				<h:outputText value="#{coursetimeLong.teacherName}" />
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="coursetimeLongList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+</h:body>
+</html>

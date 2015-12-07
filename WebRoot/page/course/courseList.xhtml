@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function doCopyChapter(){
+		return (confirm("如果当前课程已有计划项，此操作会导致原来的计划项被覆盖，确定继续吗？"));
+	}
+	function oloverWarn(args){
+		if(null != args){
+			if(null != args.warnmsg){
+				copyDialog.hide();
+			alert(args.warnmsg);
+			}
+		}
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(courseAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="辅导名称" />
+			<p:selectOneMenu id="sMajorID" value="#{courseAction.searchCourse.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			<h:outputLabel for="sCourseName" value="课程名称" />
+			<h:panelGroup style="display:block;">
+				<p:autoComplete id="sCourseName" value="#{courseAction.searchCourse.courseName}" completeMethod="#{comRequestMethod.completeCourseName}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseName}" maxResults="30" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sCourseType" value="课程类别" />
+			<p:selectOneMenu id="sCourseType" style="width:200px;" panelStyleClass="minLength" value="#{courseAction.searchCourse.courseType}">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{courseReqAction.courseTypeMap.entrySet()}" var="courseType" itemLabel="#{courseType.value}" itemValue="#{courseType.key}"/>
+			</p:selectOneMenu>
+			<h:outputLabel for="sCourseCode" value="课程代码" />
+			<p:inputText id="sCourseCode" value="#{courseAction.searchCourse.courseCode}" styleClass="minLength"/>
+			<h:outputLabel for="sCourseYear" value="课程年份" />
+			<p:selectOneMenu id="sCourseYear" value="#{courseAction.searchCourse.courseYear}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{courseReqAction.years}" var="years" itemLabel="#{years}" itemValue="#{years}"/>
+			</p:selectOneMenu>			
+			<h:outputLabel for="sStatus" value="状态" />
+			<p:selectOneMenu id="sStatus" value="#{courseAction.searchCourse.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{courseReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{courseAction.search}" rendered="#{courseAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="loadDialog.show();" 
+				actionListener="#{courseAction.add}" rendered="#{courseAction.optAuth}" update=":loadForm:loadDialog" />
+			<p:menuitem value="教务课程管理" icon="ui-icon-gear" onclick="loadTabPage4Child('qzCourse','教务课程管理');" 
+				rendered="#{courseAction.optAuth}"/>
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{courseAction.heighti2}" 
+			widgetVar="courseTable"
+			id="courseList"
+			binding="#{courseAction.pageTable}"
+			lazy="true"
+			value="#{courseAction.coursePage}" 
+			rows="20"
+			var="course" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{courseAction.viewAuth}"
+			>
+			<p:column headerText="操作" width="5%">
+				<p:rowToggler />
+			</p:column>
+			<p:rowExpansion>
+			<p:panelGrid columns="2" style="width:400px; text-align:left;">
+				<h:outputText value="计划项" />
+				<h:panelGroup style="display:block;">
+					<h:link value="查看" outcome="tempChapterList" includeViewParams="true" target="_blank">
+						<f:param name="courseID" value="#{course.courseID}"/>
+						<f:param name="courseName" value="#{course.courseName}"/>
+					</h:link>
+					<p:spacer width="5px"/>
+					<p:commandLink value="复制" oncomplete="copyDialog.show();" actionListener="#{tempChapterReqAction.copy(course.courseID,course.majorID)}" update=":copyForm:copyDialog" rendered="#{courseAction.optAuth}"/>
+				</h:panelGroup>
+				<h:outputText value="操作" />
+				<h:panelGroup style="display:block;">
+					<p:commandLink id="tStatus" value="#{course.statusStr}" update=":info tStatus" actionListener="#{courseReqAction.changeStatus(course.courseID,course.courseCode,course.status)}" rendered="#{courseAction.optAuth}"/>
+					<h:outputText value="#{course.statusStr}" rendered="#{!courseAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="查看" oncomplete="showDialog.show();" actionListener="#{courseReqAction.show(course.courseID)}" update=":showForm:showDialog" rendered="#{courseAction.viewAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="修改" oncomplete="loadDialog.show();" actionListener="#{courseAction.update(course.courseID)}" update=":loadForm:loadDialog" rendered="#{courseAction.optAuth}"/>
+					<p:spacer width="5px"/>
+					<p:commandLink value="预习课程" oncomplete="preDialog.show();" actionListener="#{courseReqAction.updatePre(course.courseID,course.majorID)}" update=":preForm:preDialog" rendered="#{course.isPre==2 and courseAction.optAuth}" />
+				</h:panelGroup>
+			</p:panelGrid>
+			</p:rowExpansion>
+			<p:column headerText="ID" width="6%">
+				<h:outputText value="#{course.courseID}"/>
+			</p:column>
+			<p:column headerText="辅导名称" width="22%">
+				<h:outputText value="#{course.majorName}" title="#{course.majorName}"/>
+			</p:column>
+			<p:column headerText="课程名称" width="20%">
+				<h:outputText value="#{course.courseName}" title="#{course.courseName}"/>
+			</p:column>
+			<p:column headerText="课程类别" width="10%">
+				<h:outputText value="#{course.courseTypeStr}"/>
+			</p:column>
+			<p:column headerText="课程代码" width="15%">
+				<h:outputText value="#{course.courseCode}" title="#{course.courseCode}"/>
+			</p:column>
+			<p:column headerText="课程年份" width="10%">
+				<h:outputText value="#{course.courseYear}"/>
+			</p:column>
+			<p:column headerText="创建时间" width="12%">
+				<h:outputText value="#{course.createTimeStr}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="courseList" />
+		</ui:include>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value=":copyForm:copyBtn" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 查看页面 -->
+	<h:form id="showForm" >
+		<ui:include src="load/courseShow.xhtml"/>
+	</h:form>
+	<!-- 添加/修改页面 -->
+	<h:form id="loadForm" >
+		<p:dialog id="loadDialog" header="#{(courseAction.flag==0)?'添加':'修改'}" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade" height="350">
+			<ui:include src="#{courseAction.url}"/>
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:messages id="msg"/>
+					<p:commandButton value="#{courseAction.flag==0?'添加':'修改'}" actionListener="#{courseAction.updateSubmit}" update="msg" oncomplete="optResult('loadDialog',args,'#{courseAction.flag}');"/>
+					<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+				</h:panelGroup>
+			</f:facet>
+		</p:dialog>
+	</h:form>
+	<!-- 预习课程页面 -->
+	<h:form id="preForm" >
+		<p:dialog id="preDialog" header="关联预习课程" widgetVar="preDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/coursePre.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 复制计划项页面 -->
+	<h:form id="copyForm" >
+		<p:dialog id="copyDialog" header="复制计划项" widgetVar="copyDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/tempChapterCopy.xhtml"/>
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

@@ -1,0 +1,37 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+	
+	<h:outputLabel value="试卷名称">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText value="#{gdbTestPaperReqAction.addPaper.paperName}" styleClass="minLength"/>
+	
+	<h:outputLabel value="试卷类型">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneRadio value="#{gdbTestPaperReqAction.addPaper.paperType}" >
+		<f:selectItems value="#{gdbTestPaperReqAction.paperTypes.entrySet()}" var="paperType" itemLabel="#{paperType.value}" itemValue="#{paperType.key}"/>
+	</p:selectOneRadio>
+	
+	<h:outputLabel value="测试时间" >
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:calendar value="#{gdbTestPaperReqAction.addPaper.testTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+	
+	<h:outputLabel value="试卷描述">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputTextarea autoResize="false" value="#{gdbTestPaperReqAction.addPaper.paperDesc}" cols="50" rows="5"/>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{gdbTestPaperReqAction.flag}"/>
+			<h:inputHidden value="#{gdbTestPaperReqAction.addPaper.id}"/>
+			<p:commandButton value="添加" actionListener="#{gdbTestPaperReqAction.updateSubmit}" update="msg"/>
+			<p:commandButton type="button" value="关闭" onclick="addDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

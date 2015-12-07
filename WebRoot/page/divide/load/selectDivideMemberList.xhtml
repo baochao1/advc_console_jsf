@@ -1,0 +1,12 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid"   columnClasses="addObjectClass, addContentClass">
+			<p:row>
+					<p:column>
+					      <p:selectOneRadio id="userID" value="#{divideAction.searchDivide.userID}" >
+				             <f:selectItems value="#{comRequestMethod.getMemberListByName(divideAction.searchDivide.userName)}" var="member" itemLabel="#{member.showUserName}" itemValue="#{member.userID}"/>
+						</p:selectOneRadio>	
+					</p:column>
+			</p:row>
+</p:panelGrid>

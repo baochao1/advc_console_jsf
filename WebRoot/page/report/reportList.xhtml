@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统--学习报告</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl autoUpdate="true" life="3000" />
+	
+	<h:form id="searchForm">
+		<p:panel id="dataTablePanel">	
+			<p:panelGrid columns="4" style="width:100%; text-align:left;">
+				
+				<h:outputLabel for="sStartTime" value="开始时间" />
+				<p:calendar id="sStartTime" pattern="yyyy-MM-dd" value="#{reportAction.initStartTime}" navigator="true" readonlyInput="true" showButtonPanel="true" />
+	
+				<h:outputLabel for="sEndTime" value="结束时间" />
+				<p:calendar id="sEndTime" pattern="yyyy-MM-dd" value="#{reportReqAction.report.endTime}" navigator="true" readonlyInput="true" showButtonPanel="true" />
+			
+				<f:facet name="footer">
+					<h:panelGroup style="display:block; text-align:center">
+						<p:confirmDialog widgetVar="cd1" severity="alert" message="确定生成报告？" header="信息提示">
+							<p:commandButton value="确定" id="createBtn" actionListener="#{reportReqAction.addReport}" onclick="cd1.hide()"/>
+							<p:commandButton value="取消" onclick="cd1.hide();" type="button" />
+						</p:confirmDialog>
+						<p:commandButton value="生成" type="button" onclick="cd1.show()" rendered="#{reportAction.optAuth}" />
+					</h:panelGroup>
+				</f:facet>	
+			</p:panelGrid>
+
+			<p:dataTable scrollable="true" scrollHeight="#{reportAction.heighti2}" 
+				id="reportTable"
+				binding="#{reportAction.pageTable}"
+				lazy="true"
+				value="#{reportAction.page}" 
+				rows="20"
+				var="report" 
+				paginator="true" 
+				paginatorPosition="bottom"
+				currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+				paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				rowsPerPageTemplate="20,50"
+				styleClass="gridTable" 
+				emptyMessage="对不起，没有查询到数据！"
+				rowKey="#{report.reportID}"
+				>
+				<p:column headerText="报告主题" width="22%">
+					<h:outputText value="#{report.reportTitle}" title="#{report.reportTitle}"/>
+				</p:column>
+				<p:column headerText="开始时间" width="10%">
+					<h:outputText value="#{report.startTimeStr}"/>
+				</p:column>
+				<p:column headerText="结束时间" width="10%">
+					<h:outputText value="#{report.endTimeStr}"/>
+				</p:column>
+				<p:column headerText="申请时间" width="15%">
+					<h:outputText value="#{report.applyTimeStr}"/>
+				</p:column>
+				<p:column headerText="评语教师" width="10%">
+					<h:outputText value="#{report.teacherName}"/>
+				</p:column>
+				<p:column headerText="评语时间" width="15%">
+					<h:outputText value="#{report.remarkTimeStr}"/>
+				</p:column>
+				<p:column headerText="状态 " width="5%">
+					<p:commandLink process="@this" value="#{report.statusStr}" 
+						update="reportTable" actionListener="#{reportReqAction.updateStatus(report.reportID, report.status)}" rendered="#{reportAction.optAuth}" />
+					<h:outputText value="#{report.statusStr}" rendered="#{!reportAction.optAuth}" />
+				</p:column>
+				<p:column headerText="查看 " width="5%">
+					<h:link value="查看" outcome="showReport.xhtml" target="_blank">
+						<f:param name="reportID" value="#{report.reportID}" />
+						<f:param name="siteID" value="#{reportAction.siteID}"/>
+					</h:link>
+				</p:column>
+				<p:column headerText="删除 " width="8%">
+					<p:commandButton value="删除" onstart="return confirmDel();"
+						actionListener="#{reportReqAction.deleteReport(report.reportID)}"
+						update="reportTable" />
+				</p:column>
+			</p:dataTable>
+		</p:panel>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="createBtn" />
+		</ui:include>
+	</h:form>
+</h:body>
+</html>

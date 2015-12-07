@@ -1,0 +1,36 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" columns="1" columnClasses="addContentClass">
+	<p:dataTable 
+		id="classNoList"
+		value="#{classNoAction.classNoList}" 
+		var="classNo" 
+		emptyMessage="对不起，没有查询到数据！"
+		rowIndexVar="row"
+		editable="true" 
+		editMode="cell" 
+		>
+		<p:ajax event="cellEdit" listener="#{classNoAction.updateClassNo(row,classNoAction.majorID)}" update=":info" />
+		<p:column headerText="类别">
+			<h:outputText value="#{classNo.classTypeName}" />
+		</p:column>
+		<p:column headerText="班级数">
+			<p:cellEditor>
+				<f:facet name="output">
+					<h:outputText value="#{classNo.currClassNo}" title="单击修改"/>
+				</f:facet>
+				<f:facet name="input">
+					<p:inputText value="#{classNo.currClassNo}" style="width:20px;"/>
+				</f:facet>
+			</p:cellEditor>
+		</p:column>
+	</p:dataTable>
+
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="classNoDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+
+</p:panelGrid>

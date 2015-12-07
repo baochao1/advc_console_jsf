@@ -1,0 +1,80 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="loadDialog" header="修改" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade" height="350" position="top">
+	<p:panelGrid id="updatePanelGrid" >
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="网站选择" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<p:selectOneMenu value="#{sitenoticeReqAction.updateSitenotice.siteID}" style="width:200px;" panelStyleClass="minLength" >
+					<f:selectItems value="#{sitenoticeAction.websiteList}" var="website" itemLabel="#{website.siteName}" itemValue="#{website.siteID}"/>
+				</p:selectOneMenu>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="公告类别">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<p:selectOneMenu value="#{sitenoticeReqAction.updateSitenotice.type}" style="width:200px;" panelStyleClass="minLength" >
+					<f:selectItems value="#{sitenoticeReqAction.type.entrySet()}" var="t" itemLabel="#{t.value}" itemValue="#{t.key}"/>
+				</p:selectOneMenu>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="公告标题">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:inputText value="#{sitenoticeReqAction.updateSitenotice.subject}" styleClass="minLength" />
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="公告开始时间" >
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<p:calendar value="#{sitenoticeReqAction.updateSitenotice.startTime}" pattern="yyyy-MM-dd HH:mm" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="公告结束时间">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<p:calendar value="#{sitenoticeReqAction.updateSitenotice.endTime}" pattern="yyyy-MM-dd HH:mm" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="公告内容">
+					<span class="requiredFlag">*</span>
+				</h:outputLabel>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:editor value="#{sitenoticeReqAction.updateSitenotice.content}" id="studyAsk1" height="200"/>
+			</p:column>
+		</p:row>
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{sitenoticeReqAction.flag}"/>
+			<h:inputHidden value="#{sitenoticeReqAction.updateSitenotice.siteNoticeID}"/>
+			<p:commandButton value="#{sitenoticeReqAction.flag == 0 ? '添加' : '修改'}" actionListener="#{sitenoticeReqAction.addSubmit()}"  update="msg" oncomplete="optResult('loadDialog',args,'#{sitenoticeReqAction.flag}');"/>
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

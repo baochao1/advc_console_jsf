@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>批量生成计划</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000"/>
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(batchGenPlanAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:panelGrid id="searchPanel" columns="4" style="width:100%; text-align:left;">
+		
+			<h:outputLabel for="sMajorID" value="辅导"  />
+			<p:selectOneMenu widgetVar="sMajorID" id="sMajorID" value="#{batchGenPlanAction.majorID}" 
+				style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sPlanType" value="计划类型"  />
+			<p:selectOneRadio widgetVar="sPlanType"  id="sPlanType" value="#{batchGenPlanAction.planType}" 
+				style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItems value="#{batchGenPlanReqAction.planTypes.entrySet()}" 
+					var="t" itemLabel="#{t.value}" itemValue="#{t.key}"/>
+			</p:selectOneRadio>
+			
+			<h:outputLabel value="删除班级"  />
+			<p:selectOneMenu value="#{batchGenPlanReqAction.delClassNum}" style="width:200px;" panelStyleClass="minLength" rendered="#{batchGenPlanAction.canDelete}">
+				<f:selectItem itemLabel="删除50个班级" itemValue="0"/>
+				<f:selectItem itemLabel="删除100个班级" itemValue="1"/>
+				<f:selectItem itemLabel="删除全部班级" itemValue="2"/>
+			</p:selectOneMenu>
+			
+			<p:outputLabel rendered="#{batchGenPlanAction.canDelete}" />
+			<p:outputLabel rendered="#{batchGenPlanAction.canDelete}" />
+
+        	<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton widgetVar="genPlanButton" value="生成计划" update=":info"
+						actionListener="#{batchGenPlanAction.checkGenPlans(0)}"/>
+					<p:commandButton widgetVar="delButton" value="删除计划" update=":info"
+						actionListener="#{batchGenPlanAction.checkGenPlans(1)}" rendered="#{batchGenPlanAction.canDelete}" />
+				</h:panelGroup>
+			</f:facet>
+		</p:panelGrid>
+	</p:panel>
+	
+	<p:confirmDialog widgetVar="cd" severity="alert" message="确定生成当前条件下的计划?" header="提示">
+		<p:commandButton value="确定" async="true"
+			onstart="genPlanButton.disable();cd.hide();messageHandle.start();" oncomplete="messageHandle.stop();"
+			actionListener="#{batchGenPlanReqAction.genPlans}"/>
+		<p:commandButton value="取消" onclick="cd.hide();" type="button" />
+	</p:confirmDialog>
+	
+	<p:confirmDialog widgetVar="cd1" severity="alert" message="确定删除计划?" header="提示">
+		<p:commandButton id="delButton" value="确定" async="true" onstart="delButton.disable();cd1.hide();"
+			actionListener="#{batchGenPlanReqAction.deletePlans}" oncomplete="optResultAlert(args,2);"/>
+		<p:commandButton value="取消" onclick="cd1.hide();" type="button" />
+	</p:confirmDialog>
+	
+	<p:poll autoStart="false" widgetVar="messageHandle" update="messagesTable" interval="1" />
+	
+	<p:outputPanel id="messagesTable" autoUpdate="true">
+		<p:dataTable scrollable="true" scrollHeight="#{batchGenPlanAction.heighti2 }" 
+			value="#{batchGenPlanReqAction.messages}" var="m" rendered="#{!empty batchGenPlanReqAction.messages}">
+			<p:column headerText="日志信息">
+				<h:outputText value="#{m}" escape="false" />
+			</p:column>
+		</p:dataTable>
+	</p:outputPanel>
+	<ui:include src="/page/common/blockUI2.xhtml">
+		<ui:param name="tableID" value="delButton" />
+	</ui:include>
+	</h:form>
+	
+</h:body>
+</html>

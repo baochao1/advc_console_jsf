@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>教务课程管理</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+		function selectMajorStageByMajorjs(majorID){
+			selectMajorStageByMajor([{name:'majorID', value:majorID},{name:'updateName', value:'courseTimeForm:uStageID4CourseTime'}]);
+		}
+	</script>
+	<style>
+		.ui-selectoneradio td{ border: none;  padding: 0 3px;}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000"/>
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(qzCourseAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:remoteCommand name="selectMajorStageByMajor" actionListener="#{majorStageOther.selectMajorStageByMajor2}" />
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="所属辅导" />
+			<p:selectOneMenu id="sMajorID" value="#{qzCourseAction.searchQzCourse.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择辅导--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sStatus" value="状态" />
+			<p:selectOneMenu id="sStatus" value="#{qzCourseAction.searchQzCourse.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{qzCourseReqAction.status.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{qzCourseAction.search}" rendered="#{qzCourseAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{qzCourseAction.heighti2}" 
+			widgetVar="qzCourseList"
+			id="qzCourseList"
+			binding="#{qzCourseAction.pageTable}"
+			lazy="true"
+			value="#{qzCourseAction.page}" 
+			rows="20"
+			var="qzCourse" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="课程ID" width="8%">
+				<h:outputText value="#{qzCourse.courseID}" />
+			</p:column>
+			<p:column headerText="课程名称" width="20%">
+				<h:outputText value="#{qzCourse.courseName}" />
+			</p:column>
+			<p:column headerText="专业名称" width="20%">
+				<h:outputText value="#{qzCourse.businessName}" />
+			</p:column>
+			<p:column headerText="辅导名称" width="20%">
+				<h:outputText value="#{qzCourse.majorName}" />
+			</p:column>
+			<p:column headerText="状态" width="7%">
+				<h:outputText value="#{qzCourse.statusStr}" />
+			</p:column>
+			<p:column headerText="操作" width="25%">
+				<h:link value="学习建议" outcome="serviceTextSet.xhtml" target="_blank">
+					<f:param value="#{qzCourse.majorID}" name="majorID"/>
+					<f:param value="#{qzCourse.courseID}" name="courseID"/>
+				</h:link>
+				<p:spacer width="5"/>
+				
+				<p:commandLink value="听课时长" oncomplete="courseTimeDialog.show();" onstart="selectMajorStageByMajorjs(#{qzCourse.majorID })"
+					actionListener="#{courseTimeReqAction.courseTimeShow(qzCourse.courseID)}"
+					update=":courseTimeForm:courseTimeDialog" rendered="#{serviceTextAction.optAuth}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="qzCourseList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 听课时长页面 -->
+	<h:form id="courseTimeForm" >
+		<ui:include src="load/courseTimeShow.xhtml"/>
+	</h:form>
+</h:body>
+</html>

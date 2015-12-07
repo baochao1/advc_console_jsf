@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+
+    <select id="getMemberList" resultType="Member" parameterType="Member">
+   	    SELECT 
+   	    	AM.*, MC.classID 
+   	    FROM 
+   	    	ADVC_MEMBER AM WITH (NOLOCK) 
+   	    LEFT JOIN 
+   	    	ADVC_MEMBER_CLASS MC WITH (NOLOCK) ON MC.userID = AM.userID 
+   	    LEFT join ADVC_CLASS c WITH (NOLOCK) on MC.classID=c.classID
+		LEFT join ADVC_TESTTERM t WITH (NOLOCK) on t.termID=c.termID
+		LEFT join ADVC_MAJOR m WITH (NOLOCK) on m.majorID=t.majorID
+   	    WHERE MC.status = 1    
+   	    <if test="majorID != null"> AND t.majorID =#{majorID} </if>
+   	    <if test="classID != null"> AND MC.classID =#{classID} </if>
+   	    <if test="courseIDStr != null and courseIDStr != ''"> AND ','+MC.studyCourse+',' like '%,'+#{courseIDStr}+',%' </if>
+   	    <if test="smsStatus != null"> AND AM.smsStatus =#{smsStatus}</if>
+    </select>
+  
+    <select id="getMember" resultType="Member">
+		SELECT userID, siteID, userName, realName, gener, brithday, telPhone, smsStatus,address
+        FROM ADVC_MEMBER WITH (NOLOCK) WHERE userID = #{userID}
+    </select>
+    <!-- 从main库中查询Member学员对象 -->
+     <select id="getMemberByNameFromMain" resultType="Member">
+        select uid as userID, Email AS email, FullName AS realName, Birthday AS birthdayStr, Phone AS telPhone 
+        from member where memberid = #{userName}
+    </select>
+    <!--  从教务库中查询  Member学员对象   -->
+    <select id="getMemberByName" resultType="Member">
+		SELECT userID, siteID, userName, realName, gener, brithday, telPhone, smsStatus,address
+        FROM ADVC_MEMBER WITH (NOLOCK) WHERE userName = #{userName} 
+    </select>
+     <select id="getMemberByUserID" resultType="Member">
+		SELECT userID, siteID, userName, realName, gener, brithday, telPhone, smsStatus,address
+        FROM ADVC_MEMBER WITH (NOLOCK) WHERE userID = #{userID} 
+    </select>
+    
+    <select id="getMemberList4I" parameterType="Integer" resultType="Member">
+		SELECT M.* 
+		FROM ADVC_MEMBER_CLASS MC WITH (NOLOCK) 
+		LEFT JOIN ADVC_MEMBER M WITH (NOLOCK) ON M.userID = MC.userID 
+		WHERE MC.classID=#{classID} AND MC.status=1 
+    </select>
+    
+    <update id="updateMember" parameterType="Member">
+		UPDATE ADVC_MEMBER
+        <set>
+			<if test="siteID != null"> siteID=#{siteID}, </if>
+			<if test="userName != null"> userName=#{userName}, </if>
+			<if test="realName != null and realName != ''"> realName=#{realName}, </if>
+			<if test="gener != null"> gener=#{gener}, </if>
+			<if test="brithday != null"> brithday=#{brithday}, </if>
+			<if test="telPhone != null"> telPhone=#{telPhone}, </if>
+			<if test="address != null"> address=#{address}, </if>
+			<if test="smsStatus != null"> smsStatus=#{smsStatus} </if>
+		</set>
+		where userID=#{userID}
+    </update>
+    
+	<insert id="insertMember" parameterType="Member">
+        INSERT INTO ADVC_MEMBER ( 
+            userID, siteID, userName, createTime, status, 
+            <trim prefix="" suffixOverrides=",">
+				<if test="realName != null and realName != ''"> realName ,</if>
+				<if test="gener != null"> gener ,</if>
+				<if test="brithday != null"> brithday ,</if>
+				<if test="telPhone != null and telPhone != ''"> telPhone ,</if>
+				<if test="address != null and address != ''"> address, </if>
+				<if test="smsStatus != null and smsStatus != ''"> smsStatus, </if>
+				<if test="email != null and email != ''"> email, </if>
+				<if test="memberSatuts != null and memberSatuts != ''"> memberSatuts </if>
+			</trim>
+        )
+        VALUES (
+            #{userID}, #{siteID}, #{userName}, #{createTime}, #{status}, 
+            <trim prefix="" suffixOverrides=",">
+				<if test="realName != null and realName != ''"> #{realName} ,</if>
+				<if test="gener != null"> #{gener} ,</if>
+				<if test="brithday != null"> #{brithday} ,</if>
+				<if test="telPhone != null and telPhone != ''"> #{telPhone} ,</if>
+				<if test="address != null and address != ''"> #{address} ,</if>
+				<if test="smsStatus != null"> #{smsStatus} ,</if>
+				<if test="email != null and email != ''"> #{email} ,</if>
+				<if test="memberSatuts != null and memberSatuts != ''"> #{memberSatuts} </if>
+			</trim>
+        )
+    </insert>
+
+</mapper>

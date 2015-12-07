@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>班级下的互助答疑</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(faqAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="所属辅导" rendered="#{faqAction.from == ''}" />
+			<p:selectOneMenu id="sMajorID" value="#{faqAction.filterFaq.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" rendered="#{faqAction.from == ''}" >
+				<p:ajax event="change" update=":searchForm:sClassesID" listener="#{classesOther.changeMajorID}" />
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="m" itemLabel="#{m.majorName}" itemValue="#{m.majorID}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel for="sClassesID" value="所属班级" rendered="#{faqAction.from == ''}" />
+			<p:selectOneMenu id="sClassesID" value="#{faqAction.filterFaq.classID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains" rendered="#{faqAction.from == ''}" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{classesOther.classList}" var="c" itemLabel="#{c.className}" itemValue="#{c.classID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sStatus" value="状态" />				   
+			<p:selectOneMenu id="sStatus" value="#{faqAction.filterFaq.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{faqAction.statuss.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sFaqTitle" value="提问主题" />
+			<p:inputText id="sFaqTitle" value="#{faqAction.filterFaq.faqTitle}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sStartDate" value="开始时间" />
+			<p:calendar id="sStartDate" value="#{faqAction.filterFaq.startDate}" pattern="yyyy-MM-dd HH:mm" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+			
+			<h:outputLabel for="sEndDate" value="结束时间" />
+			<p:calendar id="sEndDate" value="#{faqAction.filterFaq.endDate}" pattern="yyyy-MM-dd HH:mm" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" update="faqTable" actionListener="#{faqAction.search}" />
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="导出Excel" id="exportBtn" icon="ui-icon-newwin" oncomplete="exportXls(args);" 
+				actionListener="#{faqAction.exportXls}" rendered="#{faqAction.from == ''}" update=":info" />
+		</p:menubar>
+		<p:commandButton id="exportXlsBtn" ajax="false" value="Excel" style="display:none;" rendered="#{faqAction.from == ''}" >
+			<p:dataExporter type="xls" target="faqTable" fileName="faqList" />
+		</p:commandButton>
+		<p:dataTable scrollable="true" scrollHeight="#{faqAction.heighti2}" 
+			widgetVar="faqTable"
+			id="faqTable"
+			binding="#{faqAction.pageTable}"
+			lazy="true"
+			value="#{faqAction.page}" 
+			rows="20"
+			var="faq" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rowKey="#{faq.faqID}"
+			>
+			<p:column width="15%" >
+				<f:facet name="header">
+					<h:outputText value="班级名称" />
+				</f:facet>
+				<h:outputText value="#{faq.className}" title="#{faq.className}"/>
+			</p:column>
+			<p:column width="15%" sortBy="#{faq.courseName}">
+				<f:facet name="header">
+					<h:outputText value="课程名称" />
+				</f:facet>
+				<h:outputText value="#{faq.courseName}" title="#{faq.courseName}"/>
+			</p:column>
+			<p:column width="19%">
+				<f:facet name="header">
+					<h:outputText value="提问主题" />
+				</f:facet>
+				<h:link title="#{faq.faqTitle}" value="#{faq.faqTitle}" outcome="faqShow" includeViewParams="true" target="_blank" rendered="#{faqAction.viewAuth}">
+					<f:param name="faqID" value="#{faq.faqID}"/>
+				</h:link>
+			</p:column>
+			<p:column width="8%" sortBy="#{faq.hit}">
+				<f:facet name="header">
+					<h:outputText value="点击数" />
+				</f:facet>
+				<h:outputText value="#{faq.hit}"/>
+			</p:column>
+			<p:column width="8%">
+				<f:facet name="header">
+					<h:outputText value="章节号" />
+				</f:facet>
+				<h:outputText value="#{faq.chapterNum}"/>
+			</p:column>
+			<p:column width="8%">
+				<f:facet name="header">
+					<h:outputText value="创建人" />
+				</f:facet>
+				<h:outputText value="#{faq.userName}"/>
+			</p:column>
+			<p:column width="10%" sortBy="#{faq.createTimeStr}">
+				<f:facet name="header">
+					<h:outputText value="创建时间" />
+				</f:facet>
+				<h:outputText value="#{faq.createTimeStr}"/>
+			</p:column>
+			<p:column headerText="回复状态 " width="8%" exportable="false"> 
+				<h:outputText styleClass="solveStatus-#{faq.answerStatus}" value="#{faq.answerStatusStr}"/>
+			</p:column>
+			<p:column headerText="状态 " width="7%" exportable="false">
+				<p:commandLink value="#{faq.statusStr}" update=":searchForm:faqTable :info" actionListener="#{faqReqAction.changeStatus(faq.faqID,faq.status)}" rendered="#{faqAction.optAuth}"/>
+				<h:outputText styleClass="status-#{faq.status}" value="#{faq.statusStr}" rendered="#{!faqAction.optAuth}" />
+			</p:column>
+			<p:column style="width:1px;" rendered="#{faqAction.from == ''}" >
+				<f:facet name="header">
+					<h:outputText value="内容" />
+				</f:facet>
+				<h:outputText value="#{faq.faqContent}" style="display:none;"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="faqTable" />
+		</ui:include>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="exportBtn" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+</h:body>
+</html>

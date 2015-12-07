@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="majorstage">
+    
+    <delete id="deleteMajorStage" parameterType="Integer">
+		delete from advc_home_Major_Stage where majorID=#{majorID}
+    </delete>
+    
+    <insert id="insertMajorStageList">
+    	insert into advc_home_Major_Stage (majorID, stageID ) 
+    	<foreach collection="list" item="m" open="(" close=")" separator=" union all ">
+        	select #{m.majorID}, #{m.stageID} 
+        </foreach>
+    </insert>
+    
+    <select id="getMajorStageList4I" parameterType="Integer" resultType="MajorStage">
+		select a.stageID, b.stageName 
+		from advc_home_Major_Stage a WITH (NOLOCK),advc_home_Stage b WITH (NOLOCK)
+		where a.stageID=b.stageID and a.majorID=#{majorID} and b.stageID in (1,2,3) and b.status=1
+    </select>
+    
+    <select id="getAllMajorStageList" parameterType="Integer" resultType="MajorStage">
+		select a.stageID, b.stageName 
+		from advc_home_Major_Stage a WITH (NOLOCK),advc_home_Stage b WITH (NOLOCK)
+		where a.stageID=b.stageID and a.majorID=#{majorID} and b.status=1
+    </select>
+    
+</mapper>

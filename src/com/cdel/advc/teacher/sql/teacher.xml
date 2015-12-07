@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="teacher">
+    <select id="getTeacherAndOrg" parameterType="Integer" resultType="Teacher">
+	    select a.orgID,a.isHeader,b.orgName,b.parentID,a.teacherCode,a.teacherName 
+	    from advc_teacher a WITH (NOLOCK) 
+	    left join advc_teacher_org b WITH (NOLOCK) on b.orgID=a.orgID
+	    where a.teacherID=#{teacherID}
+    </select>
+    
+    <select id="getSameOrgManagerTeacherList" parameterType="Integer" resultType="Integer">
+    	with tmp as (
+			select orgID 
+			from advc_teacher WITH (NOLOCK) where teacherID=#{teacherID}
+    	)
+		select distinct a.teacherID 
+		from tmp,advc_teacher a WITH (NOLOCK),ADVC_CLASS_TEACHER ct WITH (NOLOCK) 
+        where a.orgID=tmp.orgID and ct.teacherID=a.teacherID and ct.teacherType=1 
+        union 
+        select #{teacherID} teacherID
+    </select>
+
+    <select id="getTeacher" parameterType="Integer" resultType="Teacher">
+        SELECT * FROM  ADVC_TEACHER WHERE teacherID = #{teacherID}
+    </select>
+    
+    <sql id="getTeacherList_body">
+        SELECT t.teacherID, t.teacherCode, t.teacherName, t.status,org.orgName,t.isHeader,
+             ROW_NUMBER() Over(ORDER BY t.orgID DESC) AS rowNum, t.orgID 
+        FROM ADVC_TEACHER t WITH (NOLOCK) 
+        LEFT JOIN ADVC_TEACHER_ORG org WITH (NOLOCK) on org.orgID=t.orgID
+        <where>
+        	<if test="teacherID !=null"> AND t.teacherID = #{teacherID} </if>
+        	<if test="teacherCode !=null and teacherCode !=''"> AND t.teacherCode = #{teacherCode} </if>
+        	<if test="teacherName !=null and teacherName !=''"> AND t.teacherName = #{teacherName} </if>
+        	<if test="status !=null"> AND t.status = #{status} </if>
+        	<if test="orgID !=null"> AND t.orgID = #{orgID} </if>
+        </where>
+    </sql>
+    
+    <select id="countTeacher" resultType="int">
+    	SELECT COUNT(*) FROM (
+            <include refid="getTeacherList_body" />
+        ) AS myTable 
+    </select>
+    
+    <select id="findPageTeacher" parameterType="Teacher" resultType="Teacher">
+    	SELECT * FROM (
+            <include refid="getTeacherList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="getTeacherByID" parameterType="int" resultType="Teacher">
+    	SELECT t.teacherID, t.teacherCode, t.teacherName, t.hasClass, t.status,t.orgID,org.orgName,t.isHeader
+		FROM ADVC_TEACHER t
+		LEFT JOIN ADVC_TEACHER_ORG org WITH (NOLOCK) on org.orgID=t.orgID 
+		where t.teacherID=#{teacherID}
+    </select>
+    
+    <select id="getTeacherByCode" parameterType="String" resultType="Integer">
+        SELECT top 1 t.teacherID FROM ADVC_TEACHER t WITH (NOLOCK) 
+        WHERE t.teacherCode=#{teacherCode} and teacherID &gt; 0
+    </select>
+    
+    <select id="getTeacherByCode2" parameterType="String" resultType="Teacher">
+        SELECT top 1 t.teacherID, t.teacherName, t.teacherCode FROM ADVC_TEACHER t WITH (NOLOCK) 
+        WHERE t.teacherCode=#{teacherCode} and teacherID &gt; 0
+    </select>
+    
+    <update id="updateTeacher" parameterType="Teacher">
+        UPDATE ADVC_TEACHER
+        <set>
+        	<if test="status"> status = #{status},</if>
+        	<if test="hasClass"> hasClass = #{hasClass},</if>
+        	<if test="teacherName"> teacherName = #{teacherName},</if>
+        	<if test="orgID"> orgID = #{orgID},</if>
+        	<if test="isHeader"> isHeader = #{isHeader},</if>
+        	<if test="teacherCode"> teacherCode = #{teacherCode}</if>
+        </set>
+        where teacherID = #{teacherID}
+    </update>
+
+    <select id="getTeacherByTeacherName" parameterType="String" resultType="String">
+        SELECT top 20 teacherName FROM ADVC_TEACHER 
+        WHERE (teacherName like '%'+#{teacherName}+'%' or teacherCode like '%'+#{teacherName}+'%') and teacherID &gt; 0
+    </select>
+    <select id="getTeacherByTeacherName2" parameterType="String" resultType="String">
+        SELECT top 20 teacherCode FROM ADVC_TEACHER 
+        WHERE teacherCode like '%'+#{teacherCode}+'%' and teacherID &gt; 0
+    </select>
+    <select id="getTeacherByTeacherName3" parameterType="String" resultType="String">
+        SELECT top 20 teacherName FROM ADVC_TEACHER 
+        WHERE teacherName like '%'+#{teacherName}+'%' and teacherID &gt; 0
+    </select>
+    
+    <select id="getHeadTeacherIDs" resultType="Integer">
+		select distinct teacherID from advc_teacher WITH (NOLOCK) WHERE isHeader = 1 and teacherID &gt; 0
+    </select>
+    
+    <select id="getTeacherList4I" resultType="Teacher">
+		select teacherName,teacherID,teacherCode from advc_teacher WITH (NOLOCK) where teacherID &gt; 0
+    </select>
+    
+    <select id="getTeacherListNoID" parameterType="String" resultType="Teacher">
+		select teacherName,teacherID,teacherCode from advc_teacher WITH (NOLOCK) where teacherID &gt; 0 and teacherCode!=#{teacherCode}
+    </select>
+
+    <select id="selectAllAdvanceTeacher" resultType="Teacher">
+		SELECT at.teacherID,at.teacherCode,at.teacherName 
+		From ADVC_TEACHER at WITH (NOLOCK) 
+		LEFT JOIN FAQ_TEACHER ft WITH (NOLOCK) on at.teacherID = ft.teacherID
+		WHERE at.status = 1 and ft.hasadvanc = 5 and at.teacherID &gt; 0 
+		ORDER BY at.orgID DESC
+	</select>
+    
+</mapper>

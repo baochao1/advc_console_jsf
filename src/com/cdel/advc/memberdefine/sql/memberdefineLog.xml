@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Mon Jul 01 18:07:57 CST 2013-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberdefinelog">
+
+	<select id="getMemberdefineLogList4I" parameterType="Integer" resultType="MemberdefineLog">
+       	select am.createTime ,at.teacherName,am.LogType
+		from ADVC_MEMBER_DEFINE_LOG am WITH (NOLOCK) 
+		left join ADVC_TEACHER at  WITH (NOLOCK) on at.teacherID = am.creator
+		where am.defineID =#{defineID}
+    </select> 
+
+    <insert id="insertMemberdefineLog" parameterType="MemberdefineLog">
+        INSERT INTO ADVC_MEMBER_DEFINE_LOG ( defineID,creator,createTime,logType )
+        VALUES ( #{defineID},#{creator},#{createTime},#{logType} )
+    </insert>
+    
+</mapper>

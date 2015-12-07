@@ -1,0 +1,74 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="stagerelative">
+
+	<select id="getUserPlanStageStat" parameterType="java.lang.Integer" resultType="StageRelative">
+		select c.userID,c.classID,c.planID,b.phaseNo stageID,min(a.startTime) startTime,max(a.endTime) endTime 
+		from ADVC_STUDYPLAN_CHAPTER a WITH (NOLOCK) ,ADVC_TEMP_CHAPTER b WITH (NOLOCK) ,ADVC_STUDYPLAN c WITH (NOLOCK) 
+		where a.planID=c.planID and a.chapterID=b.chapterID and a.planID=#{planID} 
+		group by c.userID,c.classID,c.planID,b.phaseNo 
+		order by b.phaseNo
+	</select>
+	
+	<select id="getUserPrePlanStageStat" parameterType="java.lang.Integer" resultType="StageRelative">
+		select c.userID,c.classID,c.planID,0 stageID,min(a.startTime) startTime,max(a.endTime) endTime 
+		from ADVC_STUDYPLAN_CHAPTER a WITH (NOLOCK), ADVC_STUDYPLAN c WITH (NOLOCK) 
+		where a.planID=c.planID and a.planID=#{planID} 
+		group by c.userID,c.classID,c.planID 
+	</select>
+	
+	<select id="getStageRelativeCount" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		select count(smsStageRelID) 
+		from advc_home_sms_stage_relative a WITH (NOLOCK) 
+		where a.planID=#{planID} 
+	</select>
+	
+	<delete id="deleteStageRelativeByObject" parameterType="StageRelative">
+		delete from advc_home_sms_stage_relative where planID=#{planID} 
+	</delete>
+	
+	<update id="update4RemoveClass" parameterType="StageRelative">
+		update advc_home_sms_stage_relative 
+		<set>
+			<if test="status != null"> status = #{status} </if>
+		</set>
+		where userID=#{userID} and classID=#{classID}
+	</update>
+	
+	<insert id="insertStageRelativeList">
+    	insert into advc_home_sms_stage_relative (userID, classID, planID, stageID, startTime, endTime, status ) 
+    	<foreach collection="list" item="m" open="(" close=")" separator=" union all ">
+        	select #{m.userID}, #{m.classID}, #{m.planID}, #{m.stageID}, #{m.startTime}, #{m.endTime},  #{m.status} 
+        </foreach>
+    </insert>
+    
+	<insert id="insertStageRelative">
+    	insert into advc_home_sms_stage_relative (userID, classID, planID, stageID, startTime, endTime, status ) 
+    	values ( #{userID}, #{classID}, #{planID}, #{stageID}, #{startTime}, #{endTime}, #{status} )
+    	<selectKey keyProperty="smsStageRelID" resultType="int">
+			SELECT @@IDENTITY AS smsStageRelID
+		</selectKey>
+    </insert>
+    
+	<update id="updateStageRelative">
+    	update advc_home_sms_stage_relative 
+    	<set>
+    		<if test="serviceTime != null"> serviceTime = #{serviceTime}, </if>
+    		<if test="templateID != null"> templateID = #{templateID}, </if>
+    		<if test="status != null"> status = #{status} </if>
+    	</set>
+    	where planID=#{planID} and stageID=#{stageID}
+   		<if test="classID != null"> and classID = #{classID} </if>
+   		<if test="userID != null"> and userID = #{userID} </if>
+    </update>
+    
+    <update id="updateStageRelativeToNewClass">
+        UPDATE advc_home_sms_stage_relative set classID=#{newClassID} WHERE classID=#{classID} AND userID=#{userID}
+    </update>
+    
+    <delete id="delete4RemoveClass" parameterType="StageRelative">
+		delete from advc_home_sms_stage_relative 
+		where userID=#{userID} and classID=#{classID} 
+		<if test="stageID != null"> and stageID = #{stageID} </if>
+	</delete>
+	
+</mapper>

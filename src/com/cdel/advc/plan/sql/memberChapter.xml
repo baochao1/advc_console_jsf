@@ -1,0 +1,25 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberchapter">
+
+	<delete id="removeMemberChapter">
+	    DELETE ADVC_MEMBER_CHAPTER where chapterID 
+	    in (select chapterID from ADVC_TEMP_CHAPTER where courseID = #{courseID})
+    </delete>
+    
+    <select id="findByID" parameterType="MemberChapter" resultType="MemberChapter">
+    	SELECT * FROM ADVC_MEMBER_CHAPTER 
+    	WHERE chapterID = #{chapterID} AND userID = #{userID} AND planID = #{planID}
+    </select>
+    
+    <update id="updateMemberChapter" parameterType="MemberChapter">
+    	UPDATE ADVC_MEMBER_CHAPTER SET finishStatus = #{finishStatus} 
+    	WHERE chapterID = #{chapterID} AND userID = #{userID} AND planID = #{planID}
+    </update>
+    
+    <insert id="insertMemberChapter" parameterType="MemberChapter">
+    	INSERT INTO ADVC_MEMBER_CHAPTER 
+    		(chapterID, planID, userID, finishStatus <if test="finishTime != null">, finishTime</if>)
+    	VALUES
+    		(#{chapterID}, #{planID}, #{userID}, #{finishStatus} <if test="finishTime != null">, #{finishTime}</if>)
+    </insert>
+</mapper>

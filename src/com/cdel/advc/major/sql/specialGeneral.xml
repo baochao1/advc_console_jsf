@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="specialgeneral">
+	<sql id="getSpecialGeneralList_body">
+        SELECT a.specialGeneralID,a.majorID,a.generalDay,a.longTime,a.creator,a.createTime,a.longTime/60 longTimeMin,
+        b.teacherName createName, c.majorName, ROW_NUMBER() Over(ORDER BY generalDay DESC) AS rowNum 
+        FROM ADVC_STUDYPLAN_SPECIAL_GENERAL a WITH (NOLOCK) 
+        left join ADVC_TEACHER b  WITH (NOLOCK) on b.teacherID=a.creator
+        left join ADVC_MAJOR c  WITH (NOLOCK) on c.majorID=a.majorID
+        where a.majorID=#{majorID}
+    </sql>
+
+    <select id="countSpecialGeneral" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getSpecialGeneralList_body" />
+        ) AS myTable 
+    </select>
+
+    <select id="findPageSpecialGeneral" parameterType="SpecialGeneral" resultType="SpecialGeneral">
+        SELECT * FROM (
+            <include refid="getSpecialGeneralList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="getSpecialGeneralByMajor" parameterType="SpecialGeneral" resultType="SpecialGeneral">
+        select * from ADVC_STUDYPLAN_SPECIAL_GENERAL where majorID=#{majorID} and generalDay=#{generalDay}
+    </select>
+    
+    <insert id="insertSpecialGeneralList">
+        INSERT INTO ADVC_STUDYPLAN_SPECIAL_GENERAL ( majorID,generalDay,longTime,createTime,creator ) 
+        <foreach collection="list" item="sg" open="(" close=")" separator=" union all ">
+        	select #{sg.majorID},#{sg.generalDay},#{sg.longTime},#{sg.createTime},#{sg.creator}
+        </foreach>
+    </insert>
+    
+    <delete id="deleteSpecialGeneral">
+    	delete from ADVC_STUDYPLAN_SPECIAL_GENERAL where specialGeneralID=#{specialGeneralID}
+    </delete>
+    
+	<select id="getSpecialGeneral" parameterType="Integer" resultType="SpecialGeneral">
+        select * from ADVC_STUDYPLAN_SPECIAL_GENERAL where specialGeneralID=#{specialGeneralID}
+    </select>
+    
+    <update id="updateSpecialGeneral" parameterType="SpecialGeneral">
+    	update ADVC_STUDYPLAN_SPECIAL_GENERAL set longTime=#{longTime} 
+    	where specialGeneralID=#{specialGeneralID}
+    </update>
+
+</mapper>

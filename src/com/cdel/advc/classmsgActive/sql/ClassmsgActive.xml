@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="classmsgactive">
+	<sql id="pageSql_body">
+		SELECT distinct classMsgID, cn.classID, msgType, msgTitle, msgContent, cn.creator, cn.createTime, cn.status, 
+	    c.className,t.teacherName,cn.courseID 
+       	FROM ADVC_CLASS_MSG cn WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS c WITH (NOLOCK) ON c.classID = cn.classID 
+		LEFT JOIN ADVC_CLASS_STRATEGY CS WITH (NOLOCK) ON c.strategyID=CS.strategyID 
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON CS.majorID = M.majorID 
+       	LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON t.teacherID = cn.creator 
+		WHERE cn.classID IS NOT NULL and cn.msgType = 3 
+		<if test="majorID !=null "> and M.majorID=#{majorID} </if>
+		<if test="classID !=null "> and cn.classID=#{classID} </if>
+		<if test="msgTitle !=null and msgTitle != ''"> and cn.msgTitle like '%'+#{msgTitle}+'%' </if>
+		<if test="status !=null "> and cn.status=#{status} </if>
+    </sql>
+    
+    <select id="findPageClassmsgActive" resultType="ClassmsgActive" parameterType="ClassmsgActive">
+    	SELECT * FROM (
+			SELECT t.*, 
+			ROW_NUMBER() Over(ORDER BY t.classMsgID DESC) AS rowNum 
+			FROM
+			(
+				<include refid="pageSql_body" />
+			)t
+		) AS myTable WHERE rowNum BETWEEN #{rowNumStart} AND #{rowNumEnd}
+    </select>
+    
+    <select id="countClassmsgActive" resultType="int">
+    	SELECT count(*) FROM (
+			<include refid="pageSql_body" />
+		) AS myTable 
+    </select>
+        
+    <update id="updateClassmsgActive" parameterType="ClassmsgActive">
+        UPDATE 
+        	ADVC_CLASS_MSG 
+        <set>
+        	<if test="status!=null"> status=#{status}, </if>
+            <if test="msgTitle!=null"> msgTitle=#{msgTitle}, </if>
+            <if test="msgContent!=null"> msgContent=#{msgContent}, </if>
+        </set>
+        	where classMsgID=#{classMsgID}	
+    </update>
+    
+    <insert id="insertClassmsgActive">
+        INSERT INTO ADVC_CLASS_MSG ( classID,msgType,msgTitle,msgContent,creator,createTime,status
+        	<if test="brief != null"> ,brief </if>
+        	<if test="courseID != null"> ,courseID </if>
+        )
+        VALUES ( #{classID},#{msgType},#{msgTitle},#{msgContent},#{creator},#{createTime},#{status}
+			<if test="brief != null"> ,#{brief} </if>
+        	<if test="courseID != null"> ,#{courseID} </if>
+        )
+        <selectKey keyProperty="classMsgID" resultType="int">
+			SELECT @@IDENTITY AS classMsgID
+		</selectKey>
+    </insert>
+    
+    <insert id="insertClassmsgActiveList">
+        INSERT INTO ADVC_CLASS_MSG ( classID, msgType, msgTitle, msgContent, creator, createTime, status ) 
+        <foreach collection="list" item="m" open="(" close=")" separator=" union all ">
+        	select #{m.classID},#{m.msgType},#{m.msgTitle},#{m.msgContent},#{m.creator},#{m.createTime},#{m.status}
+        </foreach>
+    </insert>
+    
+    <select id="getClassmsgActive" parameterType="Integer" resultType="ClassmsgActive">
+		select classMsgID,classID,msgTitle,msgContent,status from  ADVC_CLASS_MSG
+		where classMsgID=#{classMsgID}	
+    </select>
+    
+</mapper>

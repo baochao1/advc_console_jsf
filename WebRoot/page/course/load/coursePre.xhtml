@@ -1,0 +1,19 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	<h:outputLabel value="相关课程" />
+	<p:selectOneMenu style="width:200px;" panelStyleClass="minLength" value="#{courseReqAction.showCourse.previewCourse}" >
+		<f:selectItem itemLabel="--请选择--" itemValue="0" />
+		<f:selectItems binding="#{courseReqAction.preCourseSelectItems}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseID}"/>
+	</p:selectOneMenu>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{courseReqAction.showCourse.courseID}"/>
+			<p:commandButton value="提交" actionListener="#{courseReqAction.addPreSubmit}" oncomplete="optResult('preDialog',args);" update="msg"/>
+			<p:commandButton type="button" value="关闭" onclick="preDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

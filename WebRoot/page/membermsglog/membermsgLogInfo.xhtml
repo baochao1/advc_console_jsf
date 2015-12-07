@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>查看日志</title>
+	<h:outputStylesheet name="page-css.css" library="css" />
+	<h:outputScript name="page.js" library="js" />
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+		<p:dataGrid var="lg" value="#{membermsgLogAction.membermsgLogList}" columns="1">
+			<f:facet name="header">
+				日志信息
+			</f:facet>
+			<p:column>
+				<h:outputText value="#{lg.logContent}" escape="false"/>
+			</p:column>
+			<p:separator/>
+		</p:dataGrid>
+	</h:form>
+</h:body>
+</html>

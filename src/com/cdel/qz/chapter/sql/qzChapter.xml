@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="qzchapter">
+    
+    <select id="getQzChaptersCountByCourseID" resultType="Integer">
+	    select c.courseChapter 
+	    from advc_course ac WITH (NOLOCK) 
+		left join qz_site_courseware cw WITH (NOLOCK) on ac.courseCode = cw.cwID
+		left join qz_site_course sc WITH (NOLOCK) on sc.siteCourseID = cw.siteCourseID
+		left join qz_course c WITH (NOLOCK) on c.courseID=sc.courseID
+		where ac.courseID = #{courseID}
+    </select>
+    
+    <select id="getQzChapterList4I" resultType="QzChapter">
+	    select qct.chapterName,qct.chapterID 
+	    from qz_course qc WITH (NOLOCK),qz_chapter qct WITH (NOLOCK) 
+		where qc.chapterListID=qct.chapterListID and qc.courseID = #{courseID}
+    </select>
+    
+</mapper>

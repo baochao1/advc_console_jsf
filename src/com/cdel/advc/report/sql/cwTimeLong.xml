@@ -1,0 +1,80 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cwtimelong">
+
+	<select id="getAvgTime" parameterType="java.util.Map" resultType="Integer">
+    	SELECT SUM(t.StudyTime)/COUNT(DISTINCT userID) 
+		FROM Cware_TimeDay t WITH (NOLOCK) 
+		LEFT JOIN Cware c WITH (NOLOCK) ON t.CwareID=c.CwareID
+		WHERE CONVERT(CHAR, t.StudyDate, 23) = #{countDate} 
+        and RTRIM(c.CwID) IN 
+   		<foreach collection="cwIDList" item="item" separator=","  open="(" close=")">
+			#{item}
+		</foreach>
+    </select>
+    
+    <select id="getChapterTimeLong" parameterType="java.util.Map" resultType="CwTimeLong">
+		SELECT CS.CwareClassName AS classLevel, LS.SmallListName AS chapterName,
+		 	SUM(T.StudyTime) AS totalStudyTime, MAX(T.EndTime) AS lastStudyTime
+		FROM Cware_TimeDay T WITH (NOLOCK) 
+		LEFT JOIN Cware_User U WITH (NOLOCK) ON T.userID = U.userID
+		LEFT JOIN Cware C WITH (NOLOCK) ON T.CwareID=C.CwareID
+		LEFT JOIN Cware_Class CS WITH (NOLOCK) ON C.CwareClassID=CS.CwareClassID
+		LEFT JOIN Cware_InnerListVideo V WITH (NOLOCK) ON T.VideoID = V.VideoID AND V.InnerCwareID=C.InnerCwareID
+		LEFT JOIN Cware_InnerListSmall LS WITH (NOLOCK) ON V.SmallListID=LS.SmallListID
+		WHERE T.StudyDate &gt;= #{startTime} AND T.StudyDate &lt; #{endTime}
+		AND C.CwID IN 
+   		<foreach collection="ccList" item="cc" separator=","  open="(" close=")">
+			#{cc.cwID}
+		</foreach>
+		AND U.UserName=#{userName}
+		GROUP BY CS.CwareClassName, LS.SmallOrder, LS.SmallListName
+		ORDER BY CS.CwareClassName, LS.SmallOrder DESC
+	</select>
+	
+	<select id="getUserDayTimeLong" parameterType="java.util.Map" resultType="CwTimeLong">
+		SELECT t.StudyDate AS studyDate, SUM(t.StudyTime) AS totalStudyTime 
+		FROM Cware_TimeDay t WITH (NOLOCK)
+		LEFT JOIN Cware c WITH (NOLOCK) ON t.CwareID=c.CwareID
+		LEFT JOIN Cware_User u WITH (NOLOCK) ON t.userID = u.userID
+		WHERE t.StudyDate &gt;= #{startTime} AND t.StudyDate &lt; #{endTime}
+		AND c.CwID IN
+		<foreach collection="ccList" item="cc" separator="," close=")" open="(">
+			#{cc.cwID}
+		</foreach>
+		AND u.UserName=#{userName}
+		GROUP BY t.StudyDate
+	</select>
+	
+	<sql id="getCwTimeLongList_body">
+		SELECT T.StudyDate AS studyDate, CS.CwareClassName AS classLevel, LS.SmallListName AS chapterName, 
+			SUM(T.StudyTime) AS totalStudyTime, MIN(T.BeginTime) AS earlyStudyTime, MAX(T.EndTime) AS lastStudyTime, 
+			ROW_NUMBER() Over(ORDER BY T.StudyDate DESC, CS.CwareClassName, LS.SmallOrder DESC) AS rowNum
+		FROM Cware_TimeDay T WITH (NOLOCK) 
+		LEFT JOIN Cware_User U WITH (NOLOCK) ON T.userID = U.userID
+		LEFT JOIN Cware C WITH (NOLOCK) ON T.CwareID=C.CwareID
+		LEFT JOIN Cware_Class CS WITH (NOLOCK) ON C.CwareClassID=CS.CwareClassID
+		LEFT JOIN Cware_InnerListVideo V WITH (NOLOCK) ON T.VideoID = V.VideoID AND V.InnerCwareID=C.InnerCwareID
+		LEFT JOIN Cware_InnerListSmall LS WITH (NOLOCK) ON V.SmallListID=LS.SmallListID
+		WHERE U.UserName=#{userName} 
+		<if test="startTime != null"> AND T.StudyDate &gt;= #{startTime} </if>
+		<if test="endTime != null"> AND T.StudyDate &lt; #{endTime} </if>
+		AND C.CwID IN 
+   		<foreach collection="cwIDs" item="cwID" separator=","  open="(" close=")">
+			#{cwID}
+		</foreach>
+		GROUP BY T.StudyDate, CS.CwareClassName, LS.SmallOrder, LS.SmallListName
+    </sql>
+
+    <select id="countCwTimeLong" resultType="int">
+        SELECT count(*) FROM (
+			<include refid="getCwTimeLongList_body" />
+		) AS myTable 
+    </select>
+
+    <select id="findPageCwTimeLong" parameterType="java.util.Map" resultType="CwTimeLong">
+        SELECT * FROM (
+            <include refid="getCwTimeLongList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+</mapper>

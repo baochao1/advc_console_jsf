@@ -1,0 +1,33 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	<h:outputLabel value="邮件标题">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText value="#{sendEmailReqAction.sendEmail.title}" styleClass="maxLength"/>
+
+	<h:outputLabel value="邮件内容">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<h:panelGroup>
+		亲爱的学员，您好！<br />
+		<p:inputTextarea autoResize="false" value="#{sendEmailReqAction.sendEmail.content}" cols="70" rows="4"/>
+		<br />&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;
+				&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;中华会计网校教务部<br />
+				&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;
+				&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;yyyy-MM-dd
+				<br />
+				<br /> ---------------------------------------------------------------------------<br />本邮件为系统发送，请勿回复该邮件。
+	</h:panelGroup>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="text-align:center;display:block;">
+			<p:messages id="msg" />
+			<h:inputHidden value="#{sendEmailReqAction.sendEmail.classID}"/>
+			<p:commandButton value="发送" actionListener="#{sendEmailReqAction.sendClassEmail}"
+				oncomplete="optResult('sendEmailDialog',args,5);" update="msg" />
+			<p:commandButton type="button" value="关闭" onclick="sendEmailDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

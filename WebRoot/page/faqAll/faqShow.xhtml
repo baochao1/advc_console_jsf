@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>互助答疑--"#{replyFaqAction.faq.faqTitle}"</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<style>
+		.ui-panelgrid .ui-panelgrid-header {text-align: left;border: #bbdde5 1px solid;}
+		.ui-datatable .ui-datatable-header{text-align: left;}
+		.status_1{color:#20b2aa;}
+	</style>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form styleClass="formClass">
+		<p:panelGrid id="showGrid" style="width:100%;text-align:left;">
+			<f:facet name="header">
+				<p:row >
+					<p:column colspan="2">
+						主题提问标题 ：#{replyFaqAction.faq.faqTitle}【点击数：#{replyFaqAction.faq.hit}】
+					</p:column>
+				</p:row>
+			</f:facet>
+			<p:row>
+				<p:column style="width:300px;">
+					提问人:#{replyFaqAction.faq.userName}<br/>
+					提问时间:#{replyFaqAction.faq.createTimeStr}<br/>
+					状态:
+					<p:commandLink id="faqStatus" value="#{replyFaqAction.faq.statusStr}" update="faqStatus :info" actionListener="#{replyFaqAction.changeStatus(replyFaqAction.faq.faqID,replyFaqAction.faq.status,0)}" rendered="#{replyFaqAction.optAuth}"/>
+					<h:outputText styleClass="status-#{replyFaqAction.faq.status}" value="#{replyFaqAction.faq.statusStr}" rendered="#{!replyFaqAction.optAuth}" /><br/>
+					<p:separator />
+					所在辅导:#{replyFaqAction.faq.majorName}<br/>
+					所在课程:#{replyFaqAction.faq.courseName}<br/>
+					所在章节:#{replyFaqAction.faq.chapterNum}<br/>
+				</p:column>
+				<p:column>
+					【提问内容】 <p:commandLink oncomplete="loadDialog.show()" update=":loadForm:loadDialog" actionListener="#{replyFaqReqAction.showAdd}"><p:graphicImage url="/resources/images/replyyn.gif" value="解答"/></p:commandLink><br/>
+					<p:separator />
+					#{replyFaqAction.faq.faqContent}
+				</p:column>
+			</p:row>
+		</p:panelGrid>
+	</h:form>
+	<h:form styleClass="formClass">
+		<p:panelGrid style="width:100%;text-align:left;" rendered="#{not empty replyFaqAction.bestFaq}">
+			<f:facet name="header">
+				<p:row >
+					<p:column colspan="2">
+						最佳答案
+					</p:column>
+				</p:row>
+			</f:facet>
+			<p:row>
+				<p:column style="width:300px;">
+					回复人:#{replyFaqAction.bestFaq.replyUserName}<br/>
+					回复时间:#{replyFaqAction.bestFaq.createTimeStr}<br/>
+					状态:
+					<p:commandLink id="faqBestStatus" value="#{replyFaqAction.bestFaq.statusStr}" update="faqBestStatus :info" actionListener="#{replyFaqAction.changeStatus(replyFaqAction.bestFaq.faqID,replyFaqAction.bestFaq.status,1)}" rendered="#{replyFaqAction.optAuth}"/>
+					<h:outputText styleClass="status-#{replyFaqAction.bestFaq.status}" value="#{replyFaqAction.bestFaq.statusStr}" rendered="#{!replyFaqAction.optAuth}" /><br/>
+					<p:separator />
+					评分:#{replyFaqAction.bestFaq.score}<br/>
+					评分次数:#{replyFaqAction.bestFaq.scoreTimes}<br/>
+				</p:column>
+				<p:column>
+					【提问内容】
+					<p:separator />
+					#{replyFaqAction.bestFaq.faqContent}
+				</p:column>
+			</p:row>
+		</p:panelGrid>
+	</h:form>
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:dataTable scrollable="true" scrollHeight="250"
+			widgetVar="faqTable"
+			id="faqTable"
+			binding="#{replyFaqAction.pageTable}"
+			lazy="true"
+			value="#{replyFaqAction.page}" 
+			rows="10"
+			var="faq" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} / {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="10,20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，还没人回答！"
+			rowKey="#{faq.faqID}"
+			>
+			<f:facet name="header">
+				<h:outputText value="其他" rendered="#{not empty replyFaqAction.bestFaq}"/>答案
+			</f:facet>
+			<p:column headerText="回复人" width="10%">
+				<h:outputText value="#{faq.replyUserName}" />
+			</p:column>
+			
+			<p:column headerText="回复时间" width="10%">
+				<h:outputText value="#{faq.createTimeStr}" />
+			</p:column>
+			<p:column headerText="状态" width="5%">
+				<p:commandLink value="#{faq.statusStr}" update=":searchForm:faqTable :info" actionListener="#{faqReqAction.changeStatus(faq.faqID,faq.status)}" rendered="#{replyFaqAction.optAuth}"/>
+				<h:outputText styleClass="status-#{faq.status}" value="#{faq.statusStr}" rendered="#{!replyFaqAction.optAuth}" /><br/>
+			</p:column>
+			<p:column headerText="评分" width="5%">
+				<h:outputText value="#{faq.score}"/>
+			</p:column>
+			<p:column headerText="评分次数" width="5%">
+				<h:outputText value="#{faq.scoreTimes}"/>
+			</p:column>
+			<p:column headerText="回复内容" width="60%">
+				<h:outputText value="#{faq.faqContent}"/>
+			</p:column>
+			<p:column headerText="编辑" width="5%">
+				<p:commandLink value="修改" oncomplete="loadDialog.show();" actionListener="#{replyFaqReqAction.showUpdate(faq.faqID)}" update=":loadForm:loadDialog" rendered="#{replyFaqReqAction.optAuth}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="faqTable" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	   <!-- 查看公告页面 -->
+	<h:form id="loadForm" >
+		<p:dialog id="loadDialog" header="#{(replyFaqReqAction.flag==0)?'添加':'修改'}" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/faqUpdate.xhtml"/>
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

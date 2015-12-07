@@ -1,0 +1,138 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="report">
+	
+	<sql id="getReportList_body">
+		SELECT R.*, t.teacherName, m.userName, C.className, ROW_NUMBER() Over(ORDER BY R.reportID DESC) AS rowNum 
+		FROM ADVC_REPORT R WITH (NOLOCK) 
+		LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON R.classID=C.classID
+		LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON R.teacherID = t.teacherID
+		LEFT JOIN ADVC_MEMBER m WITH (NOLOCK) ON m.userID = R.userID
+		WHERE C.status = 1 AND R.userID = #{userID} AND R.classID = #{classID}
+    </sql>
+
+    <select id="countReport" resultType="int">
+        SELECT COUNT(*) 
+        FROM ADVC_REPORT R WITH (NOLOCK) 
+        WHERE R.userID = #{userID} AND R.classID = #{classID}
+    </select>
+
+    <select id="findPageReport" parameterType="Report" resultType="Report">
+        SELECT * FROM (
+            <include refid="getReportList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd}
+    </select>
+    
+    <delete id="deleteReportByID" parameterType="Integer">
+    	DELETE FROM ADVC_RPT_COURSETIME WHERE reportID = #{reportID}
+    	DELETE FROM ADVC_REPORT_DETAIL WHERE reportID = #{reportID}
+    	DELETE FROM ADVC_REPORT WHERE reportID = #{reportID}
+    	DELETE FROM ADVC_REMARK_LOG WHERE reportID = #{reportID}
+    </delete>
+    
+    <update id="updateStatus" parameterType="Report">
+		UPDATE ADVC_REPORT set status=#{status} WHERE reportID=#{reportID}
+	</update>
+
+	<update id="updateReportToNewClass">
+		UPDATE ADVC_REPORT set classID=#{newClassID} WHERE classID=#{classID} AND
+		userID=#{userID}
+	</update>
+	
+	<select id="getReport" parameterType="Integer" resultType="Report">
+      	SELECT R.*, RD.*, tea.teacherName creatorName,tea2.teacherName 
+       	FROM ADVC_REPORT R WITH (NOLOCK) 
+       	LEFT JOIN ADVC_REPORT_DETAIL RD WITH (NOLOCK) ON R.reportID = RD.reportID
+       	LEFT JOIN advc_teacher tea WITH (NOLOCK) ON R.creator = tea.teacherID
+       	LEFT JOIN advc_teacher tea2 WITH (NOLOCK) ON R.teacherID = tea2.teacherID
+		WHERE R.reportID = #{reportID}
+    </select>
+    
+	<update id="updateRemarkContent" parameterType="Report">
+	    update ADVC_REPORT_DETAIL set remarkContent=#{remarkContent} 
+	    where reportID=#{reportID}
+    </update>
+    
+	<update id="updateReport" parameterType="Report">
+	    update ADVC_REPORT set teacherID=#{teacherID},remarkTime=#{remarkTime} 
+	    	<if test="applyStatus !=null">,applyStatus=#{applyStatus}</if>
+	    where reportID=#{reportID}
+    </update>
+    
+    <select id="getCountByClassIDAndUserID" resultType="Integer">
+		SELECT COUNT(*) 
+		FROM ADVC_REPORT WITH (NOLOCK) WHERE userID = #{userID} AND classID = #{classID}
+	</select>
+	
+	<insert id="insertReport">
+		INSERT INTO ADVC_REPORT (
+		<trim prefix="" prefixOverrides=",">
+			<if test="teacherID !=null"> teacherID, </if>
+			<if test="classID !=null"> classID, </if>
+			<if test="userID !=null"> userID, </if>
+			<if test="reportTitle !=null"> reportTitle, </if>
+			<if test="startTime !=null"> startTime, </if>
+			<if test="endTime !=null"> endTime, </if>
+			<if test="reportYear !=null"> reportYear, </if>
+			<if test="applyStatus !=null"> applyStatus, </if>
+			<if test="applyTime !=null"> applyTime, </if>
+			<if test="applyContent !=null"> applyContent, </if>
+			<if test="remarkTime !=null"> remarkTime, </if>
+			<if test="status !=null"> status, </if>
+			<if test="creator !=null"> creator, </if>
+			<if test="createTime !=null"> createTime </if>
+		</trim>
+		) VALUES (
+		<trim prefix="" prefixOverrides=",">
+			<if test="teacherID !=null"> #{teacherID}, </if>
+			<if test="classID !=null"> #{classID}, </if>
+			<if test="userID !=null"> #{userID}, </if>
+			<if test="reportTitle !=null"> #{reportTitle}, </if>
+			<if test="startTime !=null"> #{startTime}, </if>
+			<if test="endTime !=null"> #{endTime}, </if>
+			<if test="reportYear !=null"> #{reportYear}, </if>
+			<if test="applyStatus !=null"> #{applyStatus}, </if>
+			<if test="applyTime !=null"> #{applyTime}, </if>
+			<if test="applyContent !=null"> #{applyContent}, </if>
+			<if test="remarkTime !=null"> #{remarkTime}, </if>
+			<if test="status !=null"> #{status}, </if>
+			<if test="creator !=null"> #{creator}, </if>
+			<if test="createTime !=null"> #{createTime} </if>
+		</trim>
+		)
+		<selectKey keyProperty="reportID" resultType="int">
+			SELECT @@IDENTITY AS reportID
+		</selectKey>
+	</insert>
+	
+	<insert id="insertReportDetail">
+		INSERT INTO ADVC_REPORT_DETAIL (
+		reportID,
+		<trim prefix="" prefixOverrides=",">
+			<if test="remarkContent !=null"> remarkContent, </if>
+			<if test="errorRecord !=null"> errorRecord, </if>
+			<if test="centerRecord !=null"> centerRecord, </if>
+			<if test="pointRecord !=null"> pointRecord, </if>
+			<if test="timeLongRecord !=null"> timeLongRecord, </if>
+			<if test="dayTimeLong !=null"> dayTimeLong </if>
+		</trim>
+		)VALUES (
+		#{reportID},
+		<trim prefix="" prefixOverrides=",">
+			<if test="remarkContent !=null"> #{remarkContent}, </if>
+			<if test="errorRecord !=null"> #{errorRecord}, </if>
+			<if test="centerRecord !=null"> #{centerRecord}, </if>
+			<if test="pointRecord !=null"> #{pointRecord}, </if>
+			<if test="timeLongRecord !=null"> #{timeLongRecord}, </if>
+			<if test="dayTimeLong !=null"> #{dayTimeLong} </if>
+		</trim>
+		)
+	</insert>
+	
+	<select id="getMaxEndTime" parameterType="Report" resultType="Report">
+      	SELECT top 1 endTime 
+       	FROM ADVC_REPORT WITH (NOLOCK) 
+		WHERE userID = #{userID} AND classID = #{classID} 
+		order by reportID desc 
+    </select>
+
+</mapper>

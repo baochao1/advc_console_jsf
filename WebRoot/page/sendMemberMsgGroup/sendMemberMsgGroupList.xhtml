@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>群发学员消息</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+	<p:remoteCommand name="setMajorList" actionListener="#{majorOther.setMajorList(sendMemberMsgGroupAction.siteID)}" update="sMajorID" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:panelGrid columns="2" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMajorID" value="辅导">
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:selectOneMenu id="sMajorID" style="width:200px;" panelStyleClass="minLength" value="#{sendMemberMsgReqGroupAction.sendMemberMsgGroupInfo.majorID}" filter="true" filterMatchMode="contains">
+				<p:ajax event="change" update=":searchForm:uCourseName" listener="#{sendMemberMsgGroupAction.changeMajorID}" />
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+			</p:selectOneMenu>
+					
+			<h:outputLabel for="uCourseName" value="课程">
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:selectOneMenu id="uCourseName" style="width:200px;" panelStyleClass="minLength" value="#{sendMemberMsgReqGroupAction.sendMemberMsgGroupInfo.courseID}"  filter="true" filterMatchMode="contains">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{sendMemberMsgGroupAction.courseList}" var="course" itemLabel="#{course.courseName}" itemValue="#{course.courseID}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sStatus" value="消息类型" >
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:selectOneMenu id="sStatus" style="width:200px;" panelStyleClass="minLength" value="#{sendMemberMsgReqGroupAction.sendMemberMsgGroupInfo.msgType}">
+				<f:selectItems value="#{sendMemberMsgReqGroupAction.msgType.entrySet()}" var="msgType" itemLabel="#{msgType.value}" itemValue="#{msgType.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel value="消息标题">
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:inputText id="uMsgTitle" value="#{sendMemberMsgReqGroupAction.sendMemberMsgGroupInfo.msgTitle}" styleClass="minLength"/>
+	
+			<h:outputLabel value="发送内容">
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:editor value="#{sendMemberMsgReqGroupAction.sendMemberMsgGroupInfo.content}" controls="bold italic underline strikethrough link" width="400" height="120"/>
+
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:messages id="msg"/>
+					<p:commandButton id="sendBtn" value="发送" actionListener="#{sendMemberMsgReqGroupAction.sendMessage}"
+					oncomplete="optResultAlert(args,5);" rendered="#{sendMemberMsgGroupAction.optAuth}" 
+					update="msg"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		<ui:include src="/page/common/blockUI2.xhtml">
+			<ui:param name="tableID" value="sendBtn" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+</h:body>
+</html>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="testterm">
+	<select id="getTesttermList4I" parameterType="Integer" resultType="Testterm">
+        SELECT T.* 
+        FROM ADVC_TESTTERM T WITH (NOLOCK) 
+        where T.majorID=#{majorID} and T.status=1 
+    </select>
+    
+	<select id="getTestterm" parameterType="java.lang.Integer" resultType="Testterm">
+        SELECT T.*,M.majorName 
+        FROM ADVC_TESTTERM T WITH (NOLOCK) 
+        LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON T.majorID = M.majorID
+        where T.termID=#{termID}
+    </select>
+    
+    <sql id="getTesttermList_body">
+		SELECT T.*, M.majorName,au.realName creatorName, ROW_NUMBER() Over(ORDER BY T.termID DESC) AS rowNum
+		FROM ADVC_TESTTERM T WITH (NOLOCK) 
+		LEFT JOIN ADVC_MAJOR M WITH (NOLOCK) ON T.majorID = M.majorID 
+		LEFT JOIN RAD_ADMIN_USER au WITH (NOLOCK) ON T.creator = au.adminID 
+		where M.status=1
+		<if test="siteID !=null"> AND M.siteID = #{siteID}</if>
+		<if test="majorID !=null"> AND T.majorID = #{majorID}</if>
+		<if test="termName !=null and termName != ''"> AND T.termName = #{termName}</if>
+		<if test="termYear !=null and termYear != ''"> AND T.termYear = #{termYear}</if>
+		<if test="termMonth !=null and termMonth != ''"> AND T.termMonth = #{termMonth}</if>
+		<if test="status !=null"> AND T.status = #{status}</if>
+    </sql>
+
+    <select id="countTestterm" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getTesttermList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageTestterm" parameterType="Testterm" resultType="Testterm">
+        SELECT * FROM (
+            <include refid="getTesttermList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+	<select id="getTermByTermName" parameterType="String" resultType="String">
+        SELECT top 20 termName FROM ADVC_TESTTERM WITH (NOLOCK) 
+        where termName like '%'+#{termName}+'%'
+    </select>
+    
+    <update id="updateTestterm">
+        UPDATE ADVC_TESTTERM
+        <set>
+        	<if test="majorID !=null"> majorID= #{majorID}, </if>
+        	<if test="termType !=null"> termType= #{termType}, </if>
+        	<if test="termName !=null and termName != ''"> termName= #{termName}, </if>
+        	<if test="termYear !=null and termYear != ''"> termYear= #{termYear}, </if>
+        	<if test="termMonth !=null and termMonth != ''"> termMonth= #{termMonth}, </if>
+        	<if test="classShortName !=null and classShortName != ''"> classShortName= #{classShortName}, </if>
+        	<if test="status !=null"> status= #{status}, </if>
+        	<if test="startTime !=null"> startTime= #{startTime}, </if>
+        	<if test="endTime !=null"> endTime= #{endTime}, </if>
+        	<if test="maxStudyTime !=null"> maxStudyTime= #{maxStudyTime}, </if>
+        	<if test="preStartTime !=null"> preStartTime= #{preStartTime}, </if>
+        	<if test="preEndTime !=null"> preEndTime= #{preEndTime}, </if>
+        	<if test="preMaxStudyTime !=null"> preMaxStudyTime= #{preMaxStudyTime} </if>
+        </set>
+        WHERE termID=#{termID}
+    </update>
+    
+    <insert id="insertTestterm">
+        INSERT INTO ADVC_TESTTERM ( majorID,termType,termName,termYear,termMonth,creator,createTime,status,
+        	classShortName,startTime,endTime,maxStudyTime,preStartTime,preEndTime,preMaxStudyTime )
+        VALUES ( #{majorID},#{termType},#{termName},#{termYear},#{termMonth},#{creator},#{createTime},#{status},
+        	#{classShortName},#{startTime},#{endTime},#{maxStudyTime},#{preStartTime},#{preEndTime},#{preMaxStudyTime} 
+        )
+    </insert>
+    
+    <delete id="deleteTestterm" parameterType="java.lang.Integer">
+		DELETE FROM ADVC_TESTTERM WHERE termID=#{termID}
+    </delete>
+    
+    <select id="getTermByClassID" parameterType="Integer" resultType="Testterm">
+        SELECT T.*, C.className 
+        FROM ADVC_TESTTERM T WITH (NOLOCK) 
+        LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON T.termID = C.termID 
+        where C.classID=#{classID}
+    </select>
+    
+</mapper>

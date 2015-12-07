@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="membertermhours">
+
+	<select id="getMemberTermHours" parameterType="MemberTermHours" resultType="MemberTermHours">
+        SELECT top 1 * FROM ADVC_MEMBER_TERM_HOURS WITH (NOLOCK) 
+        <where>
+        	<if test="mthID !=null"> AND mthID = #{mthID}</if>
+        	<if test="mthType !=null"> AND mthType = #{mthType}</if>
+        	<if test="termID !=null"> AND termID = #{termID}</if>
+        	<if test="userID !=null"> AND userID = #{userID}</if>
+        </where>
+    </select>
+
+    <insert id="insertMemberTermHours" parameterType="MemberTermHours" >
+        INSERT INTO ADVC_MEMBER_TERM_HOURS ( 
+           <trim prefix="" prefixOverrides=",">
+	           <if test="sunday !=null"> mthType,</if>
+	           <if test="sunday !=null"> termID,</if>
+	           <if test="sunday !=null"> userID,</if>
+           		<if test="sunday !=null"> sunday,</if>
+           		<if test="monday !=null"> monday,</if>
+           		<if test="tuesday !=null"> tuesday,</if>
+           		<if test="wednesday !=null"> wednesday,</if>
+           		<if test="thursday !=null"> thursday,</if>
+           		<if test="friday !=null"> friday,</if>
+           		<if test="saturday !=null"> saturday,</if>
+           		<if test="totalSum !=null"> totalSum,</if>
+           		<if test="maxStudyTime !=null"> maxStudyTime</if>
+           </trim>
+        )
+        VALUES (
+        	<trim prefix="" prefixOverrides=",">
+           		<if test="sunday !=null"> #{mthType},</if>
+           		<if test="sunday !=null"> #{termID},</if>
+           		<if test="sunday !=null"> #{userID},</if>
+           		<if test="sunday !=null"> #{sunday},</if>
+           		<if test="monday !=null"> #{monday},</if>
+           		<if test="tuesday !=null"> #{tuesday},</if>
+           		<if test="wednesday !=null"> #{wednesday},</if>
+           		<if test="thursday !=null"> #{thursday},</if>
+           		<if test="friday !=null"> #{friday},</if>
+           		<if test="saturday !=null"> #{saturday},</if>
+           		<if test="totalSum !=null"> #{totalSum},</if>
+           		<if test="maxStudyTime !=null"> #{maxStudyTime}</if>
+           </trim>
+        )
+        <selectKey keyProperty="mthID" resultType="int">
+        	SELECT @@IDENTITY AS mthID 
+        </selectKey>
+    </insert>
+
+    <update id="updateMemberTermHours">
+        UPDATE ADVC_MEMBER_TERM_HOURS
+        <set>
+        	<if test="sunday !=null"> sunday = #{sunday},</if>
+        	<if test="monday !=null"> monday = #{monday},</if>
+        	<if test="tuesday !=null"> tuesday = #{tuesday},</if>
+        	<if test="wednesday !=null"> wednesday = #{wednesday},</if>
+        	<if test="thursday !=null"> thursday = #{thursday},</if>
+        	<if test="friday !=null"> friday = #{friday},</if>
+        	<if test="saturday !=null"> saturday = #{saturday},</if>
+        	<if test="totalSum !=null"> totalSum = #{totalSum},</if>
+        	<if test="maxStudyTime !=null"> maxStudyTime = #{maxStudyTime}</if>
+        </set>
+		WHERE termID=#{termID} AND userID=#{userID} AND mthType=#{mthType}
+    </update>
+    
+
+</mapper>

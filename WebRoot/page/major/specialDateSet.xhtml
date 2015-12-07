@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学习计划公共特殊时间设定</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function addResult(args){
+		if(args.result==1){
+			if(args.str!=""){
+				alert("日期："+args.str+"未添加，因为已经添加过了！");
+			}else{
+				alert("添加成功！");
+			}
+		}
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel value="日期" >
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<h:panelGroup styleClass="maxLength">
+				从：<p:calendar value="#{specialGeneralReqAction.start}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true"/>
+				到：<p:calendar value="#{specialGeneralReqAction.end}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true"/>
+			</h:panelGroup>
+			<h:outputLabel value="学习时间（分钟）" >
+				<span class="requiredFlag">*</span>
+			</h:outputLabel>
+			<p:inputText value="#{specialGeneralReqAction.specialMin}" styleClass="minLength"/>
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:messages id="msg"/>
+					<p:commandButton id="searchBtn" value="添加" actionListener="#{specialGeneralReqAction.addSubmit(specialGeneralAction.majorID)}" oncomplete="addResult(args);" update="msg" rendered="#{specialGeneralReqAction.optAuth}"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		
+		<p:dataTable scrollable="true" scrollHeight="#{specialGeneralAction.heighti2}" 
+			widgetVar="specialGeneralTable"
+			id="specialGeneralList"
+			binding="#{specialGeneralAction.pageTable}"
+			lazy="true"
+			value="#{specialGeneralAction.specialGeneralPage}" 
+			rows="20"
+			var="specialGeneral" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{specialGeneralAction.viewAuth}"
+			editable="true" 
+			editMode="cell" 
+			>
+			<p:ajax event="cellEdit" listener="#{specialGeneralReqAction.updateSubmit}" update=":info" />
+			<p:column headerText="所属辅导" width="30%">
+				<h:outputText value="#{specialGeneral.majorName}" />
+			</p:column>
+			<p:column headerText="日期" width="18%">
+				<h:outputText value="#{specialGeneral.generalDayStr}" />
+			</p:column>
+			<p:column headerText="学习时间(分钟)" width="12%">
+				<p:cellEditor>
+					<f:facet name="output">
+						<h:outputText value="#{specialGeneral.longTimeMin}" title="单击修改"/>
+					</f:facet>
+					<f:facet name="input">
+						<p:inputText value="#{specialGeneral.longTimeMin}" style="width:20px;"/>
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+			<p:column headerText="添加教师" width="15%">
+				<h:outputText value="#{specialGeneral.createName}" />
+			</p:column>
+			<p:column headerText="添加时间" width="15%">
+				<h:outputText value="#{specialGeneral.createTimeStr}" />
+			</p:column>
+			<p:column headerText="操作" width="10%">
+				<p:commandLink value="删除" onstart="return confirmDel();" update="specialGeneralList" oncomplete="optResultAlert(args,2);" actionListener="#{specialGeneralReqAction.delete(specialGeneral.specialGeneralID)}" rendered="#{specialGeneralReqAction.optAuth}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="specialGeneralList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+</h:body>
+</html>

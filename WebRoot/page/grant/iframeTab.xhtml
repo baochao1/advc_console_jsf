@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<h:outputScript name="jquery-ui-1.9.2.custom.js" library="js" />
+	<style>
+	BODY {
+		MARGIN: 0px;
+		padding:0px;
+		FONT-SIZE: 11px; FONT-FAMILY: verdana, Geneva, Arial, Helvetica, sans-serif;
+	}
+	.ui-tabs .ui-tabs-panel {
+		padding: 0px; 
+	}
+	</style>
+	<script>
+	var tabCounter=0;
+	var actions="";
+	var height;
+	$(function() {
+		height=jQuery(document).height();
+		$("#tabs").height(height);
+		$("#tabs").tabs();
+	});
+	function addTab(action,name,siteID){
+		if(siteID==null||siteID==""){
+			siteID=1;
+		}
+		var arr=actions.split(",");
+		for(var i=0;i &lt; arr.length;i++){
+			if(arr[i]==action){
+				$('#tabs').tabs("select", i+1);
+				return;
+			}
+		}
+		if(tabCounter  &gt;= 7){
+			$('#tabs').tabs("remove", 1);
+			tabCounter--;
+			var tmpaction=actions.substring(0,actions.indexOf(","));
+			actions=actions.replace(tmpaction+",","");
+		}
+		var content='<iframe scrolling="auto" frameborder="0" src="../'+action+'/'+action+'List.xhtml?siteID='+siteID+'&amp;height='+height+'" style="width:100%; height:100%; "></iframe>';
+		$('<div id="new-tab-'+action+'" style="height:100%; ">'+content+'</div>').appendTo('#tabs');
+		$('#tabs').tabs("add", "#new-tab-" + action, name);
+		tabCounter++;
+		actions=actions+action+",";
+		arr=actions.split(",");
+		var index=0;
+		for(var i=0;i &lt; arr.length;i++){
+			if(arr[i]==action){
+				index=i+1;
+				break;
+			}
+		}
+		$('#tabs').tabs("select", index);
+		$("li").each(function(i){
+			if(i==index){
+				var func="closeMe('"+action+"')";
+				$(this).append('<span class="ui-icon ui-icon-close" onclick="'+func+'">Remove Tab</span>');
+			}
+		});
+	}
+	function closeMe(action){
+		var arr=actions.split(",");
+		for(var i=0;i &lt; arr.length;i++){
+			if(arr[i]==action){
+				$('#tabs').tabs("remove", i+1);
+				tabCounter--;
+				actions=actions.replace(action+",","");
+				break;
+			}
+		}
+	}
+	
+	$(document).bind("click", function () {
+       $("ul[role='menu']",window.parent.document).css("display","none");
+    });
+	
+	//浏览器版本
+	function getOs() {
+		var OsObject = "";
+		if (navigator.userAgent.indexOf("MSIE") > 0) {
+			return "MSIE";
+		}
+		if (isFirefox = navigator.userAgent.indexOf("Firefox") > 0) {
+			return "Firefox";
+		}
+		if (isSafari = navigator.userAgent.indexOf("Safari") > 0) {
+			return "Safari";
+		}
+		if (isCamino = navigator.userAgent.indexOf("Camino") > 0) {
+			return "Camino";
+		}
+		if (isMozilla = navigator.userAgent.indexOf("Gecko/") > 0) {
+			return "Gecko";
+		}
+
+	}
+	</script>
+</h:head>
+<h:body>
+	<div id="tabs" style="width:99.2%;height:100%;background:#f0f8ff;">
+		<ul>
+			<li><a href="#tabs-0">欢迎</a></li>
+		</ul>
+		<div id="tabs-0">
+			<p>欢迎</p>
+		</div>
+	</div>
+	<p:panel rendered="false"/>
+</h:body>
+</html>

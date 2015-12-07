@@ -1,0 +1,21 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="planchapter">
+	
+  	<select id="getPlanChaptersByPlanID" parameterType="PlanChapter" resultType="PlanChapter">
+        SELECT 
+	        sp.userID,ch.*,ISNULL(mcs.suggestStyTime,tcs.suggestStyTime) suggestStyTime, mcs.isStudy isStudy, 
+	        tc.chapterName,tc.chapterNo, tc.openStatus, b.stageName, course.courseName, mc.finishStatus, mc.finishTime
+        FROM                                                                              
+	        ADVC_STUDYPLAN_CHAPTER ch WITH (NOLOCK)      
+	        LEFT JOIN ADVC_STUDYPLAN sp WITH (NOLOCK) ON ch.planID = sp.planID
+	        LEFT JOIN ADVC_TEMP_CHAPTER tc WITH (NOLOCK) ON tc.chapterID = ch.chapterID
+	        LEFT JOIN ADVC_TEMP_CHAPTER_STUDYASK tcs WITH (NOLOCK) on tcs.chapterID=tc.chapterID and tcs.type=#{type}
+	        LEFT JOIN ADVC_COURSE course WITH (NOLOCK) ON course.courseID = tc.courseID
+	        LEFT JOIN ADVC_MEMBER_CHAPTER mc WITH (NOLOCK) ON sp.userID = mc.userID AND tc.chapterID = mc.chapterID AND mc.planID = ch.planID   
+			LEFT JOIN ADVC_MEMBER_CHAPTER_SET mcs WITH (NOLOCK) on sp.userID = mcs.userID AND tc.chapterID = mcs.chapterID,advc_home_Stage b WITH (NOLOCK) 
+		WHERE tc.phaseNo = b.stageID and 
+			ch.planID = #{planID} 
+		ORDER BY ch.planWeek, ch.sequence, ch.startTime 
+    </select>
+    
+</mapper>

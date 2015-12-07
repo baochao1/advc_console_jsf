@@ -1,0 +1,30 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	<h:outputLabel value="计划项(章节)ID" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.chapterID}" />
+	<h:outputLabel value="课程名" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.courseName}" />
+	<h:outputLabel value="阶段名" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.stageName}" />
+	<h:outputLabel value="短信章节名" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.noteName}" />
+	<h:outputLabel value="开通状态" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.openStatusStr}" />
+	<h:outputLabel value="URL" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.url}" />
+	<h:outputLabel value="开课人" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.openerName}" />
+	<h:outputLabel value="开课时间" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.openTimeStr}" />
+	<h:outputLabel value="创建人" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.creator}" />
+	<h:outputLabel value="创建时间" />
+	<h:outputText value="#{tempChapterReqAction.tempChapter.createTimeStr}" />
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:commandButton type="button" value="关闭" onclick="showDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

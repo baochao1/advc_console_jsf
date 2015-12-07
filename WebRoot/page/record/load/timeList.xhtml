@@ -1,0 +1,53 @@
+<p:panel xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" rendered="#{recordAction.selectType==3}" >
+	<p:panelGrid columns="4" style="width:100%; text-align:left;">
+		<h:outputLabel value="学习时间" />
+		<p:calendar value="#{recordReqAction.startDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+		<p:calendar value="#{recordReqAction.endDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true" styleClass="minLength"/>
+
+		<f:facet name="footer">
+			<h:panelGroup style="display:block; text-align:center">
+				<p:commandButton id="searchBtn3" value="查询" actionListener="#{recordReqAction.searchTime}" />
+				<p:spacer width="10px"/>
+				<p:commandButton type="reset" value="重置" />
+			</h:panelGroup>
+		</f:facet>	
+	</p:panelGrid>
+	<p:dataTable scrollable="true" scrollHeight="#{recordAction.heighti2}" 
+		id="timeList"
+		binding="#{recordAction.pageTable}"
+		lazy="true"
+		value="#{recordAction.timePage}" 
+		rows="20"
+		var="time" 
+		paginator="true" 
+		paginatorPosition="bottom"
+		currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+		paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+		rowsPerPageTemplate="20,50"
+		rowIndexVar="row"
+		styleClass="gridTable" 
+		emptyMessage="对不起，没有查询到数据！"
+		>
+		<p:column headerText="日期" width="15%">
+			<h:outputText value="#{time.studyDateStr}" />
+		</p:column>
+		<p:column headerText="班次" width="20%">
+			<h:outputText value="#{time.classLevelStr}" />
+		</p:column>
+		<p:column headerText="章节" width="20%">
+			<h:outputText value="#{time.chapterName}" />
+		</p:column>
+		<p:column headerText="累计学习时间" width="15%">
+			<h:outputText value="#{time.totalStudyTimeStr}" />
+		</p:column>
+		<p:column headerText="首次学习时间" width="15%">
+			<h:outputText value="#{time.earlyStudyTimeStr}" />
+		</p:column>
+		<p:column headerText="最后结束时间" width="15%">
+			<h:outputText value="#{time.lastStudyTimeStr}" />
+		</p:column>
+	</p:dataTable>
+</p:panel>

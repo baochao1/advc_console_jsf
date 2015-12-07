@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="coursetimelong">
+	
+    <sql id="getCoursetimeLongList_body">
+	   	SELECT at.timeLongID, at.courseID, at.countDate, at.timeLong, at.createTime,
+		at.op, ac.courseName, ac.courseCode, a.teacherName, ROW_NUMBER() Over(ORDER BY countDate DESC,timeLongID desc) AS rowNum 
+        FROM ADVC_COURSE_TIMELONG at WITH (NOLOCK) 
+        LEFT JOIN ADVC_COURSE ac WITH (NOLOCK) on ac.courseID = at.courseID
+        LEFT JOIN ADVC_TEACHER a WITH (NOLOCK) ON a.teacherID = at.op
+	   	<where>
+	   		<if test="courseName !=null and courseName != ''"> AND ac.courseName = #{courseName} </if>
+	   		<if test="countDate != null ">  AND at.countDate=#{countDate} </if>
+	   	</where>
+    </sql>
+
+    <select id="countCoursetimeLong" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getCoursetimeLongList_body"/>
+        ) AS myTable 
+    </select>
+
+    <select id="findPageCoursetimeLong" parameterType="CoursetimeLong" resultType="CoursetimeLong">
+        SELECT * FROM (
+            <include refid="getCoursetimeLongList_body"/>
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <delete id="deleteCoursetimeLong" parameterType="int">
+		delete ADVC_COURSE_TIMELONG WHERE timeLongID=#{timeLongID}
+    </delete>
+    
+    <update id="updateCoursetimeLong" parameterType="CoursetimeLong">
+        UPDATE ADVC_COURSE_TIMELONG
+        <set>
+        	<if test="timeLong !=null "> timeLong= #{timeLong},</if>
+        	<if test="op != null"> op= #{op}</if>
+        </set>
+		WHERE timeLongID=#{timeLongID}
+    </update>
+    
+    <select id="getCourseTimeLongSet" parameterType="java.util.Map" resultType="CoursetimeLong">
+		SELECT countDate, 
+		case when sum(userNum) is null or sum(userNum)=0 then 0 
+		else isnull(SUM(timeLong*userNum)/SUM(userNum),0) end AS timeLong 
+		FROM ADVC_COURSE_TIMELONG with (nolock) 
+		<where>
+			courseID IN 
+			<foreach collection="course" close=")" open="(" separator="," item="c">
+				#{c.courseID}
+			</foreach>
+			AND countDate IN 
+			<foreach collection="countDate" close=")" open="(" separator="," item="d">
+				#{d}
+			</foreach>
+		</where>
+		GROUP BY countDate ORDER BY countDate 
+	</select>
+	
+	<insert id="insertCoursetimeLong" parameterType="CoursetimeLong">
+        INSERT INTO ADVC_COURSE_TIMELONG ( courseID,countDate,timeLong,createTime )
+        VALUES ( #{courseID},#{countDate},#{timeLong},#{createTime} )
+    </insert>
+    
+</mapper>

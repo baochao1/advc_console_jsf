@@ -1,0 +1,34 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	<h:outputLabel for="uClassName" value="班级名称">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText id="uClassName" value="#{classesReqAction.classes.className}" styleClass="minLength"/>
+
+	<h:outputLabel for="uClassCode" value="班级代码">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText id="uClassCode" value="#{classesReqAction.classes.classCode}" styleClass="minLength"/>
+
+	<h:outputLabel for="uDisplayAdvice" value="班主任" />
+	<p:selectOneMenu id="uDisplayAdvice" value="#{classesReqAction.classes.adviserTeacherCode}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+		<f:selectItem itemLabel="--请选择--" itemValue="-1" />
+		<f:selectItems value="#{teacherOther.teacherList}" var="teacher" itemLabel="#{teacher.teacherName}(#{teacher.teacherCode})" itemValue="#{teacher.teacherCode}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uContent" value="班级口号" />
+	<p:inputTextarea cols="50" rows="5" autoResize="false" id="uContent" value="#{classesReqAction.classes.classDesc}" />
+
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg" />
+			<h:inputHidden value="#{classesReqAction.classes.classID}"/>
+			<h:inputHidden value="#{classesReqAction.oldDisplayAdviser}"/>
+			<h:inputHidden value="#{classesReqAction.classflag}"/>
+			<p:commandButton value="提交" update="msg" actionListener="#{classesReqAction.updateClasses}" oncomplete="optResult('loadDialog',args,1);" />
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

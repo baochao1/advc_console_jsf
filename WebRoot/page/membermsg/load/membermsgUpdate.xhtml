@@ -1,0 +1,137 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:p="http://primefaces.org/ui" id="loadDialog" header="回复" widgetVar="loadDialog" resizable="true" showEffect="fade" hideEffect="fade" height="350" position="top">
+	<p:panelGrid id="updatePanelGrid">
+		<p:row>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="班级代码"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{membermsgReqAction.membermsg.classcode}"/>
+			</p:column>
+			<p:column styleClass="addObjectMinClass2">
+				<h:outputLabel value="班级名称"/>
+			</p:column>
+			<p:column styleClass="addContentClass">
+				<h:outputText value="#{membermsgReqAction.membermsg.className}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="班主任"/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{membermsgReqAction.membermsg.displayAdviser}"/>
+			</p:column>
+			<p:column>
+				<h:outputLabel value="发送时间"/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{membermsgReqAction.membermsg.sentTimeStr}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="消息标题"/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{membermsgReqAction.membermsg.msgTitle}"/>
+			</p:column>
+			<p:column>
+				<h:outputLabel value="学员代码"/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{membermsgReqAction.membermsg.userName}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="消息内容"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{membermsgReqAction.membermsg.msgContent}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="回复内容"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:inputTextarea cols="70" rows="5" autoResize="false" value="#{membermsgReqAction.membermsg.replyContent}" />
+				<h:inputHidden value="#{membermsgReqAction.membermsg.replyContentOld}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="状态"/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{membermsgReqAction.membermsg.statusStr}"/>
+			</p:column>
+			<p:column>
+				<h:outputLabel value="回复时间"/>
+			</p:column>
+			<p:column>
+				<h:outputText value="#{membermsgReqAction.membermsg.replyTimeStr}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="回复人"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:outputText value="#{membermsgReqAction.membermsg.teacherName}"/>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="其他功能"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<p:commandLink value="【转为技术】" update=":searchForm:membermsgList :info" onclick="loadDialog.hide();" actionListener="#{membermsgReqAction.updateMessage(1)}" />
+				<p:commandLink value="【转为正常】" update=":searchForm:membermsgList :info" onclick="loadDialog.hide();" actionListener="#{membermsgReqAction.updateMessage(0)}" />
+				<p:commandLink value="【已往消息】" onclick="setValue('#{membermsgReqAction.membermsg.userName}');loadDialog.hide();" actionListener="#{membermsgReqAction.search}" />
+				
+				<h:link value="【电话回访】" 
+					outcome="/page/membercall/load/memberCallRecord" includeViewParams="true" target="_blank">
+					<f:param name="userID" value="#{membermsgReqAction.membermsg.userID}"/>
+					<f:param name="userName" value="#{membermsgReqAction.membermsg.userName}"/>
+					<f:param name="classID" value="#{membermsgReqAction.membermsg.classID}"/>
+					<f:param name="siteID" value="#{siteID}"/>
+				</h:link>
+			</p:column>
+		</p:row>
+		
+		<p:row>
+			<p:column>
+				<h:outputLabel value="修改日志"/>
+			</p:column>
+			<p:column colspan="3" styleClass="maxLength">
+				<h:link value="#{(membermsgReqAction.logCount!=0)?'【日志查看】':''}" 
+					outcome="/page/membermsglog/membermsgLogInfo" includeViewParams="true" target="_blank">
+					<f:param name="msgID" value="#{membermsgReqAction.membermsg.msgID}"/>
+				</h:link>
+			</p:column>
+		</p:row>
+	
+	</p:panelGrid>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<h:inputHidden value="#{membermsgReqAction.flag}"/>
+			<h:inputHidden value="#{membermsgReqAction.membermsg.msgID}"/>
+			<h:inputHidden value="#{membermsgReqAction.membermsg.userName}"/>
+			<p:commandButton value="提交" actionListener="#{membermsgReqAction.updateMessage}" update="msg" oncomplete="optResult('loadDialog',args,'3');" />
+			<p:commandButton type="button" value="关闭" onclick="loadDialog.hide();" />
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

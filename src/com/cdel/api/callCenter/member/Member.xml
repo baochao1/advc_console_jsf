@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="api.callCenter.member">
+
+	<select id="findMembersByClassID" parameterType="Integer" resultType="com.cdel.api.callCenter.member.Member">
+		SELECT DISTINCT
+			M.userName, M.userID, M.userName userCode, M.telPhone phone, C.className
+		FROM ADVC_MEMBER M WITH (NOLOCK)
+			LEFT JOIN ADVC_MEMBER_CLASS MC WITH (NOLOCK) ON M.userID = MC.userID
+			LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON MC.classID = C.classID
+		WHERE 
+			 C.classID = #{classID} AND MC.status=1 
+	</select>
+	 
+	 <!--查询学员的 班级信息  -->
+    <select id="findMembersByUpdateTime" parameterType="com.cdel.api.callCenter.member.Member" resultType="com.cdel.api.callCenter.member.Member">
+		 select TOP ${count}  am.userID,amc.classID,am.userName,
+                am.telPhone,amc.firstTime,amc.status,amc.createTime,amc.updateTime
+		 FROM  ADVC_MEMBER_CLASS  amc  WITH (NOLOCK)
+		 LEFT JOIN ADVC_MEMBER am  WITH (NOLOCK)  ON amc.userID = am.userID
+		 LEFT JOIN ADVC_CLASS C WITH (NOLOCK) ON amc.classID = C.classID
+		 LEFT JOIN  ADVC_CLASS_STRATEGY  ACS  WITH (NOLOCK)  ON  C.strategyID = ACS.strategyID 
+         LEFT JOIN  ADVC_MAJOR ama  WITH (NOLOCK)  ON  ACS.majorID =   ama.majorID
+		 WHERE   CONVERT(varchar(100),amc.updateTime, 121) > #{updateTime}    AND ama.siteID = #{siteID}
+		  ORDER BY  amc.updateTime  
+	</select>
+    
+</mapper>

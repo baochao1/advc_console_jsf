@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>#{tempChapterAction.courseName}的计划项(章节)</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+	<script>
+	function callBack(){
+		alert("添加成功，请继续设置学习时长和学习要求！");
+		window.open("studyAsk.xhtml?chapterID="+jsonResult.chapterID+"&amp;chapterName="+jsonResult.chapterName);
+	}
+	
+	function selectMajorStageByMajorjs(majorID){
+		selectMajorStageByMajor([{name:'majorID', value:majorID}]);
+	}
+	</script>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="selectMajorStageByMajor" actionListener="#{majorStageOther.selectMajorStageByMajor(tempChapterAction.majorID)}" update="sPhaseNo" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="6" style="width:100%; text-align:left;">
+			<h:outputLabel for="sPhaseNo" value="阶段名" />
+			<p:selectOneMenu id="sPhaseNo" value="#{tempChapterAction.searchTempChapter.phaseNo}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorStageOther.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel for="sChapterName" value="计划项(章节)名" />
+			<p:inputText id="sChapterName" value="#{tempChapterAction.searchTempChapter.chapterName}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sOpenStatus" value="开通状态" />
+			<p:selectOneMenu id="sOpenStatus" value="#{tempChapterAction.searchTempChapter.openStatus}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{tempChapterReqAction.openStatus.entrySet()}" var="openStatus" itemLabel="#{openStatus.value}" itemValue="#{openStatus.key}"/>
+			</p:selectOneMenu>
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{tempChapterAction.search}" rendered="#{tempChapterAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="loadDialog.show();" 
+				actionListener="#{tempChapterAction.add}" rendered="#{tempChapterAction.optAuth}" update=":loadForm:loadDialog" />
+			<p:menuitem value="批量开通" icon="ui-icon-star" oncomplete="optResultAlert(args,3);" 
+				actionListener="#{tempChapterReqAction.changeStatusSubmitBatch}" rendered="#{tempChapterAction.optAuth}" update=":info" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{tempChapterAction.heighti2}" 
+			widgetVar="tempChapterTable"
+			id="tempChapterList"
+			binding="#{tempChapterAction.pageTable}"
+			lazy="true"
+			value="#{tempChapterAction.tempChapterPage}" 
+			rows="20"
+			var="tempChapter" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{tempChapterAction.viewAuth}"
+			selection="#{tempChapterReqAction.selTempChapters}"
+			rowKey="#{tempChapter.chapterID}"
+			editable="true" 
+			editMode="cell" 
+			>
+			<p:ajax event="cellEdit" listener="#{tempChapterReqAction.updateSeqSubmit}" update=":info" />
+			<p:column width="5%" selectionMode="multiple" />
+			<p:column headerText="阶段名" width="7%">
+				<h:outputText value="#{tempChapter.stageName}"/>
+			</p:column>
+			<p:column headerText="计划项(章节)名" width="20%">
+				<h:outputText value="#{tempChapter.chapterName}" title="#{tempChapter.chapterName}"/>
+			</p:column>
+			<p:column headerText="短信章节名" width="20%">
+				<h:outputText value="#{tempChapter.noteName}" title="#{tempChapter.noteName}"/>
+			</p:column>
+			<p:column headerText="开通状态" width="8%">
+				<p:commandLink value="#{tempChapter.openStatusStr}" oncomplete="openStatusDialog.show();" update=":openStatusForm:openStatusDialog" actionListener="#{tempChapterReqAction.changeStatus(tempChapter.chapterID)}" rendered="#{tempChapterReqAction.optAuth and tempChapter.openStatus==0}"/>
+				<h:outputText value="#{tempChapter.openStatusStr}" rendered="#{!tempChapterReqAction.optAuth or tempChapter.openStatus!=0}"/>
+			</p:column>
+			<p:column headerText="开通时间" width="10%">
+				<h:outputText value="#{tempChapter.openTimeStr}"/>
+			</p:column>
+			<p:column headerText="创建时间" width="10%">
+				<h:outputText value="#{tempChapter.createTimeStr}"/>
+			</p:column>
+			<p:column headerText="学习要求" width="9%">
+				<h:link value="查看(#{tempChapter.askNum})" outcome="studyAsk" includeViewParams="true" target="_blank">
+					<f:param name="chapterID" value="#{tempChapter.chapterID}"/>
+					<f:param name="chapterName" value="#{tempChapter.chapterName}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="操作" width="9%">
+				<p:commandLink value="查看" oncomplete="showDialog.show();" actionListener="#{tempChapterReqAction.show(tempChapter.chapterID)}" update=":showForm:showDialog" rendered="#{tempChapterAction.viewAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="修改" oncomplete="loadDialog.show();" actionListener="#{tempChapterAction.update(tempChapter.chapterID)}" update=":loadForm:loadDialog" rendered="#{tempChapterAction.optAuth}"/>
+			</p:column>
+			<p:column headerText="排序" width="5%">
+				<p:cellEditor>
+					<f:facet name="output">
+						<h:outputText value="#{tempChapter.sequence}" title="单击修改"/>
+					</f:facet>
+					<f:facet name="input">
+						<p:inputText value="#{tempChapter.sequence}" style="width:60%;"/>
+					</f:facet>
+				</p:cellEditor>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="tempChapterList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	<!-- 查看页面 -->
+	<h:form id="showForm" >
+		<p:dialog id="showDialog" header="查看学习计划项" widgetVar="showDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/tempChapterShow.xhtml"/>
+		</p:dialog>
+	</h:form>
+	<!-- 添加/修改页面 -->
+	<h:form id="loadForm" >
+		<p:dialog id="loadDialog" header="#{(tempChapterAction.flag==0)?'添加':'修改'}" widgetVar="loadDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="#{tempChapterAction.url}"/>
+		</p:dialog>
+	</h:form>
+	<!-- 开通状态 -->
+	<h:form id="openStatusForm" >
+		<p:dialog id="openStatusDialog" header="修改开通状态" widgetVar="openStatusDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/tempChapterOpen.xhtml"/>
+		</p:dialog>
+	</h:form>
+</h:body>
+</html>

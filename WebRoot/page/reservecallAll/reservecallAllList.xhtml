@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>全部预约回访</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sUserName" value="学员代码"/>
+			<p:inputText id="sUserName" value="#{reserveCallAllAction.searchMemberCall.userName}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sClassName" value="班级名称"/>
+			<h:panelGroup style="display:block;">	
+				<p:autoComplete id="sClassName" value="#{reserveCallAllAction.searchMemberCall.className}" completeMethod="#{comRequestMethod.completeClassName}" var="className" itemLabel="#{className}" itemValue="#{className}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<h:outputLabel for="sCallType" value="回访分类"/>
+			<p:selectOneMenu id="sCallType" value="#{reserveCallAllAction.searchMemberCall.callType}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{reserveCallReqOther.callTypes.entrySet()}" var="status" itemLabel="#{status.value}" itemValue="#{status.key}"/>
+			</p:selectOneMenu>
+			
+			<h:outputLabel for="sTeacherCode" value="班主任或管理员"/>
+			<h:panelGroup id="sManager" style="display:block;">
+				<p:autoComplete id="sTeacherCode" value="#{reserveCallAllAction.searchMemberCall.displayAdviser}" completeMethod="#{comRequestMethod.completeTeacherName}" var="teacherName" itemLabel="#{teacherName}" itemValue="#{teacherName}" queryDelay="500" />
+				<p:graphicImage url="/resources/images/ques.png" style="cursor:pointer;" onclick="autoInfo();"/>
+			</h:panelGroup>
+			
+			<p:outputLabel/>
+			<p:outputLabel/>
+			
+        	<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" update="memberCallReserveAllList" actionListener="#{reserveCallAllAction.search}"  rendered="#{reserveCallAllAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="预约记录" icon="ui-icon-gear" target="_blank" onclick="loadTabPage4Child('reservecallHistory','预约回访历史');" />
+		</p:menubar>
+		<p:dataTable scrollable="true" scrollHeight="#{reserveCallAllAction.heighti2}" 
+			widgetVar="memberCallReserveAllList"
+			id="memberCallReserveAllList"
+			binding="#{reserveCallAllAction.pageTable}"
+			lazy="true"
+			value="#{reserveCallAllAction.memberCallPage}" 
+			rows="20"
+			var="memberCall" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="学员代码" width="10%">
+				<h:outputText value="#{memberCall.userName}"/>
+			</p:column>
+			<p:column headerText="学习记录" width="10%" style="text-align:center; " >
+				<h:link value="学习记录" outcome="/page/record/recordList.xhtml" includeViewParams="true" title="学员学习的记录,包括学习时长、测试记录、错题记录等" target="_blank">
+					<f:param name="userName" value="#{memberCall.userName}"/>
+					<f:param name="userID" value="#{memberCall.userID}"/>
+					<f:param name="classID" value="#{memberCall.classID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="班级名称" width="20%" >
+				<h:link value="#{memberCall.className}"
+					outcome="/page/memberClass/memberClassList" includeViewParams="true" target="_blank">
+					<f:param name="classID" value="#{memberCall.classID}"/>
+					<f:param name="siteID" value="#{reserveCallAllAction.siteID}"/>
+				</h:link>
+			</p:column>
+			<p:column headerText="班主任" width="10%">
+				<h:outputText value="#{memberCall.displayAdviser}"/>
+			</p:column>
+			<p:column headerText="管理员" width="10%" style="text-align:center; ">
+				<p:commandLink value="#{memberCall.teacherName}" 
+					oncomplete="showDialog.show();" 
+					actionListener="#{classteacherReqAction.show(memberCall.classID)}"
+					update=":showManagerForm:showDialog" rendered="#{reserveCallAllAction.viewAuth}">
+				</p:commandLink>
+			</p:column>
+			<p:column headerText="预约时间" width="16%">
+				<h:outputText value="#{memberCall.reservedDateStr}" />
+				<p:spacer width="5"/>
+				<h:outputText value="#{memberCall.reservedTimeStr}" style="color:red; "/>
+			</p:column>
+			<p:column headerText="回访分类" width="9%">
+				<h:outputText value="#{memberCall.callTypeStr}" />
+			</p:column>
+			<p:column headerText="电话回访" width="14%" style="text-align:center; " >
+				<h:link value="【#{memberCall.callSuccessDayStr}|#{memberCall.callDayStr}】" 
+					outcome="/page/membercall/load/memberCallRecord" includeViewParams="true" target="_blank">
+					<f:param name="userID" value="#{memberCall.userID}"/>
+					<f:param name="userName" value="#{memberCall.userName}"/>
+					<f:param name="classID" value="#{memberCall.classID}"/>
+					<f:param name="siteID" value="#{reserveCallAllAction.siteID}"/>
+				</h:link>
+				<h:outputText styleClass="notifyType-#{memberCall.reserveStatus}" value="#{memberCall.reserveStatusStr}" />
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="memberCallReserveAllList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 查看页面 -->
+	<h:form id="showManagerForm" >
+		<ui:include src="/page/classteacher/load/teacherListShow.xhtml"/>
+	</h:form>
+</h:body>
+</html>

@@ -1,0 +1,59 @@
+<p:tabView xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" rendered="#{phaseSetAction.show}" >
+	<p:ajax event="tabChange" listener="#{phaseSetAction.onChangePhaseSet}" />
+	<p:tab id="tab1" title="实验班">
+		<p:panelGrid columns="2" columnClasses="addObjectMinClass2, maxLength">
+			<p:commandButton value="添加阶段" actionListener="#{phaseSetAction.add(1)}" update="phaseSetList1"/>
+			<p:dataTable id="phaseSetList1" value="#{phaseSetAction.phaseSetList1}" var="phaseSet" rowIndexVar="row" emptyMessage="对不起，没有查询到数据！">
+				<p:column headerText="阶段">
+					<p:selectOneMenu value="#{phaseSet.phaseNo}" style="width:100px;" panelStyleClass="tinyLength" >
+						<f:selectItem itemLabel="--请选择--" itemValue="" />
+						<f:selectItems value="#{phaseSetAction.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+					</p:selectOneMenu>
+				</p:column>
+				<p:column headerText="顺序">
+					<p:inputText value="#{phaseSet.sequence}" style="width:20px;"/>&#160;&#160;
+					<p:commandLink value="删除" actionListener="#{phaseSetAction.remove(row,1)}" update="phaseSetList1"/>
+				</p:column>
+			</p:dataTable>
+		</p:panelGrid>
+	</p:tab>
+	
+	<p:tab id="tab2" title="精品班">
+		<p:panelGrid columns="2" columnClasses="addObjectMinClass2, maxLength">
+			<p:commandButton value="添加阶段" actionListener="#{phaseSetAction.add(2)}" update="phaseSetList2"/>
+			<p:dataTable id="phaseSetList2" value="#{phaseSetAction.phaseSetList2}" var="phaseSet" rowIndexVar="row" emptyMessage="对不起，没有查询到数据！">
+				<p:column headerText="阶段">
+					<p:selectOneMenu value="#{phaseSet.phaseNo}" style="width:100px;" panelStyleClass="tinyLength" >
+						<f:selectItem itemLabel="--请选择--" itemValue="" />
+						<f:selectItems value="#{phaseSetAction.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+					</p:selectOneMenu>
+				</p:column>
+				<p:column headerText="顺序">
+					<p:inputText value="#{phaseSet.sequence}" style="width:20px;"/>&#160;&#160;
+					<p:commandLink value="删除" actionListener="#{phaseSetAction.remove(row,2)}" update="phaseSetList2"/>
+				</p:column>
+			</p:dataTable>
+		</p:panelGrid>
+	</p:tab>
+	
+	<p:tab id="tab3" title="混合班">
+		<p:panelGrid columns="2" columnClasses="addObjectMinClass2, maxLength">
+			<p:commandButton value="添加阶段" actionListener="#{phaseSetAction.add(3)}" update="phaseSetList3"/>
+			<p:dataTable id="phaseSetList3" value="#{phaseSetAction.phaseSetList3}" var="phaseSet" rowIndexVar="row" emptyMessage="对不起，没有查询到数据！">
+				<p:column headerText="阶段">
+					<p:selectOneMenu value="#{phaseSet.phaseNo}" style="width:100px;" panelStyleClass="tinyLength" >
+						<f:selectItem itemLabel="--请选择--" itemValue="" />
+						<f:selectItems value="#{phaseSetAction.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+					</p:selectOneMenu>
+				</p:column>
+				<p:column headerText="顺序">
+					<p:inputText value="#{phaseSet.sequence}" style="width:20px;"/>&#160;&#160;
+					<p:commandLink value="删除" actionListener="#{phaseSetAction.remove(row,3)}" update="phaseSetList3"/>
+				</p:column>
+			</p:dataTable>
+		</p:panelGrid>
+	</p:tab>
+</p:tabView>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gdbmembercall">
+	
+	<sql id="getMembercallList_body">
+		SELECT a.callID, a.userID,b.userName, a.studyStatus, a.personalAsk, a.reservedTime,
+			a.feedback, a.callStatus, a.caller, a.callTime,a.reservedDate,a.reserveRemark, t.teacherName, 
+			ROW_NUMBER() Over(ORDER BY a.callTime DESC) AS rowNum 
+        FROM GDB_MEMBER_CALL a WITH (NOLOCK) 
+        LEFT JOIN ADVC_MEMBER b WITH (NOLOCK) on a.userID=b.userID
+        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) on a.caller = t.teacherID
+        <where>
+        	<if test="userID != null"> and a.userID=#{userID}</if>
+        	<if test="userName != null and userName != ''"> and b.userName=#{userName}</if>
+        </where>
+    </sql>
+    
+    <select id="findPageGdbMemberCall" resultType="GdbMemberCall">
+        SELECT * FROM (
+            <include refid="getMembercallList_body" />
+        ) AS myTable WHERE rowNum between #{rowNumStart} and #{rowNumEnd} 
+    </select>
+    
+    <select id="countGdbMemberCall" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="getMembercallList_body" />
+        ) AS myTable 
+    </select>
+    
+	<select id="getGdbMemberCallInfo" resultType="GdbMemberCall" parameterType="GdbMemberCall">
+        SELECT <if test="callStatus == 2"> top 1 </if>
+        a.callID, a.userID, b.userName, a.studyStatus, a.personalAsk, a.reservedTime, 
+		a.feedback, a.callStatus, a.caller, a.callTime, a.reservedDate, a.reserveRemark, t.teacherName 
+        FROM gdb_member_call a WITH (NOLOCK) 
+        LEFT JOIN ADVC_MEMBER b WITH (NOLOCK) ON a.userID=b.userID
+        LEFT JOIN ADVC_TEACHER t WITH (NOLOCK) ON a.caller = t.teacherID
+        <where>
+	        <if test="callStatus !=null"> AND a.callStatus = #{callStatus}</if>
+	        <if test="userID !=null"> AND a.userID = #{userID}</if>
+	        <if test="callID !=null"> AND a.callID = #{callID}</if>
+        </where>
+        order by a.callTime desc 
+    </select>
+    
+    <insert id="insertGdbMemberCall">
+        INSERT INTO gdb_member_call ( userID,callStatus,caller,callTime 
+        	<if test="studyStatus != null and studyStatus != ''"> ,studyStatus </if>
+        	<if test="personalAsk != null and personalAsk != ''"> ,personalAsk </if>
+        	<if test="feedback != null and feedback != ''"> ,feedback </if>
+        	<if test="reserveRemark != null and reserveRemark != ''"> ,reserveRemark </if>
+        	<if test="reservedDate != null"> ,reservedDate </if>
+        )
+        VALUES ( #{userID},#{callStatus},#{caller},#{callTime} 
+			<if test="studyStatus != null and studyStatus != ''"> ,#{studyStatus} </if>
+        	<if test="personalAsk != null and personalAsk != ''"> ,#{personalAsk} </if>
+        	<if test="feedback != null and feedback != ''"> ,#{feedback} </if>
+        	<if test="reserveRemark != null and reserveRemark != ''"> ,#{reserveRemark} </if>
+        	<if test="reservedDate != null"> ,#{reservedDate} </if>
+        )
+        <selectKey keyProperty="callID" resultType="int">
+        	SELECT @@IDENTITY AS callID
+        </selectKey>
+    </insert>
+
+    <update id="updateGdbMemberCall">
+        UPDATE gdb_member_call 
+        <set>
+        	<if test="userID != null"> userID=#{userID}, </if>
+        	<if test="classID != null"> classID=#{classID}, </if>
+        	<if test="studyStatus != null and studyStatus != ''"> studyStatus=#{studyStatus}, </if>
+        	<if test="personalAsk != null and personalAsk != ''"> personalAsk=#{personalAsk}, </if>
+        	<if test="feedback != null and feedback != ''"> feedback=#{feedback}, </if>
+        	<if test="callStatus != null"> callStatus=#{callStatus}, </if>
+        	<if test="caller != null"> caller=#{caller}, </if>
+        	<if test="callTime != null"> callTime=#{callTime}, </if>
+        	<if test="reservedDate != null"> reservedDate=#{reservedDate}, </if>
+        	<if test="reserveRemark != null and reserveRemark != ''"> reserveRemark=#{reserveRemark}, </if>
+        </set>
+		where callID=#{callID}
+    </update>
+
+</mapper>

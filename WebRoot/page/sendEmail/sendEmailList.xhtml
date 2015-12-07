@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>实验班后台管理系统--向学员发送短信</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<h:form id="emailShowForm">
+		<p:dataTable scrollable="true" scrollHeight="#{sendEmailAction.heighti2}" 
+			widgetVar="SendEmailTable"
+			id="SendEmailTable"
+			lazy="true"
+			value="#{sendEmailAction.page}" 
+			rows="20"
+			var="sendEmail" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			>
+			<p:column headerText="id" width="3%">
+				<h:outputText value="#{sendEmail.mailID}" />
+			</p:column>
+			<p:column headerText="班级名称" width="20%">
+				<h:outputText value="#{sendEmail.className}" />
+			</p:column>
+			<p:column headerText="邮件标题" width="*">
+				<h:outputText value="#{sendEmail.title}" />
+			</p:column>
+			<p:column headerText="发送人" width="10%">
+				<h:outputText value="#{sendEmail.sender}" />
+			</p:column>
+			<p:column headerText="发送时间" width="12%">
+				<h:outputText value="#{sendEmail.sendTimeStr}" />
+			</p:column>
+			<p:column headerText="查看" width="7%">
+				<p:commandLink value="查看" oncomplete="mailDeailDialog.show()" 
+		    	actionListener="#{sendEmailReqAction.showEmailDetail(sendEmail.mailID)}"
+		    	update=":mailDeailForm:mailDeailDialog" />
+			</p:column>
+		</p:dataTable>
+	</h:form>
+	<!-- 邮件详情 -->
+	<h:form id="mailDeailForm" >
+		<p:dialog id="mailDeailDialog" header="向学员发送短信" widgetVar="mailDeailDialog" resizable="false" showEffect="fade" hideEffect="fade">
+			<ui:include src="load/sendEmailShow.xhtml"/>
+		</p:dialog>
+	</h:form>
+	</h:body>
+</html>

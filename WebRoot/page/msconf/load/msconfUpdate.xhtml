@@ -1,0 +1,23 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" >
+		
+	<h:outputLabel value="开始时间" />
+	<p:calendar value="#{msconfReqAction.msconf.msStartTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+		
+	<h:outputLabel value="结束时间" />
+	<p:calendar value="#{msconfReqAction.msconf.msEndTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+	
+	<h:outputLabel value="调整时间" />
+	<p:calendar value="#{msconfReqAction.msconf.tzTime}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true"/>
+	
+  	<f:facet name="footer">
+		<h:panelGroup style="text-align:center;display:block;">
+	  		<h:inputHidden value="#{msconfReqAction.msconf.classID}"/>
+			<p:commandButton value="修改" actionListener="#{msconfReqAction.updateSubmit}" oncomplete="optResult('msconfDialog',args,1);"/>
+			<p:commandButton type="button" value="关闭" onclick="msconfDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+	
+</p:panelGrid>

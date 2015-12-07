@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>学员信息修改</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="4" style="width:100%; text-align:left;">
+			<h:outputLabel for="sMsgTitle" value="消息主题" />
+			<p:inputText id="sMsgTitle" value="#{infoModifyAction.searchInfoModify.msgTitle}" styleClass="minLength"/>
+			
+			<h:outputLabel for="sMsgTitle" value="消息内容" />
+			<p:inputTextarea cols="70" rows="3" value="#{infoModifyAction.searchInfoModify.msgContent}" autoResize="false" />
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{infoModifyAction.search}" update=":info" rendered="#{infoModifyAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:dataTable scrollable="true" scrollHeight="#{infoModifyAction.heighti}" 
+			widgetVar="infoModifyTable"
+			id="infoModifyList"
+			binding="#{infoModifyAction.pageTable}"
+			lazy="true"
+			value="#{infoModifyAction.infoModifyPage}" 
+			rows="20"
+			var="infoModify" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} / {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			editable="true" 
+			>
+			<p:column width="6%" headerText="修改">
+				<p:rowEditor />
+			</p:column>
+			<p:ajax event="rowEdit" listener="#{infoModifyReqAction.updateSubmit}" update=":info" />
+			<p:column headerText="老师" width="10%">
+				<h:outputText value="#{infoModify.teacherName}" />
+			</p:column>	
+			<p:column headerText="消息主题" width="39%">
+				<h:outputText value="#{infoModify.msgTitle}" />
+			</p:column>	
+			<p:column headerText="消息内容" width="40%">
+				<p:cellEditor>
+					<f:facet name="output">
+						<h:outputText value="#{infoModify.msgContent}" escape="false" title="单击修改"/>
+					</f:facet>
+					<f:facet name="input">
+						<p:inputTextarea autoResize="false" cols="70" rows="5" value="#{infoModify.msgContent4TextArea}" />
+					</f:facet>
+				</p:cellEditor>
+			</p:column>	
+			<p:column headerText="条数" width="8%">
+				<h:outputText value="#{infoModify.myCount}" />
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="infoModifyList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+
+</h:body>
+</html>

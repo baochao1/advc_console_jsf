@@ -1,0 +1,20 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="showPanelGrid" columns="2" columnClasses="addObjectClass, addContentClass">
+	<f:facet name="header">
+		<p:outputLabel style="color:red;" value="说明：如果选择“是”，将影响所有包含该章节的学习计划(请谨慎选择),如果选择“否”,只是使该章节在前台显示出来，不会影响学习计划，所以无特殊情况只需默认选择“否”就可以了!"/>
+	</f:facet>
+	<h:outputLabel value="是否修改学习计划状态" />
+	<p:selectOneMenu style="width:200px;" panelStyleClass="minLength" value="#{tempChapterReqAction.modifyPlan}" >
+		<f:selectItems value="#{tempChapterReqAction.yesorno.entrySet()}" var="yesorno" itemLabel="#{yesorno.value}" itemValue="#{yesorno.key}"/>
+	</p:selectOneMenu>
+	
+	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<h:inputHidden value="#{tempChapterReqAction.tempChapter.chapterID}"/>
+			<p:commandButton value="提交" actionListener="#{tempChapterReqAction.changeStatusSubmit}" oncomplete="optResult('openStatusDialog',args,1);" update=":searchForm:tempChapterList"/>
+			<p:commandButton type="button" value="关闭" onclick="openStatusDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:panelGrid>

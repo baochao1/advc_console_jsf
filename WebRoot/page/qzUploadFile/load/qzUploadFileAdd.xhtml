@@ -1,0 +1,26 @@
+<p:dialog xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="addDialog" header="添加" widgetVar="addDialog" resizable="false" showEffect="fade" hideEffect="fade" height="300">
+	<p:panelGrid id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" styleClass="largeLength">
+				
+		<h:outputLabel value="上传文件">
+			<span class="requiredFlag">*</span>
+		</h:outputLabel>
+		<p:fileUpload fileUploadListener="#{qzUploadFileAction.handleFileUpload}" sizeLimit="10000000" update=":info successFile"/>
+		
+		<h:outputLabel value="上传成功文件"/>
+		<h:outputText id="successFile" value="#{qzUploadFileAction.fileNames}"/>
+	</p:panelGrid>
+		
+	
+  	<f:facet name="footer">
+		<h:panelGroup style="display:block; text-align:center">
+			<p:messages id="msg"/>
+			<p:commandButton value="添加" 
+			actionListener="#{qzUploadFileReqAction.updateSubmit}" update="msg" 
+			oncomplete="optResult('addDialog',args,0);"/>
+			<p:commandButton type="button" value="关闭" onclick="addDialog.hide();"/>
+		</h:panelGroup>
+	</f:facet>
+</p:dialog>

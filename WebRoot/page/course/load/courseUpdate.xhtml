@@ -1,0 +1,79 @@
+<p:panelGrid xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui" id="updatePanelGrid" columns="2" columnClasses="addObjectClass, addContentClass" rendered="#{courseAction.flag==0 or courseAction.flag==1}">
+	
+	<h:outputLabel for="uMajorName" value="辅导名称">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="uMajorName" value="#{courseAction.updateCourse.majorID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+		<p:ajax event="change" update=":loadForm:uListID" listener="#{courseAction.changeMajorID}" />
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{majorOther.majorList}" var="major" itemLabel="#{major.majorName}" itemValue="#{major.majorID}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uListID" value="对内课程" />
+	<p:selectOneMenu id="uListID" value="#{courseAction.updateCourse.listID}" style="width:200px;" panelStyleClass="minLength" filter="true" filterMatchMode="contains">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{courseAction.qzCourseList}" var="qzCourse" itemLabel="#{qzCourse.courseName}" itemValue="#{qzCourse.courseID}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uCourseName" value="课程名称">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText id="uCourseName" value="#{courseAction.updateCourse.courseName}" styleClass="minLength"/>
+	
+	<h:outputLabel for="uCourseType" value="课程类别">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="uCourseType"  value="#{courseAction.updateCourse.courseType}" style="width:200px;" panelStyleClass="minLength">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{courseReqAction.courseTypeMap.entrySet()}" var="courseType" itemLabel="#{courseType.value}" itemValue="#{courseType.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uCourseCode" value="课程代码">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText id="uCourseCode"  value="#{courseAction.updateCourse.courseCode}" styleClass="minLengh"/>
+	
+	<h:outputLabel value="课程年份">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="sCourseYear"  value="#{courseAction.updateCourse.courseYear}" style="width:200px;" panelStyleClass="minLength">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{courseReqAction.years}" var="years" itemLabel="#{years}" itemValue="#{years}" />
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uIsPre" value="是否预习课程">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="uIsPre"  value="#{courseAction.updateCourse.isPre}" style="width:200px;" panelStyleClass="minLength">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{courseReqAction.isPreMap.entrySet()}" var="isPre" itemLabel="#{isPre.value}" itemValue="#{isPre.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uFaceType" value="是否面授课程">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:selectOneMenu id="uFaceType"  value="#{courseAction.updateCourse.faceType}" style="width:200px;" panelStyleClass="minLength">
+		<f:selectItems value="#{courseReqAction.faceTypeMap.entrySet()}" var="faceType" itemLabel="#{faceType.value}" itemValue="#{faceType.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uCourseSmsName" value="短信课程名">
+		<span class="requiredFlag">*</span>
+	</h:outputLabel>
+	<p:inputText id="uCourseSmsName" value="#{courseAction.updateCourse.courseSmsName}" styleClass="minLength"/>
+	
+	<h:outputLabel for="uIsMemberMsgOpen" value="是否开启定时发送学员消息" rendered="#{courseAction.flag==1}"/>
+	<p:selectOneMenu id="uIsMemberMsgOpen" value="#{courseAction.updateCourse.isMemberMsgOpen}" style="width:200px;" panelStyleClass="minLength" rendered="#{courseAction.flag==1}">
+		<f:selectItem itemLabel="--请选择--" itemValue="" />
+		<f:selectItems value="#{courseReqAction.isMemberMsgOpen.entrySet()}" var="isMemberMsgOpen" itemLabel="#{isMemberMsgOpen.value}" itemValue="#{isMemberMsgOpen.key}"/>
+	</p:selectOneMenu>
+	
+	<h:outputLabel for="uMemberMsgTitle" value="学员消息模板标题" rendered="#{courseAction.flag==1}"/>
+	<p:inputText id="uMemberMsgTitle" value="#{courseAction.updateCourse.memberMsgTitle}" rendered="#{courseAction.flag==1}" styleClass="minLength"/>
+	
+	<h:outputLabel for="uMemberMsgContent" value="学员消息模板内容" rendered="#{courseAction.flag==1}"/>
+	<p:inputTextarea cols="25" rows="3" id="uMemberMsgContent" autoResize="false" value="#{courseAction.updateCourse.memberMsgContent}" rendered="#{courseAction.flag==1}"/>
+	
+</p:panelGrid>

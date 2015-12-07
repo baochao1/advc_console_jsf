@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Mon Jul 01 18:07:57 CST 2013-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberdefine">    
+
+    <select id="getMemberdefineByUserID" resultType="Memberdefine" parameterType="int">
+		select top 1 md.*,m.userName 
+		from ADVC_MEMBER_DEFINE md WITH (NOLOCK) LEFT JOIN ADVC_MEMBER m WITH (NOLOCK) ON m.userID = md.userID
+        where md.userID=#{userID}
+    </select>  
+
+    <!-- 添加 -->
+    <insert id="insertMemberdefine">
+        INSERT INTO ADVC_MEMBER_DEFINE ( 
+        <trim prefix="" prefixOverrides=",">
+        	<if test="occupationID !=null"> occupationID,</if>
+        	<if test="specialtyID !=null"> specialtyID,</if>
+        	<if test="occupation !=null"> occupation,</if>
+        	<if test="specialty !=null"> specialty,</if>
+        	<if test="education !=null"> education,</if>
+        	<if test="jobStatus !=null"> jobStatus,</if>
+        	<if test="studyTime !=null"> studyTime,</if>
+        	<if test="studyTimeLong !=null"> studyTimeLong,</if>
+        	<if test="memory !=null"> memory,</if>
+        	<if test="examKill !=null"> examKill,</if>
+        	<if test="studyHabit !=null"> studyHabit,</if>
+        	<if test="studyWay !=null"> studyWay,</if>
+        	<if test="llikeTeacher !=null"> llikeTeacher,</if>
+        	<if test="description !=null"> description,</if>
+        	<if test="updateDate !=null"> updateDate,</if>
+        	<if test="addiJobStatus !=null"> addiJobStatus,</if>
+        	<if test="addiExamKill !=null"> addiExamKill,</if>
+        	<if test="addiStudyHabit !=null"> addiStudyHabit,</if>
+        	<if test="addiStudyWay !=null"> addiStudyWay,</if>
+        	<if test="addiMemory !=null"> addiMemory,</if>
+        	<if test="userID !=null"> userID</if>
+        </trim>
+        )
+        VALUES (
+	      <trim prefix="" prefixOverrides=",">
+        	<if test="occupationID !=null"> #{occupationID},</if>
+        	<if test="specialtyID !=null"> #{specialtyID},</if>
+        	<if test="occupation !=null"> #{occupation},</if>
+        	<if test="specialty !=null"> #{specialty},</if>
+        	<if test="education !=null"> #{education},</if>
+        	<if test="jobStatus !=null"> #{jobStatus},</if>
+        	<if test="studyTime !=null"> #{studyTime},</if>
+        	<if test="studyTimeLong !=null"> #{studyTimeLong},</if>
+        	<if test="memory !=null"> #{memory},</if>
+        	<if test="examKill !=null"> #{examKill},</if>
+        	<if test="studyHabit !=null"> #{studyHabit},</if>
+        	<if test="studyWay !=null"> #{studyWay},</if>
+        	<if test="llikeTeacher !=null"> #{llikeTeacher},</if>
+        	<if test="description !=null"> #{description},</if>
+        	<if test="updateDate !=null"> #{updateDate},</if>
+        	<if test="addiJobStatus !=null"> #{addiJobStatus},</if>
+        	<if test="addiExamKill !=null"> #{addiExamKill},</if>
+        	<if test="addiStudyHabit !=null"> #{addiStudyHabit},</if>
+        	<if test="addiStudyWay !=null"> #{addiStudyWay},</if>
+        	<if test="addiMemory !=null"> #{addiMemory},</if>
+        	<if test="userID !=null">#{userID}</if>
+        </trim>
+        )
+        <selectKey keyProperty="defineID" resultType="int">
+        	select @@identity as defineID
+        </selectKey>
+    </insert>
+
+	<!-- 更新学员反馈信息 -->
+    <update id="updateMemberdefine">
+        UPDATE ADVC_MEMBER_DEFINE
+        <set>
+        	<if test="occupationID !=null"> occupationID = #{occupationID},</if>
+        	<if test="specialtyID !=null"> specialtyID = #{specialtyID},</if>
+        	<if test="occupation !=null"> occupation = #{occupation:VARCHAR},</if>
+        	<if test="specialty !=null"> specialty = #{specialty:VARCHAR},</if>
+        	<if test="education !=null"> education = #{education},</if>
+        	<if test="jobStatus !=null"> jobStatus = #{jobStatus},</if>
+        	<if test="studyTime !=null"> studyTime = #{studyTime},</if>
+        	<if test="studyTimeLong !=null"> studyTimeLong = #{studyTimeLong:VARCHAR},</if>
+        	<if test="memory !=null"> memory = #{memory},</if>
+        	<if test="examKill !=null"> examKill = #{examKill},</if>
+        	<if test="studyHabit !=null"> studyHabit = #{studyHabit:VARCHAR},</if>
+        	<if test="studyWay !=null"> studyWay = #{studyWay},</if>
+        	<if test="llikeTeacher !=null"> llikeTeacher = #{llikeTeacher:VARCHAR},</if>
+        	<if test="description !=null"> description = #{description},</if>
+        	<if test="updateDate !=null"> updateDate = #{updateDate},</if>
+        	<if test="addiJobStatus !=null"> addiJobStatus = #{addiJobStatus},</if>
+        	<if test="addiExamKill !=null"> addiExamKill = #{addiExamKill},</if>
+        	<if test="addiStudyHabit !=null"> addiStudyHabit = #{addiStudyHabit},</if>
+        	<if test="addiStudyWay !=null"> addiStudyWay = #{addiStudyWay},</if>
+        	<if test="addiMemory !=null"> addiMemory = #{addiMemory}</if>
+        </set>
+        WHERE userID = #{userID}
+    </update>
+    
+	<update id="updateMemberdefine2">
+        UPDATE ADVC_MEMBER_DEFINE SET occupationID=NULL, specialtyID=NULL, occupation=NULL, specialty=NULL, education=NULL, jobStatus=NULL, studyTime=NULL,
+		studyTimeLong=NULL, memory=NULL, examKill=NULL, studyHabit=NULL, studyWay=NULL, llikeTeacher=NULL, description=NULL, updateDate=NULL
+		where userID=#{userID}
+    </update>
+
+</mapper>

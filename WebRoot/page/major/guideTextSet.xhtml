@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+<h:head>
+	<title>阶段引导语设置</title>
+	<h:outputStylesheet name="page-css.css" library="css"/>
+	<h:outputScript name="page.js" library="js"/>
+</h:head>
+<h:body>
+	<p:growl for="info" id="info" life="3000" />
+	<h:form id="searchForm">
+	<p:remoteCommand name="selectMajorStageByMajor" actionListener="#{majorStageOther.selectMajorStageByMajor2(guideTextAction.majorID)}" update="sPhaseNo" autoRun="true"/>
+	<p:panel id="dataTablePanel">
+		<p:fieldset legend="查询条件" toggleable="true" collapsed="true" widgetVar="searchFieldSet">
+		<p:panelGrid columns="6" style="width:100%; text-align:left;">
+			<h:outputLabel for="sPhaseNo" value="阶段名" />
+			<p:selectOneMenu id="sPhaseNo" value="#{guideTextAction.searchGuideText.stageID}" style="width:200px;" panelStyleClass="minLength" >
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{majorStageOther.majorStageList}" var="majorStage" itemLabel="#{majorStage.stageName}" itemValue="#{majorStage.stageID}"/>
+			</p:selectOneMenu>
+
+			<h:outputLabel for="sStatus" value="状态" />
+			<p:selectOneMenu id="sStatus" value="#{guideTextAction.searchGuideText.status}" style="width:200px;" panelStyleClass="minLength">
+				<f:selectItem itemLabel="--请选择--" itemValue="" />
+				<f:selectItems value="#{guideTextReqAction.status.entrySet()}" var="s" itemLabel="#{s.value}" itemValue="#{s.key}"/>
+			</p:selectOneMenu>
+			
+			<p:outputLabel />
+			<p:outputLabel />
+			
+			<f:facet name="footer">
+				<h:panelGroup style="display:block; text-align:center">
+					<p:commandButton id="searchBtn" value="查询" oncomplete="searchFieldSet.toggle();" actionListener="#{guideTextAction.search}" rendered="#{guideTextAction.viewAuth}"/>
+					<p:spacer width="10px"/>
+					<p:commandButton type="reset" value="重置" />
+				</h:panelGroup>
+			</f:facet>	
+		</p:panelGrid>
+		</p:fieldset>
+		<p:menubar>
+			<p:menuitem value="添加" icon="ui-icon-contact" oncomplete="addDialog.show();" 
+				actionListener="#{guideTextReqAction.add(0)}" rendered="#{guideTextAction.optAuth}" update=":addForm:addDialog" />
+		</p:menubar>
+		
+		<p:dataTable scrollable="true" scrollHeight="#{guideTextAction.heighti2}" 
+			widgetVar="guideTextTable"
+			id="guideTextList"
+			binding="#{guideTextAction.pageTable}"
+			lazy="true"
+			value="#{guideTextAction.page}" 
+			rows="20"
+			var="guideText" 
+			paginator="true" 
+			paginatorPosition="bottom"
+			currentPageReportTemplate="{currentPage} of {totalPages} 共 {totalRecords}条记录"
+			paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+			rowsPerPageTemplate="20,50"
+			rowIndexVar="row"
+			styleClass="gridTable" 
+			emptyMessage="对不起，没有查询到数据！"
+			rendered="#{guideTextAction.viewAuth}"
+			editable="true" 
+			editMode="cell" 
+			>
+			<p:column headerText="阶段名" width="10%">
+				<h:outputText value="#{guideText.stageName}" />
+			</p:column>
+			<p:column headerText="内容" width="35%">
+				<h:outputText title="#{guideText.content}" value="#{guideText.contentStr}" />
+			</p:column>
+			<p:column headerText="所属辅导" width="15%">
+				<h:outputText value="#{guideText.majorName}" />
+			</p:column>
+			<p:column headerText="类型" width="7%">
+				<h:outputText value="#{guideText.typeStr}" />
+			</p:column>
+			<p:column headerText="剩余天数" width="10%">
+				<h:outputText value="#{guideText.leftDays}" />
+			</p:column>
+			<p:column headerText="创建时间" width="12%">
+				<h:outputText value="#{guideText.createTimeStr}" />
+			</p:column>
+			<p:column headerText="操作" width="11%">
+				<p:commandLink value="#{guideText.statusStr}" update=":info" actionListener="#{guideTextReqAction.changeStatus(guideText.guideID,guideText.status,guideText.stageID,guideText.type)}" rendered="#{guideTextAction.optAuth}"/>
+				<h:outputText value="#{guideText.statusStr}" rendered="#{!guideTextAction.optAuth}"/>
+				<p:spacer width="5px"/>
+				<p:commandLink value="查看" oncomplete="showDialog.show();" 
+					actionListener="#{guideTextReqAction.show(guideText.guideID)}"
+					update=":showForm:showDialog" />
+				<p:spacer width="5px"/>
+				<p:commandLink value="修改" oncomplete="addDialog.show();" 
+					actionListener="#{guideTextReqAction.update(1, guideText.guideID)}"
+					update=":addForm:addDialog" rendered="#{guideTextAction.optAuth}"/>
+			</p:column>
+		</p:dataTable>
+		<ui:include src="/page/common/blockUI.xhtml">
+			<ui:param name="tableID" value="guideTextList" />
+		</ui:include>
+	</p:panel>
+	</h:form>
+	
+	<!-- 添加页面 -->
+	<h:form id="addForm" >
+		<ui:include src="load/guideTextAdd.xhtml"/>
+	</h:form>
+	<!-- 查看页面 -->
+	<h:form id="showForm" >
+		<ui:include src="load/guideTextShow.xhtml"/>
+	</h:form>
+</h:body>
+</html>

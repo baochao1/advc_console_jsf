@@ -1,0 +1,107 @@
+<p:outputPanel xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	id="updatePanelGrid" style="text-align:center;align:center;">
+	<p:panelGrid columns="4" style="width:100%;">
+		<h:outputLabel value="开始时间" />
+		<p:calendar value="#{teacherStatisticsReqAction.filterTeaStatis.startDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true" />
+
+		<h:outputLabel value="结束时间" />
+		<p:calendar value="#{teacherStatisticsReqAction.filterTeaStatis.endDate}" pattern="yyyy-MM-dd" navigator="true" readonlyInput="true" showButtonPanel="true" />
+
+		<f:facet name="footer">
+			<h:panelGroup style="display:block;text-align:center">
+				<h:inputHidden value="#{teacherStatisticsReqAction.filterTeaStatis.teacherID}"/>
+				<p:commandButton id="staBtn" value="查询" actionListener="#{teacherStatisticsReqAction.search}"/>
+				<p:spacer width="10px"/>
+				<p:commandButton type="reset" value="重置" />
+			</h:panelGroup>
+		</f:facet>
+	</p:panelGrid>
+	<p:panelGrid id="statisTable" columns="2" style="width:100%;">
+
+		<p:column headerText="教师姓名" style="text-align:center;">
+			<h:outputText value="教师姓名" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.teacherName}" />
+		</p:column>
+
+		<p:column headerText="教师代码">
+			<h:outputText value="教师代码" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.teacherCode}" />
+		</p:column>
+
+		<p:column headerText="发布班级公告数量">
+			<h:outputText value="发布班级公告数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.blackboardNewsNum}" />
+		</p:column>
+
+		<p:column headerText="发布班级活动数量">
+			<h:outputText value="发布班级活动数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.classActivityNum}" />
+		</p:column>
+
+		<p:column headerText="回复学员消息数量">
+			<h:outputText value="回复学员消息数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.replyMessageNum}" />
+		</p:column>
+
+		<p:column headerText="撰写评语数量">
+			<h:outputText value="撰写评语数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.replyReportRemarkNum}" />
+		</p:column>
+
+		<p:column headerText="电话回访数量">
+			<h:outputText value="电话回访数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.memberCallNum}" />
+		</p:column>
+
+		<p:column headerText="成功回访数量">
+			<h:outputText value="成功回访数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.memberCallSuccessNum}" />
+		</p:column>
+
+		<p:column headerText="短消息过期数量">
+			<h:outputText value="短消息过期数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.messageOTNum}" />
+		</p:column>
+
+		<p:column headerText="评语过期数量">
+			<h:outputText value="评语过期数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.reportRemarkOTNum}" />
+		</p:column>
+
+		<p:column headerText="电话回访过期数量">
+			<h:outputText value="电话回访过期数量" style="font-weight: bold;" />
+		</p:column>
+		<p:column>
+			<h:outputText value="#{teacherStatisticsReqAction.teacherStatistics.memberCallOTNum}" />
+		</p:column>
+
+	</p:panelGrid>
+	<ui:include src="/page/common/blockUI3.xhtml">
+		<ui:param name="reflushID" value="updatePanelGrid" />
+		<ui:param name="triggerID" value="staBtn" />
+	</ui:include>
+</p:outputPanel>
